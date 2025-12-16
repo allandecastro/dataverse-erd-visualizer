@@ -1,7 +1,7 @@
 /**
  * ERD Visualizer - Main Component
  * Refactored into smaller, reusable components
- * Now with viewport culling and optional canvas rendering for performance
+ * Now with viewport culling for performance
  */
 
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
@@ -14,7 +14,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useViewport } from './hooks/useViewport';
 
 // Components
-import { CanvasERD, EntityCard, EntitySearch, FeatureGuide, Minimap, RelationshipLines, Sidebar, Toast, Toolbar } from './components';
+import { EntityCard, EntitySearch, FeatureGuide, Minimap, RelationshipLines, Sidebar, Toast, Toolbar } from './components';
 
 // Types and utilities
 import { getThemeColors, type ColorSettings } from './types';
@@ -75,8 +75,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [highlightedEntity, setHighlightedEntity] = useState<string | null>(null);
 
-  // Performance mode state
-  const [useCanvasRenderer, setUseCanvasRenderer] = useState(false);
+  // Container size for viewport calculations
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   // Feature guide state
@@ -483,7 +482,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         {/* Canvas */}
         <div
           ref={containerRef}
-          onMouseDown={useCanvasRenderer ? undefined : handleMouseDown}
+          onMouseDown={handleMouseDown}
           style={{
             flex: 1,
             overflow: 'hidden',
@@ -492,39 +491,8 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
             background: bgColor
           }}
         >
-          {/* Canvas Renderer (High Performance Mode) */}
-          {useCanvasRenderer ? (
-            <CanvasERD
-              entities={visibleEntities}
-              relationships={visibleRelationships}
-              entityPositions={entityPositions}
-              selectedFields={selectedFields}
-              collapsedEntities={collapsedEntities}
-              pan={pan}
-              zoom={zoom}
-              isDarkMode={isDarkMode}
-              colorSettings={colorSettings}
-              themeColors={themeColors}
-              highlightedEntity={highlightedEntity}
-              hoveredEntity={hoveredEntity}
-              containerWidth={containerSize.width}
-              containerHeight={containerSize.height}
-              onEntityHover={setHoveredEntity}
-              onEntityClick={(entityName) => {
-                setShowFieldSelector(showFieldSelector === entityName ? null : entityName);
-              }}
-              onEntityDragStart={(entityName, e) => {
-                const pos = entityPositions[entityName] || { x: 0, y: 0 };
-                setDraggingEntity(entityName);
-                setDragEntityOffset({
-                  x: (e.clientX - pan.x) / zoom - pos.x,
-                  y: (e.clientY - pan.y) / zoom - pos.y
-                });
-              }}
-            />
-          ) : (
-            /* DOM Renderer (Standard Mode with Viewport Culling) */
-            <div
+          {/* DOM Renderer with Viewport Culling */}
+          <div
               ref={canvasRef}
               className="erd-canvas"
               style={{
@@ -584,7 +552,6 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
                 );
               })}
             </div>
-          )}
 
           {/* Performance Stats Overlay */}
           {perfStats.cullRate > 0 && (
@@ -603,29 +570,6 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
               Rendering {perfStats.visibleEntities}/{perfStats.totalEntities} entities ({perfStats.cullRate}% culled)
             </div>
           )}
-
-          {/* Canvas Mode Toggle */}
-          <button
-            onClick={() => setUseCanvasRenderer(!useCanvasRenderer)}
-            style={{
-              position: 'absolute',
-              bottom: 10,
-              right: showMinimap ? 170 : 10,
-              padding: '6px 12px',
-              background: useCanvasRenderer
-                ? (isDarkMode ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)')
-                : (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'),
-              border: `1px solid ${useCanvasRenderer ? '#22c55e' : (isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)')}`,
-              borderRadius: '4px',
-              fontSize: '11px',
-              color: useCanvasRenderer ? '#22c55e' : (isDarkMode ? '#94a3b8' : '#64748b'),
-              cursor: 'pointer',
-              zIndex: 10,
-            }}
-            title={useCanvasRenderer ? 'Using Canvas Renderer (High Performance)' : 'Using DOM Renderer (Standard)'}
-          >
-            {useCanvasRenderer ? '⚡ Canvas Mode' : '📦 DOM Mode'}
-          </button>
 
           {/* Minimap */}
           {showMinimap && (

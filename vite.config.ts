@@ -14,12 +14,29 @@ export default defineConfig(({ mode }) => {
         name: 'transform-html-for-dataverse',
         transformIndexHtml(html) {
           // Remove Vite-specific attributes and adjust paths for Dataverse
-          return html
+          let transformed = html
             .replace(/type="module"\s*/g, '')
             .replace(/crossorigin\s*/g, '')
             .replace(/\s*<link rel="icon"[^>]*>/g, '')
             .replace(/href="\/([^"]+)"/g, 'href="$1"')
             .replace(/src="\/([^"]+)"/g, 'src="$1"');
+
+          // Move script from head to end of body for proper DOM loading
+          // Extract script tag from head
+          const scriptMatch = transformed.match(/<script\s+src="([^"]+)"[^>]*><\/script>/);
+          if (scriptMatch) {
+            const scriptTag = scriptMatch[0];
+            const scriptSrc = scriptMatch[1];
+            // Remove script from wherever it is
+            transformed = transformed.replace(scriptTag, '');
+            // Add script at the end of body with defer as backup
+            transformed = transformed.replace(
+              '</body>',
+              `  <script defer src="${scriptSrc}"></script>\n  </body>`
+            );
+          }
+
+          return transformed;
         }
       }
     ].filter(Boolean),

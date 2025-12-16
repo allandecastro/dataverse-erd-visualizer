@@ -46,6 +46,8 @@ export const FieldSelector = forwardRef<HTMLDivElement, FieldSelectorProps>(({
         zIndex: 100
       }}
       onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
         <div style={{ fontSize: '12px', fontWeight: '600' }}>Select Fields</div>

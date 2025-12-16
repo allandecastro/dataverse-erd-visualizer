@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Download, ZoomIn, ZoomOut, Maximize2, RefreshCw, Minimize2, Search, Keyboard, X, HelpCircle } from 'lucide-react';
+import { Download, ZoomIn, ZoomOut, Maximize2, RefreshCw, Minimize2, Search, Keyboard, X, HelpCircle, ClipboardCopy } from 'lucide-react';
 import type { ThemeColors } from '../types';
 import { getKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
@@ -102,12 +102,13 @@ export function Toolbar({
       </div>
 
       {/* Controls */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        {/* Export buttons */}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        {/* Export buttons - clipboard icon for copy, download for SVG */}
         <button
           onClick={onCopyPNG}
+          title="Copy PNG to clipboard"
           style={{
-            padding: '8px 12px',
+            padding: '8px 10px',
             background: isDarkMode ? 'rgba(236, 72, 153, 0.2)' : 'rgba(236, 72, 153, 0.1)',
             border: '1px solid #ec4899',
             borderRadius: '6px',
@@ -115,18 +116,19 @@ export function Toolbar({
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            fontSize: '13px',
+            gap: '5px',
+            fontSize: '12px',
             fontWeight: '600'
           }}
         >
-          <Download size={16} />
-          Copy PNG
+          <ClipboardCopy size={14} />
+          PNG
         </button>
         <button
           onClick={onExportMermaid}
+          title="Copy Mermaid code to clipboard"
           style={{
-            padding: '8px 12px',
+            padding: '8px 10px',
             background: isDarkMode ? 'rgba(139, 92, 246, 0.2)' : 'rgba(139, 92, 246, 0.1)',
             border: '1px solid #8b5cf6',
             borderRadius: '6px',
@@ -134,18 +136,19 @@ export function Toolbar({
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            fontSize: '13px',
+            gap: '5px',
+            fontSize: '12px',
             fontWeight: '600'
           }}
         >
-          <Download size={16} />
+          <ClipboardCopy size={14} />
           Mermaid
         </button>
         <button
           onClick={onExportSVG}
+          title="Download SVG file"
           style={{
-            padding: '8px 12px',
+            padding: '8px 10px',
             background: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)',
             border: '1px solid #10b981',
             borderRadius: '6px',
@@ -153,28 +156,28 @@ export function Toolbar({
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            fontSize: '13px',
+            gap: '5px',
+            fontSize: '12px',
             fontWeight: '600'
           }}
         >
-          <Download size={16} />
+          <Download size={14} />
           SVG
         </button>
 
         <div style={{ width: '1px', height: '24px', background: borderColor }} />
 
-        {/* Smart Zoom */}
+        {/* Smart Zoom - no ON/OFF text, just color indicates state */}
         <button
           onClick={onToggleSmartZoom}
           title={isSmartZoom
-            ? "Smart Zoom ON: Adaptive zoom speed based on entity density"
-            : "Smart Zoom OFF: Standard zoom speed"
+            ? "Smart Zoom: Adaptive zoom (click to disable)"
+            : "Enable Smart Zoom for adaptive zoom speed"
           }
           style={buttonStyle(isSmartZoom)}
         >
-          <ZoomIn size={16} />
-          Smart Zoom {isSmartZoom ? 'ON' : 'OFF'}
+          <ZoomIn size={14} />
+          Smart Zoom
         </button>
 
         {/* Minimap */}

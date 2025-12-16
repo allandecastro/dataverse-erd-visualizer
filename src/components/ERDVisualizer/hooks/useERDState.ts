@@ -15,10 +15,8 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   // Theme
   const [isDarkMode, setIsDarkMode] = useState(true);
 
-  // Entity selection
-  const [selectedEntities, setSelectedEntities] = useState<Set<string>>(
-    new Set(entities.map(e => e.logicalName))
-  );
+  // Entity selection - start with none selected by default
+  const [selectedEntities, setSelectedEntities] = useState<Set<string>>(new Set());
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,13 +86,25 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
+  // Helper to get publisher from entity
+  const getEntityPublisher = (entity: Entity): string => {
+    if (entity.publisher) return entity.publisher;
+    if (!entity.isCustomEntity) return 'Microsoft';
+    const underscoreIndex = entity.logicalName.indexOf('_');
+    if (underscoreIndex > 0) {
+      return entity.logicalName.substring(0, underscoreIndex);
+    }
+    return 'Unknown';
+  };
+
   // Filtered entities and relationships
+  // Note: searchQuery is NOT used here - it only filters the sidebar selection list
+  // The canvas shows all selected entities regardless of search
   const filteredEntities = entities.filter(entity => {
-    const matchesSearch = entity.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entity.logicalName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPublisher = publisherFilter === 'all' || entity.publisher === publisherFilter;
+    const entityPublisher = getEntityPublisher(entity);
+    const matchesPublisher = publisherFilter === 'all' || entityPublisher === publisherFilter;
     const matchesSolution = solutionFilter === 'all' || entity.solution === solutionFilter;
-    return matchesSearch && matchesPublisher && matchesSolution && selectedEntities.has(entity.logicalName);
+    return matchesPublisher && matchesSolution && selectedEntities.has(entity.logicalName);
   });
 
   const filteredRelationships = relationships.filter(rel =>
@@ -188,9 +198,10 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     setPan({ x: 400, y: 100 });
   }, []);
 
-  // Get publishers and solutions for filters
-  const publishers: string[] = ['all', ...new Set(entities.map(e => e.publisher).filter((p): p is string => Boolean(p)))];
-  const solutions: string[] = ['all', ...new Set(entities.map(e => e.solution).filter((s): s is string => Boolean(s)))];
+  // Derive publishers and solutions for filters
+  const publishers: string[] = ['all', ...new Set(entities.map(e => getEntityPublisher(e)))].sort();
+  // Solutions are harder to derive - group by publisher prefix for now
+  const solutions: string[] = ['all', ...new Set(entities.map(e => e.solution).filter((s): s is string => Boolean(s)))].sort();
 
   return {
     // Theme

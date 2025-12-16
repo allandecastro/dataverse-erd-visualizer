@@ -15,6 +15,16 @@ import type {
 } from '@/types';
 import { getParentXrm } from '@/types';
 
+interface SolutionInfo {
+  solutionId: string;
+  uniqueName: string;
+  friendlyName: string;
+}
+
+interface EntitySolutionMap {
+  [entityMetadataId: string]: string[]; // MetadataId -> solution unique names
+}
+
 class DataverseApiService {
   private baseUrl: string = '';
   private apiVersion: string = '9.2';
@@ -81,9 +91,10 @@ class DataverseApiService {
 
   /**
    * Fetch all entity metadata from Dataverse with pagination support
-   * Uses a two-step approach to work around v8.2+ limitation:
+   * Uses a multi-step approach to work around v8.2+ limitation:
    * 1. Fetch entity definitions with relationships (without attributes) - handles pagination
    * 2. Fetch attributes separately per entity to get polymorphic types (Targets)
+   * 3. Fetch solutions and map entities to their solutions
    *
    * Returns both entities and relationships extracted from the metadata
    * @param onProgress - Optional callback to report progress (pages fetched, total entities so far)
@@ -102,9 +113,14 @@ class DataverseApiService {
       // Extract relationships from raw metadata BEFORE transformation (they would be lost otherwise)
       const relationships = this.extractRelationshipsFromMetadata(allEntityMetadata);
 
-      // Step 2: Fetch attributes separately for each entity to get polymorphic types (including Targets)
+      // Step 2: Fetch solutions and entity-solution mappings in parallel with attributes
+      onProgress?.({ page: 0, totalEntities: allEntityMetadata.length, phase: 'fetching_solutions' });
+      const solutions = await this.fetchSolutions();
+      const entitySolutionMap = await this.fetchEntitySolutionMappings(solutions);
+
+      // Step 3: Fetch attributes separately for each entity to get polymorphic types (including Targets)
       onProgress?.({ page: 0, totalEntities: allEntityMetadata.length, phase: 'fetching_attributes' });
-      const entities = await this.enrichEntitiesWithAttributes(allEntityMetadata, onProgress);
+      const entities = await this.enrichEntitiesWithAttributes(allEntityMetadata, onProgress, entitySolutionMap);
 
       return { entities, relationships };
     } catch (error) {
@@ -347,6 +363,98 @@ class DataverseApiService {
    */
   isInDataverseContext(): boolean {
     return !!(window.Xrm || getParentXrm());
+  }
+
+  /**
+   * Fetch all solutions from Dataverse
+   */
+  async fetchSolutions(): Promise<SolutionInfo[]> {
+    try {
+      const url = `${this.baseUrl}/solutions?$select=solutionid,uniquename,friendlyname&$filter=isvisible eq true&$orderby=friendlyname`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'OData-MaxVersion': '4.0',
+          'OData-Version': '4.0',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(`Failed to fetch solutions: ${response.statusText}`);
+        return [];
+      }
+
+      const data = await response.json();
+      return data.value.map((sol: any) => ({
+        solutionId: sol.solutionid,
+        uniqueName: sol.uniquename,
+        friendlyName: sol.friendlyname,
+      }));
+    } catch (error) {
+      console.warn('Error fetching solutions:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch entity-to-solution mappings from solutioncomponents
+   * Component type 1 = Entity
+   */
+  async fetchEntitySolutionMappings(solutions: SolutionInfo[]): Promise<EntitySolutionMap> {
+    const entitySolutionMap: EntitySolutionMap = {};
+
+    try {
+      // Fetch solution components where componenttype = 1 (Entity)
+      const url = `${this.baseUrl}/solutioncomponents?$select=objectid,_solutionid_value&$filter=componenttype eq 1`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'OData-MaxVersion': '4.0',
+          'OData-Version': '4.0',
+          'Content-Type': 'application/json',
+          'Prefer': 'odata.maxpagesize=5000',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(`Failed to fetch solution components: ${response.statusText}`);
+        return entitySolutionMap;
+      }
+
+      const data = await response.json();
+
+      // Create a lookup map for solution IDs to names
+      const solutionIdToName: Record<string, string> = {};
+      solutions.forEach(sol => {
+        solutionIdToName[sol.solutionId] = sol.uniqueName;
+      });
+
+      // Map entity metadata IDs to solution names
+      data.value.forEach((component: any) => {
+        const entityMetadataId = component.objectid;
+        const solutionId = component._solutionid_value;
+        const solutionName = solutionIdToName[solutionId];
+
+        if (entityMetadataId && solutionName) {
+          if (!entitySolutionMap[entityMetadataId]) {
+            entitySolutionMap[entityMetadataId] = [];
+          }
+          if (!entitySolutionMap[entityMetadataId].includes(solutionName)) {
+            entitySolutionMap[entityMetadataId].push(solutionName);
+          }
+        }
+      });
+
+      return entitySolutionMap;
+    } catch (error) {
+      console.warn('Error fetching solution components:', error);
+      return entitySolutionMap;
+    }
   }
 }
 

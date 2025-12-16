@@ -175,6 +175,9 @@ declare global {
   interface Window {
     Xrm?: XrmObject;
   }
+  // Xrm is also available as a global variable (not just window.Xrm)
+  // eslint-disable-next-line no-var
+  var Xrm: XrmObject | undefined;
 }
 
 // Helper to safely get Xrm from parent window (for iframes)

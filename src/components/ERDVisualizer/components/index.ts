@@ -2,7 +2,6 @@
  * Export all ERD Visualizer components
  */
 
-export { CanvasERD } from './CanvasERD';
 export { EntityCard } from './EntityCard';
 export { EntitySearch } from './EntitySearch';
 export { FeatureGuide } from './FeatureGuide';

@@ -52,14 +52,38 @@ function getProgressMessage(info: { page: number; totalEntities: number; phase: 
  */
 function isDataverseEnvironment(): boolean {
   try {
-    // Check for Xrm object (Dataverse web resource context)
-    if (window.Xrm?.Utility?.getGlobalContext) {
+    // Method 1: Check for Xrm object on window (standard web resource)
+    if (typeof window !== 'undefined' && window.Xrm) {
       return true;
     }
-    // Check parent window for iframe scenario
-    if ((window.parent as Window & { Xrm?: unknown })?.Xrm) {
+
+    // Method 2: Check for global Xrm (sometimes not on window directly)
+    if (typeof Xrm !== 'undefined') {
       return true;
     }
+
+    // Method 3: Check parent window for iframe scenario
+    try {
+      if (window.parent && window.parent !== window) {
+        const parentXrm = (window.parent as Window & { Xrm?: unknown })?.Xrm;
+        if (parentXrm) {
+          return true;
+        }
+      }
+    } catch {
+      // Cross-origin access blocked - ignore
+    }
+
+    // Method 4: Check URL pattern for Dataverse domains
+    const url = window.location.href.toLowerCase();
+    if (url.includes('.dynamics.com') ||
+        url.includes('.crm.dynamics.com') ||
+        url.includes('crm4.dynamics.com') ||
+        url.includes('webresources')) {
+      // We're on a Dataverse URL, assume Xrm will be available
+      return true;
+    }
+
     return false;
   } catch {
     return false;
