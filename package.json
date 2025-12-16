@@ -1,0 +1,35 @@
+{
+  "name": "dataverse-erd-visualizer",
+  "version": "1.0.0",
+  "description": "Entity Relationship Diagram Visualizer for Microsoft Dataverse",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "build:webresource": "vite build --mode webresource"
+  },
+  "keywords": [
+    "dataverse",
+    "power-platform",
+    "erd",
+    "dynamics-365",
+    "web-resource"
+  ],
+  "author": "Allan De Castro",
+  "license": "MIT",
+  "dependencies": {
+    "lucide-react": "^0.263.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "terser": "^5.44.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}
