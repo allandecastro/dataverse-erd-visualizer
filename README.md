@@ -1,48 +1,74 @@
 # Dataverse ERD Visualizer
 
-**Version:** 1.0.0 BETA  
-**Author:** Allan De Castro  
+**Version:** 1.0.0 BETA
+**Author:** Allan De Castro
 **License:** MIT
 
 Entity Relationship Diagram Visualizer for Microsoft Dataverse / Dynamics 365 Power Platform.
 
 ## Features
 
+### Core Visualization
 - 🎨 **Visual ERD** - Interactive force-directed, grid, and auto-arrange layouts
 - 🔗 **Precise Relationships** - Connections from Lookup fields to Primary Keys
 - 🎯 **Smart Navigation** - Smart Zoom, Minimap, Fit to Screen
+- 📊 **Dataverse Integration** - Fetch live metadata from your environment
+
+### Performance
+- ⚡ **Viewport Culling** - Only renders visible entities for smooth performance
+- 🖼️ **Canvas Mode** - High-performance HTML5 Canvas rendering for large diagrams (100+ tables)
+- 🚀 **Optimized Rendering** - Efficient React.memo and lazy loading
+
+### User Experience
+- 🔍 **Search & Filter** - Quick search by table name, filter by publisher
+- 📋 **Field Selector** - Choose which fields to display per table
+- ⌨️ **Keyboard Shortcuts** - Ctrl+F (search), Escape (deselect), +/- (zoom)
+- 📖 **Built-in Feature Guide** - Interactive onboarding for new users
+
+### Export & Customization
 - 📤 **Multiple Exports** - PNG (clipboard), SVG (download), Mermaid (clipboard)
 - 🌓 **Dark/Light Mode** - Professional themes
 - 🎨 **Customizable Colors** - Table and relationship colors
-- 🔍 **Field Selector** - Choose which fields to display per table
-- 📊 **Dataverse Integration** - Fetch live metadata from your environment
 
 ## Project Structure
 
 ```
 dataverse-erd-visualizer/
 ├── src/
-│   ├── components/          # React components
-│   │   ├── ERDCanvas/       # Main canvas component
-│   │   ├── Sidebar/         # Left panel with filters
-│   │   ├── Toolbar/         # Top toolbar with actions
-│   │   └── ...
-│   ├── services/            # API services
-│   │   └── dataverseApi.ts  # Dataverse Web API client
-│   ├── hooks/               # Custom React hooks
-│   │   └── useDataverseData.ts
-│   ├── types/               # TypeScript definitions
-│   │   └── index.ts
-│   ├── utils/               # Utility functions
-│   ├── constants/           # Constants and configs
-│   ├── App.tsx              # Main app component
-│   ├── main.tsx             # Entry point
-│   └── index.css            # Global styles
-├── dist/                    # Build output (dev)
-├── dist/webresource/        # Build output (web resource)
+│   ├── components/
+│   │   └── ERDVisualizer/        # Main ERD component
+│   │       ├── ERDVisualizer.tsx # Root component with state management
+│   │       ├── components/       # Sub-components
+│   │       │   ├── EntityCard.tsx      # Table card rendering
+│   │       │   ├── RelationshipLines.tsx # SVG relationship lines
+│   │       │   ├── CanvasERD.tsx       # Canvas mode renderer
+│   │       │   ├── Toolbar.tsx         # Top action bar
+│   │       │   ├── Sidebar.tsx         # Filter panel
+│   │       │   ├── Minimap.tsx         # Navigation minimap
+│   │       │   ├── FeatureGuide.tsx    # Onboarding modal
+│   │       │   └── ...
+│   │       ├── hooks/            # Custom hooks
+│   │       │   ├── useDataverseData.ts # API data fetching
+│   │       │   └── useViewport.ts      # Viewport culling logic
+│   │       ├── utils/            # Utility functions
+│   │       │   └── layoutUtils.ts
+│   │       └── constants/        # Configuration
+│   ├── services/
+│   │   └── dataverseApi.ts       # Dataverse Web API client
+│   ├── types/
+│   │   └── index.ts              # TypeScript definitions
+│   ├── App.tsx                   # App wrapper
+│   ├── main.tsx                  # Entry point
+│   └── index.css                 # Global styles
+├── dist/                         # Build output (dev)
+├── dist/webresource/             # Build output (Dataverse)
+│   ├── adc_erdvisualizer.js      # Main bundle
+│   ├── adc_erdvisualizer.css     # Styles
+│   └── index.html                # HTML wrapper
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
+├── DEPLOYMENT.md                 # Dataverse deployment guide
 └── README.md
 ```
 
@@ -83,58 +109,35 @@ VITE_DATAVERSE_URL=https://your-org.crm.dynamics.com
 npm run build:webresource
 ```
 
-This creates:
-- `dist/webresource/cr_erdvisualizer.js` - Main bundle
-- `dist/webresource/cr_erdvisualizer.css` - Styles
-- `dist/webresource/index.html` - HTML wrapper
+This creates optimized files in `dist/webresource/`:
+- `adc_erdvisualizer.js` - Main JavaScript bundle (~266 KB, ~76 KB gzipped)
+- `adc_erdvisualizer.css` - Styles (~0.6 KB)
+- `index.html` - HTML wrapper (ready to use)
 
-### Deployment to Dataverse
+### Quick Deployment
 
-#### Option 1: Manual Upload
+1. Navigate to https://make.powerapps.com
+2. Select your environment → **Solutions** → Your solution
+3. Click **+ New** → **More** → **Web resource**
+4. Upload each file:
+   - `adc_erdvisualizer.js` (Type: Script)
+   - `adc_erdvisualizer.css` (Type: Style Sheet)
+   - `index.html` as `adc_erdvisualizer.html` (Type: Web Page)
+5. **Save** and **Publish All Customizations**
 
-1. Navigate to **Settings** → **Solutions**
-2. Open your solution
-3. Add **Web Resource** → **New**
-4. Upload `cr_erdvisualizer.js` and `cr_erdvisualizer.css`
-5. Create an HTML web resource with:
+### Add to Model-Driven App
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>ERD Visualizer</title>
-    <link rel="stylesheet" href="cr_erdvisualizer.css">
-</head>
-<body>
-    <div id="root"></div>
-    <script src="cr_erdvisualizer.js"></script>
-</body>
-</html>
-```
+1. Open your app in **App Designer**
+2. Add a **Subarea** with:
+   - **Content Type:** Web Resource
+   - **Web Resource:** `adc_erdvisualizer.html`
+3. **Save** and **Publish**
 
-#### Option 2: Using Solution Packager (Recommended)
-
-1. Create a Solution XML structure
-2. Include web resources
-3. Package and import
-
-```bash
-# Example using Microsoft.CrmSdk.CoreTools
-pac solution pack --zipfile solution.zip --folder src --packagetype Both
-```
-
-### Add to Sitemap
-
-Add the ERD Visualizer to your sitemap:
-
-```xml
-<SubArea Id="cr_erdvisualizer" 
-         ResourceId="cr_erdvisualizer_html"
-         Icon="/_imgs/area/16_visualizations.png"
-         Title="ERD Visualizer"
-         Url="/WebResources/cr_erdvisualizer.html" />
-```
+📖 **See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions**, including:
+- PAC CLI deployment
+- Solution packaging
+- Required permissions
+- Troubleshooting guide
 
 ## Architecture
 
@@ -176,12 +179,22 @@ For local development:
 
 ## Performance Optimizations
 
+### Viewport Culling
+- Only entities visible in the current viewport are rendered
+- Entities outside the view are automatically excluded from the DOM
+- Provides smooth performance even with 100+ tables
+
+### Canvas Mode
+- Toggle Canvas Mode for ultimate performance with large diagrams
+- Uses HTML5 Canvas API instead of DOM elements
+- Significantly reduces browser memory usage
+
+### Other Optimizations
 - **Lazy loading** of relationship data
 - **Debounced** search and filters
-- **Canvas virtualization** for large models (100+ tables)
 - **Optimized re-renders** with React.memo
 - **Tree-shaking** via Vite
-- **Code splitting** for web resource builds
+- **Single bundle** for web resource deployment
 
 ## Browser Support
 
@@ -229,18 +242,41 @@ MIT License - see LICENSE file for details
 Microsoft MVP | FastTrack Ready Solutions Architect  
 Blog: Allan's Tech Forge
 
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + F` | Focus search box |
+| `Escape` | Deselect entity / Close dialogs |
+| `+` / `=` | Zoom in |
+| `-` | Zoom out |
+| Mouse wheel | Zoom in/out |
+| Click + Drag | Pan canvas |
+| Click entity | Select and highlight relationships |
+
 ## Changelog
 
-### v1.0.0 BETA (2025-12-14)
+### v1.0.0 BETA (2025-12-16)
 
-- Initial release
-- Dataverse metadata integration
-- Force, Grid, Auto-arrange layouts
-- Primary Key indicators
-- Precise lookup→PK relationships
-- Export to PNG, SVG, Mermaid
-- Dark/Light themes
-- Smart Zoom
-- Interactive Minimap
+**Initial Release**
+- Dataverse metadata integration via Web API
+- Force-directed, Grid, and Auto-arrange layouts
+- Primary Key indicators on entity cards
+- Precise lookup→PK relationship visualization
+- Export to PNG (clipboard), SVG (download), Mermaid (clipboard)
+- Dark/Light themes with localStorage persistence
+- Smart Zoom with fit-to-screen
+- Interactive Minimap for navigation
 - Field selector per table
-- Color customization
+- Color customization for tables and relationships
+
+**Performance Features**
+- Viewport Culling - Only render visible entities
+- Canvas Mode - High-performance HTML5 Canvas rendering
+- Optimized for environments with 100+ tables
+
+**User Experience**
+- Built-in Feature Guide with onboarding modal
+- Keyboard shortcuts for common actions
+- Search and filter by publisher
+- Collapsible entity cards

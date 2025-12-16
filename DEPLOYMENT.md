@@ -1,5 +1,9 @@
 # Deployment Guide - Dataverse Web Resource
 
+## Overview
+
+This guide explains how to deploy the ERD Visualizer as a web resource in Microsoft Dataverse / Dynamics 365 / Power Platform.
+
 ## Quick Deployment Steps
 
 ### 1. Build the Web Resource
@@ -9,9 +13,9 @@ npm run build:webresource
 ```
 
 This creates optimized files in `dist/webresource/`:
-- `cr_erdvisualizer.js` - Main JavaScript bundle
-- `cr_erdvisualizer.css` - Styles
-- `index.html` - HTML wrapper (optional)
+- `adc_erdvisualizer.js` - Main JavaScript bundle (~266 KB, ~76 KB gzipped)
+- `adc_erdvisualizer.css` - Styles (~0.6 KB)
+- `index.html` - HTML wrapper (ready to use)
 
 ### 2. Upload to Dataverse
 
@@ -23,83 +27,89 @@ This creates optimized files in `dist/webresource/`:
 4. Click **+ New** → **More** → **Web resource**
 
 **Upload JavaScript:**
-- Name: `cr_erdvisualizer.js`
+- Name: `adc_erdvisualizer.js`
 - Display Name: `ERD Visualizer Script`
 - Type: **Script (JScript)**
-- Upload: `dist/webresource/cr_erdvisualizer.js`
+- Upload: `dist/webresource/adc_erdvisualizer.js`
 
 **Upload CSS:**
-- Name: `cr_erdvisualizer.css`
+- Name: `adc_erdvisualizer.css`
 - Display Name: `ERD Visualizer Styles`
 - Type: **Style Sheet (CSS)**
-- Upload: `dist/webresource/cr_erdvisualizer.css`
+- Upload: `dist/webresource/adc_erdvisualizer.css`
 
 **Upload HTML:**
-- Name: `cr_erdvisualizer.html`
+- Name: `adc_erdvisualizer.html`
 - Display Name: `ERD Visualizer`
 - Type: **Web Page (HTML)**
-- Content: See below
+- Upload: `dist/webresource/index.html` (or copy content below)
 
-5. **Save** and **Publish**
+5. **Save** and **Publish All Customizations**
 
 ### 3. HTML Web Resource Content
+
+If you need to create the HTML manually:
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERD Visualizer</title>
-    <link rel="stylesheet" href="cr_erdvisualizer.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dataverse ERD Visualizer</title>
+    <script src="adc_erdvisualizer.js"></script>
+    <link rel="stylesheet" href="adc_erdvisualizer.css">
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        #root {
-            width: 100%;
-            height: 100%;
-        }
+      body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="root"></div>
-    <script src="cr_erdvisualizer.js"></script>
-</body>
+  </body>
 </html>
 ```
 
-### 4. Add to Sitemap (App Navigation)
+### 4. Add to Model-Driven App Navigation
 
 #### Using App Designer
 
 1. Open your Model-Driven App in **App Designer**
-2. Click **Navigation** → **+ Add** → **Group**
+2. Click **Navigation** → **+ Add** → **Group** (or use existing)
 3. Add **Subarea**:
    - **Title:** ERD Visualizer
-   - **Icon:** Choose visualization icon
-   - **URL:** `/main.aspx?pagetype=webresource&webresourceName=cr_erdvisualizer.html`
-   - **Open in:** Main Window
+   - **Icon:** Choose a visualization icon (e.g., `/_imgs/area/16_visualizations.png`)
+   - **Content Type:** Web Resource
+   - **Web Resource:** Select `adc_erdvisualizer.html`
 
 4. **Save** and **Publish**
 
+#### Using URL (Alternative)
+
+You can also add as a URL subarea:
+- **URL:** `$webresource:adc_erdvisualizer.html`
+
 #### Using Sitemap XML (Advanced)
 
-Add to your sitemap:
+Add to your sitemap XML:
 
 ```xml
-<Area Id="cr_Tools" ResourceId="Area_Tools">
-  <Group Id="cr_DataTools" ResourceId="Group_DataTools">
-    <SubArea 
-      Id="cr_ERDVisualizer" 
-      ResourceId="SubArea_ERDVisualizer"
+<Area Id="adc_Tools" Title="Tools">
+  <Group Id="adc_DataTools" Title="Data Tools">
+    <SubArea
+      Id="adc_ERDVisualizer"
       Title="ERD Visualizer"
-      Url="/main.aspx?pagetype=webresource&amp;webresourceName=cr_erdvisualizer.html"
-      Icon="/_imgs/area/visualizations.png">
+      Url="$webresource:adc_erdvisualizer.html"
+      Icon="/_imgs/area/16_visualizations.png">
     </SubArea>
   </Group>
 </Area>
@@ -107,29 +117,83 @@ Add to your sitemap:
 
 ### 5. Grant Permissions
 
-Users need:
-- **Read** permission on **Entity Definitions**
-- **Read** permission on **Relationship Definitions**
-- **Read** permission on the Web Resource
+Users need these permissions to use the ERD Visualizer:
 
-Add to security role:
-1. **Customization** tab
-2. Enable **Entity** → **Read**
-3. Enable **Relationship** → **Read**
+**Required Security Role Privileges:**
 
-## Alternative: Standalone Page
+| Privilege | Entity | Access Level |
+|-----------|--------|--------------|
+| Read | Entity (Table) | Organization |
+| Read | Attribute (Column) | Organization |
+| Read | Relationship | Organization |
+| Read | Web Resource | Organization |
+
+**Quick Setup:**
+1. Go to **Settings** → **Security** → **Security Roles**
+2. Open the role to modify
+3. **Customization** tab:
+   - **Entity** → Read: Organization
+   - **Attribute** → Read: Organization
+   - **Relationship** → Read: Organization
+
+## Alternative: Standalone Access
 
 For a standalone page (not in navigation):
 
 1. Upload web resources as above
 2. Access directly via URL:
    ```
-   https://[org].crm.dynamics.com/WebResources/cr_erdvisualizer.html
+   https://[org].crm.dynamics.com/WebResources/adc_erdvisualizer.html
    ```
 
-## Solution XML Structure (for PAC CLI)
+## Using Power Platform CLI (PAC CLI)
 
-Create `solution.xml`:
+### Prerequisites
+
+Install Power Platform CLI:
+```bash
+# Using npm
+npm install -g @microsoft/power-platform-cli
+
+# Or download from Microsoft
+# https://aka.ms/PowerAppsCLI
+```
+
+### Deployment Steps
+
+```bash
+# 1. Authenticate
+pac auth create --url https://[org].crm.dynamics.com
+
+# 2. Create a new solution (if needed)
+pac solution init --publisher-name "YourPublisher" --publisher-prefix "adc"
+
+# 3. Add web resources to solution
+pac solution add-reference --path "./dist/webresource/adc_erdvisualizer.js"
+pac solution add-reference --path "./dist/webresource/adc_erdvisualizer.css"
+pac solution add-reference --path "./dist/webresource/index.html"
+
+# 4. Build the solution
+pac solution pack --zipfile ERDVisualizer_1_0_0.zip --folder . --packagetype Both
+
+# 5. Import to environment
+pac solution import --path ERDVisualizer_1_0_0.zip --publish-changes
+```
+
+## Solution Structure for Manual Packaging
+
+```
+ERDVisualizer/
+├── solution.xml
+├── [Content_Types].xml
+├── customizations.xml
+└── WebResources/
+    ├── adc_erdvisualizer.html
+    ├── adc_erdvisualizer.js
+    └── adc_erdvisualizer.css
+```
+
+### Sample solution.xml
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -140,39 +204,19 @@ Create `solution.xml`:
       <LocalizedName description="ERD Visualizer" languagecode="1033"/>
     </LocalizedNames>
     <Descriptions>
-      <Description description="Entity Relationship Diagram Visualizer" languagecode="1033"/>
+      <Description description="Entity Relationship Diagram Visualizer for Dataverse" languagecode="1033"/>
     </Descriptions>
     <Version>1.0.0.0</Version>
     <Managed>0</Managed>
     <Publisher>
-      <UniqueName>contoso</UniqueName>
+      <UniqueName>AllanDeCastro</UniqueName>
       <LocalizedNames>
-        <LocalizedName description="Contoso" languagecode="1033"/>
+        <LocalizedName description="Allan De Castro" languagecode="1033"/>
       </LocalizedNames>
+      <CustomizationPrefix>adc</CustomizationPrefix>
     </Publisher>
   </SolutionManifest>
 </ImportExportXml>
-```
-
-## Using PAC CLI (Power Platform CLI)
-
-```bash
-# Login
-pac auth create --url https://[org].crm.dynamics.com
-
-# Create solution
-pac solution init --publisher-name contoso --publisher-prefix cr
-
-# Add web resources
-pac solution add-reference --path "dist/webresource/cr_erdvisualizer.js"
-pac solution add-reference --path "dist/webresource/cr_erdvisualizer.css"
-pac solution add-reference --path "dist/webresource/cr_erdvisualizer.html"
-
-# Pack solution
-pac solution pack --zipfile ERDVisualizer.zip --folder src --packagetype Both
-
-# Import to environment
-pac solution import --path ERDVisualizer.zip
 ```
 
 ## Troubleshooting
@@ -181,81 +225,121 @@ pac solution import --path ERDVisualizer.zip
 
 **Cause:** Web resource loaded outside Dataverse context
 
-**Solution:** 
-- Ensure accessing via Dataverse URL
-- Check HTML wrapper includes proper Xrm initialization
+**Solutions:**
+1. Ensure accessing via Dataverse URL (not localhost)
+2. Access through Model-Driven App navigation
+3. Use the full URL: `https://[org].crm.dynamics.com/WebResources/adc_erdvisualizer.html`
 
 ### Issue: "Failed to fetch entity metadata"
 
 **Cause:** Insufficient permissions or API error
 
 **Solutions:**
-1. Verify user has read permissions on Entity Definitions
-2. Check browser console for detailed error
-3. Verify Web API is enabled
+1. Verify user has read permissions on Entity Definitions (see permissions section)
+2. Check browser console (F12) for detailed error messages
+3. Verify Web API is enabled for the environment
+4. Try with System Administrator role to confirm it's a permissions issue
 
 ### Issue: Blank screen
 
 **Causes:**
-1. JavaScript not loaded
+1. JavaScript not loaded correctly
 2. CSS not loaded
-3. Root div missing
+3. Web resource names don't match references
 
 **Solutions:**
-1. Check browser console for errors
-2. Verify web resource names match
-3. Clear browser cache and republish
+1. Check browser console (F12) for JavaScript errors
+2. Verify web resource names match exactly (case-sensitive)
+3. Clear browser cache: Ctrl+Shift+Delete
+4. Republish all customizations
+5. Try in Incognito/Private mode
 
-### Issue: CORS errors in development
+### Issue: "Cross-origin" / CORS errors
 
-**Solution:** Use Dataverse environment URL in `.env`:
-```
-VITE_DATAVERSE_URL=https://your-org.crm.dynamics.com
-```
+**Cause:** Trying to access from wrong domain or localhost
+
+**Solutions:**
+1. Only access via Dataverse domain
+2. For local development, use mock data (see Development section in README)
+
+### Issue: Performance issues with large environments
+
+**Cause:** Too many tables/relationships to render
+
+**Solutions:**
+1. Use the Filter by Publisher feature to reduce visible tables
+2. Enable Canvas Mode for better performance (toggle in bottom-right)
+3. Collapse tables you're not actively viewing
+4. Use the Search feature to navigate directly to specific tables
 
 ## Best Practices
 
-1. **Versioning:** Include version in web resource names
-   - `cr_erdvisualizer_v1_0_0.js`
-   
-2. **Managed Solutions:** Deploy as managed for production
+### Naming Convention
+- Use publisher prefix: `adc_erdvisualizer`
+- Include version for major updates: `adc_erdvisualizer_v2`
 
-3. **Dependencies:** Document in solution description
+### Managed vs Unmanaged Solutions
+- **Development:** Use unmanaged solutions
+- **Production:** Deploy as managed solutions for cleaner upgrades
 
-4. **Testing:** Test in Sandbox before Production
+### Version Control
+1. Keep source code in Git
+2. Tag releases with version numbers
+3. Export solution before updates as backup
 
-5. **Backup:** Export solution before updates
+### Testing Checklist
+- [ ] Build completes without errors
+- [ ] Test in Sandbox environment first
+- [ ] Verify with non-admin user
+- [ ] Test all export functions (PNG, SVG, Mermaid)
+- [ ] Test with different browsers (Edge, Chrome)
+- [ ] Test performance with your actual data volume
 
-## Updates
+## Updating the Web Resource
 
-To update the web resource:
+To deploy a new version:
 
-1. Build new version: `npm run build:webresource`
-2. Upload new files (overwrite existing)
-3. **Increment version** in web resource properties
-4. **Publish** all customizations
-5. Clear browser cache
-6. Test in Incognito/Private mode
+1. **Build new version:**
+   ```bash
+   npm run build:webresource
+   ```
+
+2. **Upload updated files:**
+   - Open each web resource in the solution
+   - Click "Upload File" and select the new file
+   - Save
+
+3. **Publish:**
+   - Click "Publish All Customizations"
+
+4. **Clear caches:**
+   - Users should clear browser cache
+   - Or test in Incognito/Private mode
+
+5. **Verify:**
+   - Open the app and confirm new version loads
+   - Check for any console errors
 
 ## Performance Tips
 
-- Enable **CDN** for web resources (if available)
-- Use **Gzip compression** on web server
-- Monitor with browser DevTools
-- Consider lazy loading for large environments (1000+ tables)
+- **Viewport Culling:** The app automatically only renders visible entities
+- **Canvas Mode:** Toggle for better performance with 100+ tables
+- **Filter by Publisher:** Reduce visible tables to those you need
+- **Collapse Tables:** Hide field details for tables you're not examining
 
 ## Security Considerations
 
-- Web resource uses **Dataverse session authentication**
-- No credentials stored in code
-- Read-only access to metadata
+- Web resource uses **Dataverse session authentication** - no credentials stored
+- **Read-only access** to metadata only - cannot modify data
 - Respects Dataverse security roles
 - All API calls via HTTPS
+- No external network requests - all data stays within your environment
 
 ## Support
 
 For issues:
-1. Check browser console
-2. Verify permissions
+1. Check browser console (F12) for errors
+2. Verify user permissions
 3. Test with System Administrator role
-4. Review Dataverse logs
+4. Review Dataverse audit logs if available
+5. Open an issue on the project repository

@@ -13,6 +13,7 @@ export interface EntityCardProps {
   entity: Entity;
   position: { x: number; y: number };
   isHovered: boolean;
+  isHighlighted?: boolean;
   isDraggingThis: boolean;
   isCollapsed: boolean;
   tableColor: string;
@@ -38,6 +39,7 @@ export function EntityCard({
   entity,
   position,
   isHovered,
+  isHighlighted = false,
   isDraggingThis,
   isCollapsed,
   tableColor,
@@ -66,6 +68,12 @@ export function EntityCard({
 
   const getTypeColor = (type: AttributeType) => getFieldTypeColor(type, lookupColor);
 
+  // Highlight animation style
+  const highlightStyle = isHighlighted ? {
+    boxShadow: '0 0 0 4px rgba(96, 165, 250, 0.6), 0 12px 24px rgba(0, 0, 0, 0.3)',
+    animation: 'pulse-highlight 1s ease-in-out 2',
+  } : {};
+
   return (
     <div
       onMouseEnter={onMouseEnter}
@@ -77,15 +85,18 @@ export function EntityCard({
         top: `${position.y}px`,
         width: '300px',
         background: cardBg,
-        border: `2px solid ${tableColor}`,
+        border: `2px solid ${isHighlighted ? '#60a5fa' : tableColor}`,
         borderRadius: '6px',
         overflow: 'visible',
-        transition: 'box-shadow 0.2s ease',
-        boxShadow: isHovered
-          ? '0 12px 24px rgba(0, 0, 0, 0.2)'
-          : '0 2px 8px rgba(0, 0, 0, 0.1)',
+        transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+        boxShadow: isHighlighted
+          ? '0 0 0 4px rgba(96, 165, 250, 0.6), 0 12px 24px rgba(0, 0, 0, 0.3)'
+          : isHovered
+            ? '0 12px 24px rgba(0, 0, 0, 0.2)'
+            : '0 2px 8px rgba(0, 0, 0, 0.1)',
         cursor: isDraggingThis ? 'grabbing' : 'grab',
-        zIndex: isHovered || isDraggingThis ? 10 : 2
+        zIndex: isHighlighted ? 20 : isHovered || isDraggingThis ? 10 : 2,
+        ...highlightStyle,
       }}
     >
       {/* Header */}
