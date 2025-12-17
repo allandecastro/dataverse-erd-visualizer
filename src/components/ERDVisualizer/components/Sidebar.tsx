@@ -187,7 +187,7 @@ export function Sidebar({
               }}>
                 BETA
               </span>
-              <span style={{ fontSize: '11px', color: textSecondary, fontWeight: '500' }}>v1.0.0</span>
+              <span style={{ fontSize: '11px', color: textSecondary, fontWeight: '500' }}>v0.1.0</span>
             </div>
             <div style={{ fontSize: '12px', color: textSecondary }}>Entity Relationship Diagram</div>
           </div>
