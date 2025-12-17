@@ -2,7 +2,7 @@
  * Custom hook for managing ERD Visualizer state
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
 import type { ToastType, ToastState, LayoutMode, ColorSettings } from '../types';
 
@@ -65,20 +65,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   // Toast
   const [toast, setToast] = useState<ToastState | null>(null);
 
-  // Auto-select all Lookup fields on mount
-  useEffect(() => {
-    const initialSelectedFields: Record<string, Set<string>> = {};
-    entities.forEach(entity => {
-      const lookupFields = entity.attributes
-        .filter(attr => attr.type === 'Lookup' || attr.type === 'Owner')
-        .map(attr => attr.name);
-
-      if (lookupFields.length > 0) {
-        initialSelectedFields[entity.logicalName] = new Set(lookupFields);
-      }
-    });
-    setSelectedFields(initialSelectedFields);
-  }, [entities]);
+  // No auto-select - fields start empty, PK is shown automatically
 
   // Show toast notification
   const showToast = useCallback((message: string, type: ToastType = 'success') => {
@@ -103,7 +90,8 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   const filteredEntities = entities.filter(entity => {
     const entityPublisher = getEntityPublisher(entity);
     const matchesPublisher = publisherFilter === 'all' || entityPublisher === publisherFilter;
-    const matchesSolution = solutionFilter === 'all' || entity.solution === solutionFilter;
+    // Entity can belong to multiple solutions - match if ANY solution matches the filter
+    const matchesSolution = solutionFilter === 'all' || (entity.solutions?.includes(solutionFilter) ?? false);
     return matchesPublisher && matchesSolution && selectedEntities.has(entity.logicalName);
   });
 
@@ -200,8 +188,9 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
 
   // Derive publishers and solutions for filters
   const publishers: string[] = ['all', ...new Set(entities.map(e => getEntityPublisher(e)))].sort();
-  // Solutions are harder to derive - group by publisher prefix for now
-  const solutions: string[] = ['all', ...new Set(entities.map(e => e.solution).filter((s): s is string => Boolean(s)))].sort();
+  // Flatten all solutions from all entities (each entity can belong to multiple solutions)
+  const allSolutions = entities.flatMap(e => e.solutions || []);
+  const solutions: string[] = ['all', ...new Set(allSolutions)].sort();
 
   return {
     // Theme

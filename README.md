@@ -1,6 +1,6 @@
 # Dataverse ERD Visualizer
 
-**Version:** 1.0.0 BETA
+**Version:** 0.1.0 BETA
 **Author:** Allan De Castro
 **License:** MIT
 
@@ -26,7 +26,8 @@ Entity Relationship Diagram Visualizer for Microsoft Dataverse / Dynamics 365 Po
 - 📖 **Built-in Feature Guide** - Interactive onboarding for new users
 
 ### Export & Customization
-- 📤 **Multiple Exports** - PNG (clipboard), SVG (download), Mermaid (clipboard)
+- 📤 **Multiple Exports** - PNG (clipboard), SVG (download), Mermaid (clipboard), Draw.io (for Visio import)
+- 📊 **Draw.io Export** - Full diagram export with proper connectors, compatible with draw.io and Microsoft Visio
 - 🌓 **Dark/Light Mode** - Professional themes
 - 🎨 **Customizable Colors** - Table and relationship colors
 
@@ -51,7 +52,9 @@ dataverse-erd-visualizer/
 │   │       │   ├── useDataverseData.ts # API data fetching
 │   │       │   └── useViewport.ts      # Viewport culling logic
 │   │       ├── utils/            # Utility functions
-│   │       │   └── layoutUtils.ts
+│   │       │   ├── layoutUtils.ts
+│   │       │   ├── exportUtils.ts    # PNG/SVG/Mermaid export
+│   │       │   └── drawioExport.ts   # Draw.io/Visio export
 │   │       └── constants/        # Configuration
 │   ├── services/
 │   │   └── dataverseApi.ts       # Dataverse Web API client
@@ -256,7 +259,14 @@ Blog: Allan's Tech Forge
 
 ## Changelog
 
-### v1.0.0 BETA (2025-12-16)
+### v0.1.0 BETA (2025-12-17)
+
+**New Features**
+- **Draw.io Export** - Export diagrams to Draw.io format (.drawio) with proper connectors
+  - Open directly in [draw.io](https://app.diagrams.net/) (free, web-based)
+  - Import into Microsoft Visio
+  - Compatible with VS Code Draw.io extension
+- **Solution Filter** - Filter entities by Dataverse solution (entities can belong to multiple solutions)
 
 **Initial Release**
 - Dataverse metadata integration via Web API
@@ -278,5 +288,5 @@ Blog: Allan's Tech Forge
 **User Experience**
 - Built-in Feature Guide with onboarding modal
 - Keyboard shortcuts for common actions
-- Search and filter by publisher
+- Search and filter by publisher/solution
 - Collapsible entity cards

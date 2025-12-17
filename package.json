@@ -1,6 +1,6 @@
 {
   "name": "dataverse-erd-visualizer",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Entity Relationship Diagram Visualizer for Microsoft Dataverse",
   "type": "module",
   "scripts": {
@@ -19,6 +19,7 @@
   "author": "Allan De Castro",
   "license": "MIT",
   "dependencies": {
+    "jszip": "^3.10.1",
     "lucide-react": "^0.263.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

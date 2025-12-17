@@ -99,7 +99,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'accountid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('accountid', 'Account'),
         stringField('name', 'Account Name'),
@@ -129,7 +129,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'contactid',
       primaryNameAttribute: 'fullname',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('contactid', 'Contact'),
         stringField('fullname', 'Full Name'),
@@ -158,7 +158,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'opportunityid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'Sales',
+      solutions: ['Sales'],
       attributes: [
         primaryIdField('opportunityid', 'Opportunity'),
         stringField('name', 'Topic'),
@@ -188,7 +188,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'leadid',
       primaryNameAttribute: 'fullname',
       publisher: 'Microsoft',
-      solution: 'Sales',
+      solutions: ['Sales'],
       attributes: [
         primaryIdField('leadid', 'Lead'),
         stringField('fullname', 'Name'),
@@ -219,7 +219,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'incidentid',
       primaryNameAttribute: 'title',
       publisher: 'Microsoft',
-      solution: 'Service',
+      solutions: ['Service'],
       attributes: [
         primaryIdField('incidentid', 'Case'),
         stringField('title', 'Case Title'),
@@ -249,7 +249,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'productid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'Product Catalog',
+      solutions: ['Product Catalog'],
       attributes: [
         primaryIdField('productid', 'Product'),
         stringField('name', 'Name'),
@@ -278,7 +278,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'quoteid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'Sales',
+      solutions: ['Sales'],
       attributes: [
         primaryIdField('quoteid', 'Quote'),
         stringField('name', 'Name'),
@@ -308,7 +308,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'salesorderid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'Sales',
+      solutions: ['Sales'],
       attributes: [
         primaryIdField('salesorderid', 'Order'),
         stringField('name', 'Name'),
@@ -338,7 +338,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'invoiceid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'Sales',
+      solutions: ['Sales'],
       attributes: [
         primaryIdField('invoiceid', 'Invoice'),
         stringField('name', 'Name'),
@@ -368,7 +368,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'campaignid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'Marketing',
+      solutions: ['Marketing'],
       attributes: [
         primaryIdField('campaignid', 'Campaign'),
         stringField('name', 'Name'),
@@ -399,7 +399,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'pricelevelid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'Product Catalog',
+      solutions: ['Product Catalog'],
       attributes: [
         primaryIdField('pricelevelid', 'Price List'),
         stringField('name', 'Name'),
@@ -422,7 +422,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'activityid',
       primaryNameAttribute: 'subject',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('activityid', 'Activity'),
         stringField('subject', 'Subject'),
@@ -450,7 +450,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'activityid',
       primaryNameAttribute: 'subject',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('activityid', 'Task'),
         stringField('subject', 'Subject'),
@@ -476,7 +476,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'activityid',
       primaryNameAttribute: 'subject',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('activityid', 'Email'),
         stringField('subject', 'Subject'),
@@ -503,7 +503,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'activityid',
       primaryNameAttribute: 'subject',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('activityid', 'Phone Call'),
         stringField('subject', 'Subject'),
@@ -528,7 +528,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'activityid',
       primaryNameAttribute: 'subject',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('activityid', 'Appointment'),
         stringField('subject', 'Subject'),
@@ -554,7 +554,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'subjectid',
       primaryNameAttribute: 'title',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('subjectid', 'Subject'),
         stringField('title', 'Title'),
@@ -573,7 +573,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'new_projectid',
       primaryNameAttribute: 'new_name',
       publisher: 'Contoso',
-      solution: 'Project Management',
+      solutions: ['Project Management'],
       attributes: [
         primaryIdField('new_projectid', 'Project'),
         stringField('new_name', 'Project Name'),
@@ -604,7 +604,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'new_projecttaskid',
       primaryNameAttribute: 'new_name',
       publisher: 'Contoso',
-      solution: 'Project Management',
+      solutions: ['Project Management'],
       attributes: [
         primaryIdField('new_projecttaskid', 'Project Task'),
         stringField('new_name', 'Task Name'),
@@ -635,7 +635,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'new_timeentryid',
       primaryNameAttribute: 'new_name',
       publisher: 'Contoso',
-      solution: 'Project Management',
+      solutions: ['Project Management'],
       attributes: [
         primaryIdField('new_timeentryid', 'Time Entry'),
         stringField('new_name', 'Description'),
@@ -663,7 +663,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'new_expenseid',
       primaryNameAttribute: 'new_name',
       publisher: 'Contoso',
-      solution: 'Project Management',
+      solutions: ['Project Management'],
       attributes: [
         primaryIdField('new_expenseid', 'Expense'),
         stringField('new_name', 'Expense Name'),
@@ -691,7 +691,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'systemuserid',
       primaryNameAttribute: 'fullname',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('systemuserid', 'User'),
         stringField('fullname', 'Full Name'),
@@ -717,7 +717,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'teamid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('teamid', 'Team'),
         stringField('name', 'Team Name'),
@@ -738,7 +738,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'businessunitid',
       primaryNameAttribute: 'name',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('businessunitid', 'Business Unit'),
         stringField('name', 'Name'),
@@ -761,7 +761,7 @@ export function generateMockEntities(): Entity[] {
       primaryIdAttribute: 'annotationid',
       primaryNameAttribute: 'subject',
       publisher: 'Microsoft',
-      solution: 'System',
+      solutions: ['System'],
       attributes: [
         primaryIdField('annotationid', 'Note'),
         stringField('subject', 'Title'),

@@ -65,9 +65,28 @@ class DataverseApiService {
 
   /**
    * Map Dataverse attribute type to our simplified type system
+   * Note: Dataverse Web API returns types like "String", "Lookup", "Integer" (without "Type" suffix)
    */
   private mapAttributeType(dataverseType: string): AttributeType {
     const typeMap: Record<string, AttributeType> = {
+      // Dataverse returns types without "Type" suffix
+      'String': 'String',
+      'Memo': 'Memo',
+      'Integer': 'Integer',
+      'Decimal': 'Decimal',
+      'Money': 'Money',
+      'DateTime': 'DateTime',
+      'Boolean': 'Boolean',
+      'Picklist': 'Picklist',
+      'Lookup': 'Lookup',
+      'Owner': 'Owner',
+      'Uniqueidentifier': 'UniqueIdentifier',
+      'Customer': 'Customer',
+      'State': 'State',
+      'Status': 'Status',
+      'Double': 'Double',
+      'BigInt': 'BigInt',
+      // Also support legacy format with "Type" suffix (just in case)
       'StringType': 'String',
       'MemoType': 'Memo',
       'IntegerType': 'Integer',
@@ -188,7 +207,8 @@ class DataverseApiService {
    */
   private async enrichEntitiesWithAttributes(
     entities: DataverseEntityMetadata[],
-    onProgress?: (info: { page: number; totalEntities: number; phase: string }) => void
+    onProgress?: (info: { page: number; totalEntities: number; phase: string }) => void,
+    entitySolutionMap?: EntitySolutionMap
   ): Promise<Entity[]> {
     const enrichedEntities: Entity[] = [];
 
@@ -218,14 +238,17 @@ class DataverseApiService {
             },
           });
 
+          // Get solution names for this entity
+          const solutionNames = entitySolutionMap?.[entityMeta.MetadataId] || [];
+
           if (!attrResponse.ok) {
             console.warn(`Failed to fetch attributes for ${entityMeta.LogicalName}: ${attrResponse.statusText}`);
             // Return entity without attributes rather than failing
-            return this.createEntityWithoutAttributes(entityMeta);
+            return this.createEntityWithoutAttributes(entityMeta, solutionNames);
           }
 
           const attrData = await attrResponse.json();
-          return this.transformEntityWithAttributes(entityMeta, attrData.value);
+          return this.transformEntityWithAttributes(entityMeta, attrData.value, solutionNames);
         } catch (error) {
           console.warn(`Error fetching attributes for ${entityMeta.LogicalName}:`, error);
           return this.createEntityWithoutAttributes(entityMeta);
@@ -242,7 +265,7 @@ class DataverseApiService {
   /**
    * Create entity object without attributes (fallback)
    */
-  private createEntityWithoutAttributes(entityMeta: DataverseEntityMetadata): Entity {
+  private createEntityWithoutAttributes(entityMeta: DataverseEntityMetadata, solutionNames: string[] = []): Entity {
     return {
       logicalName: entityMeta.LogicalName,
       displayName: entityMeta.DisplayName?.UserLocalizedLabel?.Label || entityMeta.LogicalName,
@@ -251,26 +274,40 @@ class DataverseApiService {
       primaryIdAttribute: entityMeta.PrimaryIdAttribute,
       primaryNameAttribute: entityMeta.PrimaryNameAttribute,
       attributes: [],
+      solutions: solutionNames.length > 0 ? solutionNames : undefined,
     };
   }
 
   /**
    * Transform entity metadata with separately fetched attributes
    */
-  private transformEntityWithAttributes(entityMeta: DataverseEntityMetadata, attributes: any[]): Entity {
+  private transformEntityWithAttributes(entityMeta: DataverseEntityMetadata, attributes: any[], solutionNames: string[] = []): Entity {
+    // Get the primary key attribute name from entity metadata
+    const primaryIdAttribute = entityMeta.PrimaryIdAttribute;
+
     const mappedAttributes: EntityAttribute[] = attributes.map((attr) => {
       // Check if this is a LookupAttributeMetadata (has @odata.type)
       const isLookupType = attr['@odata.type'] === '#Microsoft.Dynamics.CRM.LookupAttributeMetadata';
+      const attrType = attr.AttributeType;
+
+      // PK is identified by matching the entity's PrimaryIdAttribute, not IsPrimaryId flag
+      const isPrimaryKey = attr.LogicalName === primaryIdAttribute;
+
+      // Check for lookup types (Dataverse returns "Lookup", "Customer", "Owner" without "Type" suffix)
+      const isLookup = isLookupType ||
+                       attrType === 'Lookup' ||
+                       attrType === 'LookupType' ||
+                       attrType === 'Customer' ||
+                       attrType === 'CustomerType' ||
+                       attrType === 'Owner' ||
+                       attrType === 'OwnerType';
 
       return {
         name: attr.LogicalName,
         displayName: attr.DisplayName?.UserLocalizedLabel?.Label || attr.LogicalName,
-        type: this.mapAttributeType(attr.AttributeType),
-        isPrimaryKey: attr.IsPrimaryId || false,
-        isLookup: isLookupType ||
-                  attr.AttributeType === 'LookupType' ||
-                  attr.AttributeType === 'CustomerType' ||
-                  attr.AttributeType === 'OwnerType',
+        type: this.mapAttributeType(attrType),
+        isPrimaryKey,
+        isLookup,
         lookupTarget: isLookupType && attr.Targets?.length > 0 ? attr.Targets[0] : undefined,
       };
     });
@@ -283,6 +320,7 @@ class DataverseApiService {
       primaryIdAttribute: entityMeta.PrimaryIdAttribute,
       primaryNameAttribute: entityMeta.PrimaryNameAttribute,
       attributes: mappedAttributes,
+      solutions: solutionNames.length > 0 ? solutionNames : undefined,
     };
   }
 

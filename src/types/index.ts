@@ -40,7 +40,7 @@ export interface Entity {
   primaryIdAttribute: string;
   primaryNameAttribute: string;
   publisher?: string;
-  solution?: string;
+  solutions?: string[]; // Entity can belong to multiple solutions
   attributes: EntityAttribute[];
 }
 

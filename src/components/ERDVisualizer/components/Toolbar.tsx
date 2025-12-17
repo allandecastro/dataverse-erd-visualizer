@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Download, ZoomIn, ZoomOut, Maximize2, RefreshCw, Minimize2, Search, Keyboard, X, HelpCircle, ClipboardCopy } from 'lucide-react';
+import { Download, ZoomIn, ZoomOut, Maximize2, RefreshCw, Minimize2, Search, Keyboard, X, HelpCircle, ClipboardCopy, FileSpreadsheet, Loader2 } from 'lucide-react';
 import type { ThemeColors } from '../types';
 import { getKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
@@ -15,6 +15,8 @@ export interface ToolbarProps {
   showMinimap: boolean;
   isDarkMode: boolean;
   themeColors: ThemeColors;
+  isExportingVisio?: boolean;
+  visioExportProgress?: { progress: number; message: string };
   onZoomIn: () => void;
   onZoomOut: () => void;
   onFitToScreen: () => void;
@@ -24,6 +26,7 @@ export interface ToolbarProps {
   onCopyPNG: () => void;
   onExportMermaid: () => void;
   onExportSVG: () => void;
+  onExportVisio: () => void;
   onOpenSearch: () => void;
   onOpenGuide: () => void;
 }
@@ -36,6 +39,8 @@ export function Toolbar({
   showMinimap,
   isDarkMode,
   themeColors,
+  isExportingVisio,
+  visioExportProgress,
   onZoomIn,
   onZoomOut,
   onFitToScreen,
@@ -45,6 +50,7 @@ export function Toolbar({
   onCopyPNG,
   onExportMermaid,
   onExportSVG,
+  onExportVisio,
   onOpenSearch,
   onOpenGuide,
 }: ToolbarProps) {
@@ -88,6 +94,13 @@ export function Toolbar({
       alignItems: 'center',
       justifyContent: 'space-between'
     }}>
+      {/* Spinner animation for Visio export */}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       {/* Stats */}
       <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
         <div>
@@ -163,6 +176,39 @@ export function Toolbar({
         >
           <Download size={14} />
           SVG
+        </button>
+        <button
+          onClick={onExportVisio}
+          title={isExportingVisio ? visioExportProgress?.message || 'Exporting...' : 'Download Draw.io file (can import to Visio)'}
+          disabled={isExportingVisio}
+          style={{
+            padding: '8px 10px',
+            background: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)',
+            border: '1px solid #3b82f6',
+            borderRadius: '6px',
+            color: '#3b82f6',
+            cursor: isExportingVisio ? 'wait' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            fontSize: '12px',
+            fontWeight: '600',
+            opacity: isExportingVisio ? 0.7 : 1,
+            position: 'relative',
+            minWidth: '80px',
+          }}
+        >
+          {isExportingVisio ? (
+            <>
+              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+              {visioExportProgress ? `${visioExportProgress.progress}%` : 'Draw.io'}
+            </>
+          ) : (
+            <>
+              <FileSpreadsheet size={14} />
+              Draw.io
+            </>
+          )}
         </button>
 
         <div style={{ width: '1px', height: '24px', background: borderColor }} />

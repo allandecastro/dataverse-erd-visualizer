@@ -5,7 +5,10 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "Bash(npm run build:webresource:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(npm search:*)"
     ]
   }
 }

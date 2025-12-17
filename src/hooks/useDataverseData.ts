@@ -37,6 +37,9 @@ function getProgressMessage(info: { page: number; totalEntities: number; phase: 
   if (info.phase === 'extracting_relationships') {
     return `Extracting relationships from ${info.totalEntities} entities...`;
   }
+  if (info.phase === 'fetching_solutions') {
+    return `Fetching solutions and mappings...`;
+  }
   if (info.phase.startsWith('fetching_attributes:')) {
     const [current, total] = info.phase.split(':')[1].split('/');
     return `Fetching attributes (${current}/${total} entities)...`;

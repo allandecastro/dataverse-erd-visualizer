@@ -128,6 +128,11 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         title: 'Mermaid Code',
         description: 'Generate Mermaid.js code to embed diagrams in markdown documentation.',
       },
+      {
+        title: 'Draw.io Export',
+        description: 'Export to Draw.io format with proper connectors between tables.',
+        tip: 'Open in draw.io (free) or import into Microsoft Visio'
+      },
     ],
   },
   {
