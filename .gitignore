@@ -32,6 +32,9 @@ lerna-debug.log*
 *.swo
 *~
 
+# Claude Code
+.claude/
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts

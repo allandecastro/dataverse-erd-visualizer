@@ -8,7 +8,8 @@
       "Bash(dir:*)",
       "Bash(cat:*)",
       "Bash(npm install:*)",
-      "Bash(npm search:*)"
+      "Bash(npm search:*)",
+      "Bash(del \"c:\\Users\\allan.de.castro\\Downloads\\dataverse-erd-visualizer\\dataverse-erd-visualizer\\src\\components\\ERDVisualizer\\utils\\visioExport.ts\")"
     ]
   }
 }

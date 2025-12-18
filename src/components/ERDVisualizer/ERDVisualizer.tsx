@@ -82,9 +82,9 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
   // Feature guide state
   const [showGuide, setShowGuide] = useState(false);
 
-  // Visio export state
-  const [isExportingVisio, setIsExportingVisio] = useState(false);
-  const [visioExportProgress, setVisioExportProgress] = useState<{ progress: number; message: string } | undefined>();
+  // Draw.io export state
+  const [isExportingDrawio, setIsExportingDrawio] = useState(false);
+  const [drawioExportProgress, setDrawioExportProgress] = useState<{ progress: number; message: string } | undefined>();
 
   // Check if user has seen the guide before
   useEffect(() => {
@@ -407,11 +407,11 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
   }, [filteredEntities, filteredRelationships, entityPositions, selectedFields, collapsedEntities, isDarkMode, colorSettings, showToast]);
 
   const handleExportDrawio = useCallback(async () => {
-    if (isExportingVisio) return;
+    if (isExportingDrawio) return;
 
     try {
-      setIsExportingVisio(true);
-      setVisioExportProgress({ progress: 0, message: 'Starting export...' });
+      setIsExportingDrawio(true);
+      setDrawioExportProgress({ progress: 0, message: 'Starting export...' });
 
       const blob = await exportToDrawio({
         entities: filteredEntities,
@@ -421,7 +421,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         collapsedEntities,
         colorSettings,
         onProgress: (progress, message) => {
-          setVisioExportProgress({ progress, message });
+          setDrawioExportProgress({ progress, message });
         },
       });
 
@@ -431,10 +431,10 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
       console.error('Error exporting Draw.io:', err);
       showToast('Failed to export Draw.io file', 'error');
     } finally {
-      setIsExportingVisio(false);
-      setVisioExportProgress(undefined);
+      setIsExportingDrawio(false);
+      setDrawioExportProgress(undefined);
     }
-  }, [filteredEntities, filteredRelationships, entityPositions, selectedFields, collapsedEntities, colorSettings, showToast, isExportingVisio]);
+  }, [filteredEntities, filteredRelationships, entityPositions, selectedFields, collapsedEntities, colorSettings, showToast, isExportingDrawio]);
 
   // Minimap navigation
   const handleMinimapNavigate = useCallback((canvasX: number, canvasY: number) => {
@@ -501,8 +501,8 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
           showMinimap={showMinimap}
           isDarkMode={isDarkMode}
           themeColors={themeColors}
-          isExportingVisio={isExportingVisio}
-          visioExportProgress={visioExportProgress}
+          isExportingDrawio={isExportingDrawio}
+          drawioExportProgress={drawioExportProgress}
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
           onFitToScreen={fitToScreen}
@@ -512,7 +512,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
           onCopyPNG={handleCopyPNG}
           onExportMermaid={handleExportMermaid}
           onExportSVG={handleExportSVG}
-          onExportVisio={handleExportDrawio}
+          onExportDrawio={handleExportDrawio}
           onOpenSearch={() => setIsSearchOpen(true)}
           onOpenGuide={() => setShowGuide(true)}
         />

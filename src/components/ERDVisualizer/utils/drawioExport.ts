@@ -142,7 +142,7 @@ function generateDrawioXml(options: DrawioExportOptions): string {
 
   // Build the complete XML document
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<mxfile host="Dataverse ERD Visualizer" modified="${new Date().toISOString()}" agent="ERD Visualizer" version="1.0">
+<mxfile host="Dataverse ERD Visualizer" modified="${new Date().toISOString()}" agent="Dataverse ERD Visualizer" version="1.0">
   <diagram id="erd-diagram" name="ERD Diagram">
     <mxGraphModel dx="0" dy="0" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>

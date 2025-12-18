@@ -79,9 +79,8 @@ dataverse-erd-visualizer/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
-- Access to a Dataverse environment (for testing)
 
 ### Setup
 
@@ -95,13 +94,11 @@ npm run dev
 
 The app will open at `http://localhost:3000`
 
-### Environment Variables
+### Mock Data Mode
 
-Create a `.env` file for local development:
+When running locally (`npm run dev`), the app **automatically uses mock data** - no Dataverse connection required! You'll see a "MOCK MODE" banner at the top.
 
-```env
-VITE_DATAVERSE_URL=https://your-org.crm.dynamics.com
-```
+You can also force mock mode via URL parameter: `?mock=true`
 
 ## Building for Dataverse Web Resource
 

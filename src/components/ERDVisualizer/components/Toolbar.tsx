@@ -15,8 +15,8 @@ export interface ToolbarProps {
   showMinimap: boolean;
   isDarkMode: boolean;
   themeColors: ThemeColors;
-  isExportingVisio?: boolean;
-  visioExportProgress?: { progress: number; message: string };
+  isExportingDrawio?: boolean;
+  drawioExportProgress?: { progress: number; message: string };
   onZoomIn: () => void;
   onZoomOut: () => void;
   onFitToScreen: () => void;
@@ -26,7 +26,7 @@ export interface ToolbarProps {
   onCopyPNG: () => void;
   onExportMermaid: () => void;
   onExportSVG: () => void;
-  onExportVisio: () => void;
+  onExportDrawio: () => void;
   onOpenSearch: () => void;
   onOpenGuide: () => void;
 }
@@ -39,8 +39,8 @@ export function Toolbar({
   showMinimap,
   isDarkMode,
   themeColors,
-  isExportingVisio,
-  visioExportProgress,
+  isExportingDrawio,
+  drawioExportProgress,
   onZoomIn,
   onZoomOut,
   onFitToScreen,
@@ -50,7 +50,7 @@ export function Toolbar({
   onCopyPNG,
   onExportMermaid,
   onExportSVG,
-  onExportVisio,
+  onExportDrawio,
   onOpenSearch,
   onOpenGuide,
 }: ToolbarProps) {
@@ -94,7 +94,7 @@ export function Toolbar({
       alignItems: 'center',
       justifyContent: 'space-between'
     }}>
-      {/* Spinner animation for Visio export */}
+      {/* Spinner animation for Draw.io export */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
@@ -178,30 +178,30 @@ export function Toolbar({
           SVG
         </button>
         <button
-          onClick={onExportVisio}
-          title={isExportingVisio ? visioExportProgress?.message || 'Exporting...' : 'Download Draw.io file (can import to Visio)'}
-          disabled={isExportingVisio}
+          onClick={onExportDrawio}
+          title={isExportingDrawio ? drawioExportProgress?.message || 'Exporting...' : 'Download Draw.io file (can import to Visio)'}
+          disabled={isExportingDrawio}
           style={{
             padding: '8px 10px',
             background: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)',
             border: '1px solid #3b82f6',
             borderRadius: '6px',
             color: '#3b82f6',
-            cursor: isExportingVisio ? 'wait' : 'pointer',
+            cursor: isExportingDrawio ? 'wait' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '5px',
             fontSize: '12px',
             fontWeight: '600',
-            opacity: isExportingVisio ? 0.7 : 1,
+            opacity: isExportingDrawio ? 0.7 : 1,
             position: 'relative',
             minWidth: '80px',
           }}
         >
-          {isExportingVisio ? (
+          {isExportingDrawio ? (
             <>
               <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-              {visioExportProgress ? `${visioExportProgress.progress}%` : 'Draw.io'}
+              {drawioExportProgress ? `${drawioExportProgress.progress}%` : 'Draw.io'}
             </>
           ) : (
             <>
