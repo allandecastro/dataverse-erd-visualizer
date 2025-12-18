@@ -119,6 +119,18 @@ export function generateMockEntities(): Entity[] {
         createdOnField(),
         modifiedOnField(),
       ],
+      alternateKeys: [
+        {
+          logicalName: 'account_accountnumber',
+          displayName: 'Account Number',
+          keyAttributes: ['accountnumber'],
+        },
+        {
+          logicalName: 'account_name_email',
+          displayName: 'Name + Email',
+          keyAttributes: ['name', 'emailaddress1'],
+        },
+      ],
     },
     // Contact
     {
@@ -147,6 +159,13 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+      ],
+      alternateKeys: [
+        {
+          logicalName: 'contact_emailaddress1',
+          displayName: 'Email Address',
+          keyAttributes: ['emailaddress1'],
+        },
       ],
     },
     // Opportunity
@@ -267,6 +286,13 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+      ],
+      alternateKeys: [
+        {
+          logicalName: 'product_productnumber',
+          displayName: 'Product Number',
+          keyAttributes: ['productnumber'],
+        },
       ],
     },
     // Quote
@@ -593,6 +619,18 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+      ],
+      alternateKeys: [
+        {
+          logicalName: 'new_project_code',
+          displayName: 'Project Code',
+          keyAttributes: ['new_projectcode'],
+        },
+        {
+          logicalName: 'new_project_account_name',
+          displayName: 'Account + Project Name',
+          keyAttributes: ['new_accountid', 'new_name'],
+        },
       ],
     },
     // Custom Entity 2: Project Task
