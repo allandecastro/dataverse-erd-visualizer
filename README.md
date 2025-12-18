@@ -26,9 +26,9 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a> •
+  <a href="#installation">Installation</a> •
   <a href="#features">Features</a> •
-  <a href="#deployment">Deployment</a> •
+  <a href="#development">Development</a> •
   <a href="#documentation">Documentation</a> •
   <a href="#contributing">Contributing</a>
 </p>
@@ -96,14 +96,96 @@
 
 ---
 
-## Quick Start
+## Installation
 
-### Prerequisites
+Choose your preferred installation method:
 
+### Option 1: Quick Install (Recommended)
+
+Download and import the pre-built managed solution directly into your Dataverse environment.
+
+<p align="center">
+  <a href="https://github.com/allandecastro/dataverse-erd-visualizer/releases/latest">
+    <img src="https://img.shields.io/badge/Download-Managed_Solution-00A4EF?style=for-the-badge&logo=microsoft&logoColor=white" alt="Download Managed Solution" />
+  </a>
+</p>
+
+1. Download `DataverseERDVisualizer_managed.zip` from [Releases](https://github.com/allandecastro/dataverse-erd-visualizer/releases)
+2. Go to [make.powerapps.com](https://make.powerapps.com) → Select your environment
+3. Navigate to **Solutions** → Click **Import solution**
+4. Browse and select the downloaded `.zip` file
+5. Click **Next** → **Import**
+
+**Using PAC CLI:**
+```bash
+pac auth create --environment "https://yourorg.crm.dynamics.com"
+pac solution import --path DataverseERDVisualizer_managed.zip
+```
+
+### Option 2: Build from Source
+
+Build the solution yourself from source code.
+
+#### Prerequisites
 - Node.js 18+
 - npm or yarn
+- (Optional) [Power Platform CLI](https://learn.microsoft.com/en-us/power-platform/developer/cli/introduction)
 
-### Development
+#### Build Steps
+
+```bash
+# Clone the repository
+git clone https://github.com/allandecastro/dataverse-erd-visualizer.git
+cd dataverse-erd-visualizer
+
+# Install dependencies
+npm install
+
+# Build for Dataverse web resource
+npm run build:webresource
+```
+
+Output files in `dist/webresource/`:
+| File | Description |
+|------|-------------|
+| `adc_erdvisualizer.js` | Main bundle (~266 KB, gzipped: ~76 KB) |
+| `adc_erdvisualizer.css` | Stylesheet |
+| `index.html` | HTML entry point |
+
+#### Manual Deployment
+
+1. Go to [make.powerapps.com](https://make.powerapps.com) → **Solutions** → Your solution
+2. Click **+ New** → **More** → **Web resource**
+3. Upload each file with the appropriate type:
+   - `adc_erdvisualizer.js` → Type: **Script (JS)**
+   - `adc_erdvisualizer.css` → Type: **Style Sheet (CSS)**
+   - `index.html` → Type: **Web Page (HTML)**, Name: `adc_erdvisualizer.html`
+4. **Save** and **Publish All Customizations**
+
+#### Package as Solution
+
+See [`solution/README.md`](solution/README.md) for instructions on packaging your build as a Dataverse solution.
+
+---
+
+### Add to Model-Driven App
+
+After importing or deploying the web resources:
+
+1. Open your app in **App Designer**
+2. Add a new **Subarea** (or Page)
+3. Configure:
+   - **Content Type:** Web Resource
+   - **Web Resource:** `adc_/erdvisualizer/adc_erdvisualizer.html`
+4. **Save** and **Publish**
+
+> **Detailed Instructions:** See [DEPLOYMENT.md](DEPLOYMENT.md) for additional deployment options and troubleshooting.
+
+---
+
+## Development
+
+Run the application locally with mock data for development and testing.
 
 ```bash
 # Clone the repository
@@ -119,42 +201,9 @@ npm run dev
 
 The app opens at `http://localhost:3000` with **mock data** - no Dataverse connection required!
 
-### Build for Dataverse
+You'll see a **"MOCK MODE"** banner indicating you're using simulated data.
 
-```bash
-# Build optimized bundle for web resource
-npm run build:webresource
-```
-
-Output in `dist/webresource/`:
-- `adc_erdvisualizer.js` - Main bundle (~266 KB gzipped: ~76 KB)
-- `adc_erdvisualizer.css` - Styles
-- `index.html` - Ready-to-use HTML wrapper
-
----
-
-## Deployment
-
-### Quick Deploy to Dataverse
-
-1. Navigate to [make.powerapps.com](https://make.powerapps.com)
-2. Select your environment → **Solutions** → Your solution
-3. Click **+ New** → **More** → **Web resource**
-4. Upload each file:
-   - `adc_erdvisualizer.js` (Type: Script)
-   - `adc_erdvisualizer.css` (Type: Style Sheet)
-   - `index.html` as `adc_erdvisualizer.html` (Type: Web Page)
-5. **Save** and **Publish All Customizations**
-
-### Add to Model-Driven App
-
-1. Open your app in **App Designer**
-2. Add a **Subarea** with:
-   - **Content Type:** Web Resource
-   - **Web Resource:** `adc_erdvisualizer.html`
-3. **Save** and **Publish**
-
-> **Detailed Instructions:** See [DEPLOYMENT.md](DEPLOYMENT.md) for PAC CLI deployment, solution packaging, permissions, and troubleshooting.
+> **Tip:** Force mock mode via URL parameter: `?mock=true`
 
 ---
 
@@ -282,20 +331,6 @@ Contributions are welcome! Please:
 - Interactive Minimap
 - Field selector per table
 - Viewport Culling & Canvas Mode for performance
-
----
-
-## Author
-
-<p>
-  <strong>Allan De Castro</strong><br>
-  Microsoft MVP | FastTrack Ready Solutions Architect
-</p>
-
-<p>
-  <a href="https://github.com/allandecastro"><img src="https://img.shields.io/badge/GitHub-allandecastro-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
-  <a href="https://www.linkedin.com/in/allandecastro/"><img src="https://img.shields.io/badge/LinkedIn-allandecastro-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
-</p>
 
 ---
 
