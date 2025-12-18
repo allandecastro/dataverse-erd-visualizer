@@ -3,7 +3,7 @@
  */
 
 import { useRef } from 'react';
-import { Settings, ChevronDown, ChevronUp, Link2, Key } from 'lucide-react';
+import { Settings, ChevronDown, ChevronUp, Link2, Key, KeyRound } from 'lucide-react';
 import type { Entity, AttributeType } from '@/types';
 import type { ThemeColors, ColorSettings } from '../types';
 import { FieldSelector } from './FieldSelector';
@@ -229,6 +229,38 @@ export function EntityCard({
                 </div>
                 <span style={{ fontFamily: 'monospace', fontSize: '9px', color: textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {attr.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Alternate Keys */}
+      {!isCollapsed && entity.alternateKeys && entity.alternateKeys.length > 0 && (
+        <div style={{ padding: '12px', paddingTop: selectedFields.size > 0 || entity.attributes.some(a => a.isPrimaryKey) ? '0' : '12px' }}>
+          <div style={{ fontSize: '10px', color: textSecondary, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '600' }}>
+            Alternate Keys ({entity.alternateKeys.length})
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {entity.alternateKeys.map(key => (
+              <div key={key.logicalName} style={{
+                padding: '6px 8px',
+                background: isDarkMode ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.05)',
+                borderRadius: '3px',
+                border: `1px solid ${isDarkMode ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.2)'}`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <KeyRound size={12} color="#8b5cf6" style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: '11px', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {key.displayName}
+                  </span>
+                </div>
+                <span style={{ fontFamily: 'monospace', fontSize: '9px', color: textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: '18px' }}>
+                  {key.keyAttributes.join(', ')}
                 </span>
               </div>
             ))}

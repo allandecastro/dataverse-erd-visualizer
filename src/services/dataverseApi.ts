@@ -12,6 +12,7 @@ import type {
   DataverseEntityMetadata,
   AttributeType,
   RelationshipType,
+  AlternateKey,
 } from '@/types';
 import { getParentXrm } from '@/types';
 
@@ -163,6 +164,7 @@ class DataverseApiService {
     // polymorphic casting in complex-type collections ($expand with derived types)
     let url = `${this.baseUrl}/EntityDefinitions?$select=MetadataId,LogicalName,DisplayName,ObjectTypeCode,IsCustomEntity,PrimaryIdAttribute,PrimaryNameAttribute` +
       `&$expand=` +
+      `Keys($select=LogicalName,DisplayName,KeyAttributes),` +
       `OneToManyRelationships($select=SchemaName,ReferencingEntity,ReferencingAttribute,ReferencedEntity,ReferencedAttribute),` +
       `ManyToOneRelationships($select=SchemaName,ReferencingEntity,ReferencingAttribute,ReferencedEntity,ReferencedAttribute),` +
       `ManyToManyRelationships($select=SchemaName,Entity1LogicalName,Entity2LogicalName,IntersectEntityName)` +
@@ -266,6 +268,13 @@ class DataverseApiService {
    * Create entity object without attributes (fallback)
    */
   private createEntityWithoutAttributes(entityMeta: DataverseEntityMetadata, solutionNames: string[] = []): Entity {
+    // Transform alternate keys
+    const alternateKeys: AlternateKey[] | undefined = entityMeta.Keys?.map(key => ({
+      logicalName: key.LogicalName,
+      displayName: key.DisplayName?.UserLocalizedLabel?.Label || key.LogicalName,
+      keyAttributes: key.KeyAttributes || [],
+    }));
+
     return {
       logicalName: entityMeta.LogicalName,
       displayName: entityMeta.DisplayName?.UserLocalizedLabel?.Label || entityMeta.LogicalName,
@@ -274,6 +283,7 @@ class DataverseApiService {
       primaryIdAttribute: entityMeta.PrimaryIdAttribute,
       primaryNameAttribute: entityMeta.PrimaryNameAttribute,
       attributes: [],
+      alternateKeys: alternateKeys && alternateKeys.length > 0 ? alternateKeys : undefined,
       solutions: solutionNames.length > 0 ? solutionNames : undefined,
     };
   }
@@ -312,6 +322,13 @@ class DataverseApiService {
       };
     });
 
+    // Transform alternate keys
+    const alternateKeys: AlternateKey[] | undefined = entityMeta.Keys?.map(key => ({
+      logicalName: key.LogicalName,
+      displayName: key.DisplayName?.UserLocalizedLabel?.Label || key.LogicalName,
+      keyAttributes: key.KeyAttributes || [],
+    }));
+
     return {
       logicalName: entityMeta.LogicalName,
       displayName: entityMeta.DisplayName?.UserLocalizedLabel?.Label || entityMeta.LogicalName,
@@ -320,6 +337,7 @@ class DataverseApiService {
       primaryIdAttribute: entityMeta.PrimaryIdAttribute,
       primaryNameAttribute: entityMeta.PrimaryNameAttribute,
       attributes: mappedAttributes,
+      alternateKeys: alternateKeys && alternateKeys.length > 0 ? alternateKeys : undefined,
       solutions: solutionNames.length > 0 ? solutionNames : undefined,
     };
   }

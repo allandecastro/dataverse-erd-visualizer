@@ -1,90 +1,115 @@
-# Dataverse ERD Visualizer
+<p align="center">
+  <img src="public/logo.svg" alt="Dataverse ERD Visualizer" width="180" height="180">
+</p>
 
-**Version:** 0.1.0 BETA
-**Author:** Allan De Castro
-**License:** MIT
+<h1 align="center">Dataverse ERD Visualizer</h1>
 
-Entity Relationship Diagram Visualizer for Microsoft Dataverse / Dynamics 365 Power Platform.
+<p align="center">
+  <strong>Interactive Entity Relationship Diagram Visualizer for Microsoft Dataverse / Dynamics 365 Power Platform</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0_BETA-blue?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Dataverse-0B556A?style=for-the-badge&logo=microsoft-azure&logoColor=white" alt="Dataverse" />
+  <img src="https://img.shields.io/badge/Dynamics_365-0078D4?style=for-the-badge&logo=microsoft&logoColor=white" alt="Dynamics 365" />
+  <img src="https://img.shields.io/badge/Power_Platform-742774?style=for-the-badge&logo=powerapps&logoColor=white" alt="Power Platform" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#features">Features</a> •
+  <a href="#deployment">Deployment</a> •
+  <a href="#documentation">Documentation</a> •
+  <a href="#contributing">Contributing</a>
+</p>
+
+---
+
+## Preview
+
+<!--
+  Add your screenshot or video here!
+
+  For a screenshot:
+  ![Dataverse ERD Visualizer Screenshot](docs/screenshot.png)
+
+  For a video/GIF:
+  ![Dataverse ERD Visualizer Demo](docs/demo.gif)
+
+  For an embedded video (GitHub supports this):
+  https://user-images.githubusercontent.com/YOUR_ID/VIDEO_ID.mp4
+-->
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="Dataverse ERD Visualizer Screenshot" width="100%">
+</p>
+
+<p align="center">
+  <em>Visualize your Dataverse schema with interactive entity relationship diagrams</em>
+</p>
+
+---
 
 ## Features
 
 ### Core Visualization
-- 🎨 **Visual ERD** - Interactive force-directed, grid, and auto-arrange layouts
-- 🔗 **Precise Relationships** - Connections from Lookup fields to Primary Keys
-- 🎯 **Smart Navigation** - Smart Zoom, Minimap, Fit to Screen
-- 📊 **Dataverse Integration** - Fetch live metadata from your environment
+| Feature | Description |
+|---------|-------------|
+| **Visual ERD** | Interactive force-directed, grid, and auto-arrange layouts |
+| **Precise Relationships** | Connections from Lookup fields to Primary Keys |
+| **Alternate Keys** | Display entity alternate keys with composite key support |
+| **Smart Navigation** | Smart Zoom, Minimap, Fit to Screen |
+| **Dataverse Integration** | Fetch live metadata from your environment |
 
 ### Performance
-- ⚡ **Viewport Culling** - Only renders visible entities for smooth performance
-- 🖼️ **Canvas Mode** - High-performance HTML5 Canvas rendering for large diagrams (100+ tables)
-- 🚀 **Optimized Rendering** - Efficient React.memo and lazy loading
+| Feature | Description |
+|---------|-------------|
+| **Viewport Culling** | Only renders visible entities for smooth performance |
+| **Canvas Mode** | High-performance HTML5 Canvas rendering for large diagrams (100+ tables) |
+| **Optimized Rendering** | Efficient React.memo and lazy loading |
 
 ### User Experience
-- 🔍 **Search & Filter** - Quick search by table name, filter by publisher
-- 📋 **Field Selector** - Choose which fields to display per table
-- ⌨️ **Keyboard Shortcuts** - Ctrl+F (search), Escape (deselect), +/- (zoom)
-- 📖 **Built-in Feature Guide** - Interactive onboarding for new users
+| Feature | Description |
+|---------|-------------|
+| **Search & Filter** | Quick search by table name, filter by publisher/solution |
+| **Field Selector** | Choose which fields to display per table |
+| **Keyboard Shortcuts** | Ctrl+F (search), Escape (deselect), +/- (zoom) |
+| **Feature Guide** | Interactive onboarding for new users |
 
 ### Export & Customization
-- 📤 **Multiple Exports** - PNG (clipboard), SVG (download), Mermaid (clipboard), Draw.io (for Visio import)
-- 📊 **Draw.io Export** - Full diagram export with proper connectors, compatible with draw.io and Microsoft Visio
-- 🌓 **Dark/Light Mode** - Professional themes
-- 🎨 **Customizable Colors** - Table and relationship colors
+| Feature | Description |
+|---------|-------------|
+| **Multiple Exports** | PNG (clipboard), SVG (download), Mermaid (clipboard) |
+| **Draw.io Export** | Full diagram export compatible with Draw.io and Microsoft Visio |
+| **Dark/Light Mode** | Professional themes with automatic persistence |
+| **Custom Colors** | Table and relationship color customization |
 
-## Project Structure
+---
 
-```
-dataverse-erd-visualizer/
-├── src/
-│   ├── components/
-│   │   └── ERDVisualizer/        # Main ERD component
-│   │       ├── ERDVisualizer.tsx # Root component with state management
-│   │       ├── components/       # Sub-components
-│   │       │   ├── EntityCard.tsx      # Table card rendering
-│   │       │   ├── RelationshipLines.tsx # SVG relationship lines
-│   │       │   ├── CanvasERD.tsx       # Canvas mode renderer
-│   │       │   ├── Toolbar.tsx         # Top action bar
-│   │       │   ├── Sidebar.tsx         # Filter panel
-│   │       │   ├── Minimap.tsx         # Navigation minimap
-│   │       │   ├── FeatureGuide.tsx    # Onboarding modal
-│   │       │   └── ...
-│   │       ├── hooks/            # Custom hooks
-│   │       │   ├── useDataverseData.ts # API data fetching
-│   │       │   └── useViewport.ts      # Viewport culling logic
-│   │       ├── utils/            # Utility functions
-│   │       │   ├── layoutUtils.ts
-│   │       │   ├── exportUtils.ts    # PNG/SVG/Mermaid export
-│   │       │   └── drawioExport.ts   # Draw.io/Visio export
-│   │       └── constants/        # Configuration
-│   ├── services/
-│   │   └── dataverseApi.ts       # Dataverse Web API client
-│   ├── types/
-│   │   └── index.ts              # TypeScript definitions
-│   ├── App.tsx                   # App wrapper
-│   ├── main.tsx                  # Entry point
-│   └── index.css                 # Global styles
-├── dist/                         # Build output (dev)
-├── dist/webresource/             # Build output (Dataverse)
-│   ├── adc_erdvisualizer.js      # Main bundle
-│   ├── adc_erdvisualizer.css     # Styles
-│   └── index.html                # HTML wrapper
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-├── DEPLOYMENT.md                 # Dataverse deployment guide
-└── README.md
-```
-
-## Development
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
 - npm or yarn
 
-### Setup
+### Development
 
 ```bash
+# Clone the repository
+git clone https://github.com/allandecastro/dataverse-erd-visualizer.git
+cd dataverse-erd-visualizer
+
 # Install dependencies
 npm install
 
@@ -92,31 +117,27 @@ npm install
 npm run dev
 ```
 
-The app will open at `http://localhost:3000`
+The app opens at `http://localhost:3000` with **mock data** - no Dataverse connection required!
 
-### Mock Data Mode
-
-When running locally (`npm run dev`), the app **automatically uses mock data** - no Dataverse connection required! You'll see a "MOCK MODE" banner at the top.
-
-You can also force mock mode via URL parameter: `?mock=true`
-
-## Building for Dataverse Web Resource
-
-### Build
+### Build for Dataverse
 
 ```bash
 # Build optimized bundle for web resource
 npm run build:webresource
 ```
 
-This creates optimized files in `dist/webresource/`:
-- `adc_erdvisualizer.js` - Main JavaScript bundle (~266 KB, ~76 KB gzipped)
-- `adc_erdvisualizer.css` - Styles (~0.6 KB)
-- `index.html` - HTML wrapper (ready to use)
+Output in `dist/webresource/`:
+- `adc_erdvisualizer.js` - Main bundle (~266 KB gzipped: ~76 KB)
+- `adc_erdvisualizer.css` - Styles
+- `index.html` - Ready-to-use HTML wrapper
 
-### Quick Deployment
+---
 
-1. Navigate to https://make.powerapps.com
+## Deployment
+
+### Quick Deploy to Dataverse
+
+1. Navigate to [make.powerapps.com](https://make.powerapps.com)
 2. Select your environment → **Solutions** → Your solution
 3. Click **+ New** → **More** → **Web resource**
 4. Upload each file:
@@ -133,116 +154,13 @@ This creates optimized files in `dist/webresource/`:
    - **Web Resource:** `adc_erdvisualizer.html`
 3. **Save** and **Publish**
 
-📖 **See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions**, including:
-- PAC CLI deployment
-- Solution packaging
-- Required permissions
-- Troubleshooting guide
+> **Detailed Instructions:** See [DEPLOYMENT.md](DEPLOYMENT.md) for PAC CLI deployment, solution packaging, permissions, and troubleshooting.
 
-## Architecture
+---
 
-### Dataverse API Integration
+## Documentation
 
-The app uses the Dataverse Web API to fetch:
-
-- **Entity Metadata** - All tables with attributes
-- **Relationship Metadata** - N:1, 1:N, N:N relationships
-- **Publisher Information** - For filtering
-
-#### API Calls
-
-```typescript
-// Fetch all entity metadata
-GET /api/data/v9.2/EntityDefinitions
-  ?$select=LogicalName,DisplayName,...
-  &$expand=Attributes,OneToManyRelationships,...
-  
-// Results are cached and transformed to internal format
-```
-
-### Authentication
-
-When deployed as a Web Resource:
-- Uses **Xrm.WebApi** context
-- Automatic authentication via Dataverse session
-- No additional auth required
-
-For local development:
-- Set `VITE_DATAVERSE_URL` in `.env`
-- Authentication handled by browser session
-
-### State Management
-
-- React hooks for local state
-- Custom `useDataverseData` hook for API data
-- No external state management library (keeps bundle small)
-
-## Performance Optimizations
-
-### Viewport Culling
-- Only entities visible in the current viewport are rendered
-- Entities outside the view are automatically excluded from the DOM
-- Provides smooth performance even with 100+ tables
-
-### Canvas Mode
-- Toggle Canvas Mode for ultimate performance with large diagrams
-- Uses HTML5 Canvas API instead of DOM elements
-- Significantly reduces browser memory usage
-
-### Other Optimizations
-- **Lazy loading** of relationship data
-- **Debounced** search and filters
-- **Optimized re-renders** with React.memo
-- **Tree-shaking** via Vite
-- **Single bundle** for web resource deployment
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-
-## Troubleshooting
-
-### "Failed to fetch entity metadata"
-
-- Check Dataverse URL is correct
-- Ensure you have read permissions on Entity Metadata
-- Verify CORS settings if testing locally
-
-### "Xrm is not defined"
-
-- Ensure the web resource is loaded within Dataverse context
-- Check that it's not being loaded in a standalone browser
-
-### Build fails
-
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-```
-
-## Contributing
-
-Contributions welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Author
-
-**Allan De Castro**  
-Microsoft MVP | FastTrack Ready Solutions Architect  
-Blog: Allan's Tech Forge
-
-## Keyboard Shortcuts
+### Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
@@ -254,36 +172,139 @@ Blog: Allan's Tech Forge
 | Click + Drag | Pan canvas |
 | Click entity | Select and highlight relationships |
 
+### Project Structure
+
+```
+dataverse-erd-visualizer/
+├── src/
+│   ├── components/
+│   │   └── ERDVisualizer/          # Main ERD component
+│   │       ├── components/         # UI components
+│   │       ├── hooks/              # Custom React hooks
+│   │       └── utils/              # Utility functions
+│   ├── services/
+│   │   └── dataverseApi.ts         # Dataverse Web API client
+│   └── types/
+│       └── index.ts                # TypeScript definitions
+├── dist/webresource/               # Dataverse build output
+├── DEPLOYMENT.md                   # Deployment guide
+└── README.md
+```
+
+### Architecture
+
+**Dataverse Integration**
+- Uses Dataverse Web API for metadata fetching
+- Automatic authentication via Xrm.WebApi context
+- Fetches entities, attributes, relationships, and alternate keys
+
+**State Management**
+- React hooks for local state
+- Custom `useDataverseData` hook for API data
+- No external state library (keeps bundle small)
+
+**Performance**
+- Viewport culling for large schemas
+- Canvas mode for 100+ entities
+- Debounced search and filters
+- Tree-shaking via Vite
+
+---
+
+## Browser Support
+
+| Browser | Version |
+|---------|---------|
+| Chrome/Edge | 90+ |
+| Firefox | 88+ |
+| Safari | 14+ |
+
+---
+
+## Troubleshooting
+
+<details>
+<summary><strong>"Failed to fetch entity metadata"</strong></summary>
+
+- Check Dataverse URL is correct
+- Ensure you have read permissions on Entity Metadata
+- Verify CORS settings if testing locally
+</details>
+
+<details>
+<summary><strong>"Xrm is not defined"</strong></summary>
+
+- Ensure the web resource is loaded within Dataverse context
+- Check that it's not being loaded in a standalone browser
+</details>
+
+<details>
+<summary><strong>Build fails</strong></summary>
+
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+</details>
+
+---
+
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
 ## Changelog
 
-### v0.1.0 BETA (2025-12-17)
+### v0.1.0 BETA (December 2025)
 
 **New Features**
-- **Draw.io Export** - Export diagrams to Draw.io format (.drawio) with proper connectors
-  - Open directly in [draw.io](https://app.diagrams.net/) (free, web-based)
-  - Import into Microsoft Visio
-  - Compatible with VS Code Draw.io extension
-- **Solution Filter** - Filter entities by Dataverse solution (entities can belong to multiple solutions)
+- Draw.io Export - Compatible with Draw.io and Microsoft Visio
+- Solution Filter - Filter entities by Dataverse solution
+- Alternate Keys - Display entity alternate keys with composite key support
 
-**Initial Release**
+**Core Features**
 - Dataverse metadata integration via Web API
 - Force-directed, Grid, and Auto-arrange layouts
 - Primary Key indicators on entity cards
 - Precise lookup→PK relationship visualization
-- Export to PNG (clipboard), SVG (download), Mermaid (clipboard)
-- Dark/Light themes with localStorage persistence
+- Export to PNG, SVG, Mermaid, Draw.io
+- Dark/Light themes with persistence
 - Smart Zoom with fit-to-screen
-- Interactive Minimap for navigation
+- Interactive Minimap
 - Field selector per table
-- Color customization for tables and relationships
+- Viewport Culling & Canvas Mode for performance
 
-**Performance Features**
-- Viewport Culling - Only render visible entities
-- Canvas Mode - High-performance HTML5 Canvas rendering
-- Optimized for environments with 100+ tables
+---
 
-**User Experience**
-- Built-in Feature Guide with onboarding modal
-- Keyboard shortcuts for common actions
-- Search and filter by publisher/solution
-- Collapsible entity cards
+## Author
+
+<p>
+  <strong>Allan De Castro</strong><br>
+  Microsoft MVP | FastTrack Ready Solutions Architect
+</p>
+
+<p>
+  <a href="https://github.com/allandecastro"><img src="https://img.shields.io/badge/GitHub-allandecastro-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="https://www.linkedin.com/in/allandecastro/"><img src="https://img.shields.io/badge/LinkedIn-allandecastro-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+</p>
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  Made with ❤️ for the Power Platform Community
+</p>

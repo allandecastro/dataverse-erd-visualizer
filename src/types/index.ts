@@ -32,6 +32,12 @@ export interface EntityAttribute {
   lookupTarget?: string; // Target entity logical name for lookup fields
 }
 
+export interface AlternateKey {
+  logicalName: string;
+  displayName: string;
+  keyAttributes: string[]; // Array of attribute logical names that compose the key
+}
+
 export interface Entity {
   logicalName: string;
   displayName: string;
@@ -42,6 +48,7 @@ export interface Entity {
   publisher?: string;
   solutions?: string[]; // Entity can belong to multiple solutions
   attributes: EntityAttribute[];
+  alternateKeys?: AlternateKey[];
 }
 
 export interface EntityRelationship {
@@ -96,6 +103,17 @@ export interface DataverseEntityMetadataResponse {
   value: DataverseEntityMetadata[];
 }
 
+export interface DataverseEntityKeyMetadata {
+  MetadataId: string;
+  LogicalName: string;
+  DisplayName: {
+    UserLocalizedLabel: {
+      Label: string;
+    };
+  };
+  KeyAttributes: string[];
+}
+
 export interface DataverseEntityMetadata {
   MetadataId: string;
   LogicalName: string;
@@ -109,6 +127,7 @@ export interface DataverseEntityMetadata {
   PrimaryIdAttribute: string;
   PrimaryNameAttribute: string;
   Attributes: DataverseAttributeMetadata[];
+  Keys?: DataverseEntityKeyMetadata[];
   OneToManyRelationships?: DataverseRelationshipMetadata[];
   ManyToOneRelationships?: DataverseRelationshipMetadata[];
   ManyToManyRelationships?: DataverseManyToManyRelationshipMetadata[];
