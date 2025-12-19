@@ -53,7 +53,7 @@ jobs:
           cd ../..
 
       - name: Upload web resources artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: webresources-${{ steps.version.outputs.VERSION }}
           path: dist/webresource/
