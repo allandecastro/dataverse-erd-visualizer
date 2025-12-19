@@ -225,19 +225,56 @@ You'll see a **"MOCK MODE"** banner indicating you're using simulated data.
 
 ```
 dataverse-erd-visualizer/
+├── public/
+│   └── logo.svg                    # Application logo
 ├── src/
 │   ├── components/
 │   │   └── ERDVisualizer/          # Main ERD component
-│   │       ├── components/         # UI components
+│   │       ├── components/         # UI sub-components
+│   │       │   ├── CanvasERD.tsx       # Canvas rendering mode
+│   │       │   ├── EntityCard.tsx      # Entity table card
+│   │       │   ├── EntitySearch.tsx    # Search component
+│   │       │   ├── FeatureGuide.tsx    # Onboarding modal
+│   │       │   ├── FieldSelector.tsx   # Field visibility picker
+│   │       │   ├── Minimap.tsx         # Navigation minimap
+│   │       │   ├── RelationshipLines.tsx # SVG relationship arrows
+│   │       │   ├── Sidebar.tsx         # Filter sidebar
+│   │       │   ├── Toast.tsx           # Notification toasts
+│   │       │   ├── Toolbar.tsx         # Top action bar
+│   │       │   └── VirtualEntityList.tsx # Virtual scrolling
 │   │       ├── hooks/              # Custom React hooks
-│   │       └── utils/              # Utility functions
+│   │       │   ├── useERDState.ts      # Main state management
+│   │       │   ├── useKeyboardShortcuts.ts # Keyboard handling
+│   │       │   ├── useLayoutAlgorithms.ts  # Layout engines
+│   │       │   ├── useViewport.ts      # Viewport culling
+│   │       │   └── useVirtualScroll.ts # Virtual scroll logic
+│   │       ├── utils/              # Utility functions
+│   │       │   ├── drawioExport.ts     # Draw.io/Visio export
+│   │       │   └── exportUtils.ts      # PNG/SVG/Mermaid export
+│   │       ├── ERDVisualizer.tsx   # Root ERD component
+│   │       └── types.ts            # Component-specific types
+│   ├── hooks/
+│   │   └── useDataverseData.ts     # Dataverse API hook
 │   ├── services/
-│   │   └── dataverseApi.ts         # Dataverse Web API client
-│   └── types/
-│       └── index.ts                # TypeScript definitions
-├── dist/webresource/               # Dataverse build output
-├── DEPLOYMENT.md                   # Deployment guide
-└── README.md
+│   │   ├── dataverseApi.ts         # Dataverse Web API client
+│   │   └── mockData.ts             # Mock data for development
+│   ├── types/
+│   │   └── index.ts                # TypeScript definitions
+│   ├── App.tsx                     # App wrapper
+│   ├── main.tsx                    # Entry point
+│   └── index.css                   # Global styles
+├── solution/                       # Dataverse solution package
+├── docs/                           # Documentation assets
+├── dist/                           # Build output
+│   └── webresource/                # Dataverse web resource build
+├── index.html                      # HTML template
+├── vite.config.ts                  # Vite configuration
+├── tsconfig.json                   # TypeScript configuration
+├── package.json                    # Dependencies & scripts
+├── DEPLOYMENT.md                   # Detailed deployment guide
+├── CONTRIBUTING.md                 # Contribution guidelines
+├── LICENSE                         # MIT License
+└── README.md                       # This file
 ```
 
 ### Architecture
@@ -301,13 +338,28 @@ npm install
 
 ## Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- Code of Conduct
+- Development setup
+- Submitting pull requests
+- Coding standards
+
+Quick start:
+
+```bash
+# Fork and clone
+git clone https://github.com/YOUR_USERNAME/dataverse-erd-visualizer.git
+
+# Create feature branch
+git checkout -b feature/amazing-feature
+
+# Make changes and commit
+git commit -m 'Add amazing feature'
+
+# Push and create PR
+git push origin feature/amazing-feature
+```
 
 ---
 

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/allandecastro/dataverse-erd-visualizer/discussions
+    about: For general discussions, ideas, and community support
+  - name: Documentation
+    url: https://github.com/allandecastro/dataverse-erd-visualizer#readme
+    about: Check the README for documentation and guides
+  - name: Deployment Guide
+    url: https://github.com/allandecastro/dataverse-erd-visualizer/blob/main/DEPLOYMENT.md
+    about: Detailed instructions for deploying to Dataverse
