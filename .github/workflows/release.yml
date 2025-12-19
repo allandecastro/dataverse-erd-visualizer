@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 0.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Web Resources
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build web resource
+        run: npm run build:webresource
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create web resources zip
+        run: |
+          cd dist/webresource
+          zip -r ../../webresources_${{ steps.version.outputs.VERSION }}.zip .
+          cd ../..
+
+      - name: Upload web resources artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webresources-${{ steps.version.outputs.VERSION }}
+          path: dist/webresource/
+          retention-days: 90
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Dataverse ERD Visualizer v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## Dataverse ERD Visualizer v${{ steps.version.outputs.VERSION }}
+
+            ### Downloads
+
+            | File | Description |
+            |------|-------------|
+            | `DataverseERDVisualizer_x_x_x_managed.zip` | **Managed Solution** - Import directly into Dataverse |
+            | `webresources_${{ steps.version.outputs.VERSION }}.zip` | Web resources only (for manual deployment) |
+
+            ### Quick Install
+
+            1. Download `DataverseERDVisualizer_x_x_x_managed.zip`
+            2. Go to [make.powerapps.com](https://make.powerapps.com) → **Solutions** → **Import solution**
+            3. Upload and import the solution
+            4. The ERD Visualizer app will be available in your environment
+
+            ### Manual Deployment
+
+            If you prefer to deploy manually, download `webresources_${{ steps.version.outputs.VERSION }}.zip` and follow the [deployment guide](https://github.com/allandecastro/dataverse-erd-visualizer/blob/main/DEPLOYMENT.md).
+
+            ---
+
+            See the [Changelog](https://github.com/allandecastro/dataverse-erd-visualizer#changelog) for what's new.
+          files: |
+            webresources_${{ steps.version.outputs.VERSION }}.zip
+          draft: true
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

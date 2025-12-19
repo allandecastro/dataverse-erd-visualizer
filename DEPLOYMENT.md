@@ -19,7 +19,7 @@ This creates optimized files in `dist/webresource/`:
 
 ### 2. Upload to Dataverse
 
-#### Using Power Apps Portal
+#### Using Power Apps Maker Portal
 
 1. Navigate to https://make.powerapps.com
 2. Select your environment
@@ -98,22 +98,6 @@ If you need to create the HTML manually:
 You can also add as a URL subarea:
 - **URL:** `$webresource:adc_erdvisualizer.html`
 
-#### Using Sitemap XML (Advanced)
-
-Add to your sitemap XML:
-
-```xml
-<Area Id="adc_Tools" Title="Tools">
-  <Group Id="adc_DataTools" Title="Data Tools">
-    <SubArea
-      Id="adc_ERDVisualizer"
-      Title="ERD Visualizer"
-      Url="$webresource:adc_erdvisualizer.html"
-      Icon="/_imgs/area/16_visualizations.png">
-    </SubArea>
-  </Group>
-</Area>
-```
 
 ### 5. Grant Permissions
 
