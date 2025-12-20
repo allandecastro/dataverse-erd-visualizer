@@ -150,27 +150,33 @@ npm install -g @microsoft/power-platform-cli
 # https://aka.ms/PowerAppsCLI
 ```
 
-### Deployment Steps
+### Import Pre-built Solution
 
 ```bash
 # 1. Authenticate
 pac auth create --url https://[org].crm.dynamics.com
 
-# 2. Create a new solution (if needed)
-pac solution init --publisher-name "YourPublisher" --publisher-prefix "adc"
-
-# 3. Add web resources to solution
-pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.js"
-pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.css"
-pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizerlogo.svg"
-pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.html"
-
-# 4. Build the solution
-pac solution pack --folder . --zipfile DataverseERDVisualizer_0.1.0.0_managed.zip --packagetype Managed
-
-# 5. Import to environment
-pac solution import --path DataverseERDVisualizer_0.1.0.0_managed.zip --publish-changes
+# 2. Import the managed solution from GitHub releases
+pac solution import --path DataverseERDVisualizer_x.x.x.x_managed.zip --publish-changes
 ```
+
+### Update Web Resources in Existing Solution
+
+```bash
+# 1. Authenticate
+pac auth create --url https://[org].crm.dynamics.com
+
+# 2. Push updated web resources
+pac webresource push --solution DataverseERDVisualizer --file "./dist/webresource/adc_dataverseerdvisualizer.js"
+pac webresource push --solution DataverseERDVisualizer --file "./dist/webresource/adc_dataverseerdvisualizer.css"
+pac webresource push --solution DataverseERDVisualizer --file "./dist/webresource/adc_dataverseerdvisualizer.html"
+pac webresource push --solution DataverseERDVisualizer --file "./dist/webresource/adc_dataverseerdvisualizerlogo.svg"
+
+# 3. Publish customizations
+pac solution publish
+```
+
+> **Note:** To create a managed solution, you must export it from Dataverse. PAC CLI cannot convert unmanaged source to managed locally.
 
 ## Solution Structure for Manual Packaging
 
