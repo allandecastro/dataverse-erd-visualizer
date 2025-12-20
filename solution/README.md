@@ -85,10 +85,12 @@ solution/src/
 If you need to add new components to the solution (new web resources, apps, etc.):
 
 1. Make changes in Dataverse
-2. Export the **managed** solution
+2. Export the solution as **UNMANAGED**
 3. Unpack: `pac solution unpack --zipfile <solution.zip> --folder solution/src --allowDelete --allowWrite`
 4. Commit the changes
 5. Create a new release tag
+
+> **Important:** Always export as **unmanaged**. The CD pipeline packs the unmanaged source with `--packagetype Managed` to produce the managed solution for distribution.
 
 **Note:** For code-only changes, just commit your code and create a release tag. The CD handles everything automatically.
 
