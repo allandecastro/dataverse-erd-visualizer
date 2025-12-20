@@ -95,12 +95,12 @@ jobs:
       - name: Pack managed solution
         shell: pwsh
         run: |
-          pac solution pack --zipfile "DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip" --folder solution/src --packagetype Managed
+          & $env:POWERPLATFORMTOOLS_PACPATH solution pack --zipfile "DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip" --folder solution/src --packagetype Managed
 
       - name: Pack unmanaged solution
         shell: pwsh
         run: |
-          pac solution pack --zipfile "DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_unmanaged.zip" --folder solution/src --packagetype Unmanaged
+          & $env:POWERPLATFORMTOOLS_PACPATH solution pack --zipfile "DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_unmanaged.zip" --folder solution/src --packagetype Unmanaged
 
       - name: Create web resources zip
         shell: pwsh
