@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide explains how to deploy the ERD Visualizer as a web resource in Microsoft Dataverse / Dynamics 365 / Power Platform.
+This guide explains how to deploy the Dataverse ERD Visualizer as a web resource in Microsoft Dataverse / Dynamics 365 / Power Platform.
 
 ## Quick Deployment Steps
 
@@ -13,8 +13,9 @@ npm run build:webresource
 ```
 
 This creates optimized files in `dist/webresource/`:
-- `adc_erdvisualizer.js` - Main JavaScript bundle (~266 KB, ~76 KB gzipped)
-- `adc_erdvisualizer.css` - Styles (~0.6 KB)
+- `adc_dataverseerdvisualizer.js` - Main JavaScript bundle (~266 KB, ~76 KB gzipped)
+- `adc_dataverseerdvisualizer.css` - Styles (~0.6 KB)
+- `adc_dataverseerdvisualizerlogo.svg` - Application logo
 - `index.html` - HTML wrapper (ready to use)
 
 ### 2. Upload to Dataverse
@@ -27,22 +28,28 @@ This creates optimized files in `dist/webresource/`:
 4. Click **+ New** → **More** → **Web resource**
 
 **Upload JavaScript:**
-- Name: `adc_erdvisualizer.js`
-- Display Name: `ERD Visualizer Script`
+- Name: `adc_dataverseerdvisualizer.js`
+- Display Name: `Dataverse ERD Visualizer Script`
 - Type: **Script (JScript)**
-- Upload: `dist/webresource/adc_erdvisualizer.js`
+- Upload: `dist/webresource/adc_dataverseerdvisualizer.js`
 
 **Upload CSS:**
-- Name: `adc_erdvisualizer.css`
-- Display Name: `ERD Visualizer Styles`
+- Name: `adc_dataverseerdvisualizer.css`
+- Display Name: `Dataverse ERD Visualizer Styles`
 - Type: **Style Sheet (CSS)**
-- Upload: `dist/webresource/adc_erdvisualizer.css`
+- Upload: `dist/webresource/adc_dataverseerdvisualizer.css`
+
+**Upload Logo:**
+- Name: `adc_dataverseerdvisualizerlogo.svg`
+- Display Name: `Dataverse ERD Visualizer Logo`
+- Type: **Image (SVG)**
+- Upload: `dist/webresource/adc_dataverseerdvisualizerlogo.svg`
 
 **Upload HTML:**
-- Name: `adc_erdvisualizer.html`
-- Display Name: `ERD Visualizer`
+- Name: `adc_dataverseerdvisualizer.html`
+- Display Name: `Dataverse ERD Visualizer`
 - Type: **Web Page (HTML)**
-- Upload: `dist/webresource/index.html` (or copy content below)
+- Upload: `dist/webresource/index.html`
 
 5. **Save** and **Publish All Customizations**
 
@@ -57,8 +64,8 @@ If you need to create the HTML manually:
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dataverse ERD Visualizer</title>
-    <script src="adc_erdvisualizer.js"></script>
-    <link rel="stylesheet" href="adc_erdvisualizer.css">
+    <script src="adc_dataverseerdvisualizer.js"></script>
+    <link rel="stylesheet" href="adc_dataverseerdvisualizer.css">
     <style>
       body, html {
         margin: 0;
@@ -86,22 +93,22 @@ If you need to create the HTML manually:
 1. Open your Model-Driven App in **App Designer**
 2. Click **Navigation** → **+ Add** → **Group** (or use existing)
 3. Add **Subarea**:
-   - **Title:** ERD Visualizer
+   - **Title:** Dataverse ERD Visualizer
    - **Icon:** Choose a visualization icon (e.g., `/_imgs/area/16_visualizations.png`)
    - **Content Type:** Web Resource
-   - **Web Resource:** Select `adc_erdvisualizer.html`
+   - **Web Resource:** Select `adc_dataverseerdvisualizer.html`
 
 4. **Save** and **Publish**
 
 #### Using URL (Alternative)
 
 You can also add as a URL subarea:
-- **URL:** `$webresource:adc_erdvisualizer.html`
+- **URL:** `$webresource:adc_dataverseerdvisualizer.html`
 
 
 ### 5. Grant Permissions
 
-Users need these permissions to use the ERD Visualizer:
+Users need these permissions to use the Dataverse ERD Visualizer:
 
 **Required Security Role Privileges:**
 
@@ -127,7 +134,7 @@ For a standalone page (not in navigation):
 1. Upload web resources as above
 2. Access directly via URL:
    ```
-   https://[org].crm.dynamics.com/WebResources/adc_erdvisualizer.html
+   https://[org].crm.dynamics.com/WebResources/adc_dataverseerdvisualizer.html
    ```
 
 ## Using Power Platform CLI (PAC CLI)
@@ -153,28 +160,30 @@ pac auth create --url https://[org].crm.dynamics.com
 pac solution init --publisher-name "YourPublisher" --publisher-prefix "adc"
 
 # 3. Add web resources to solution
-pac solution add-reference --path "./dist/webresource/adc_erdvisualizer.js"
-pac solution add-reference --path "./dist/webresource/adc_erdvisualizer.css"
+pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.js"
+pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.css"
+pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizerlogo.svg"
 pac solution add-reference --path "./dist/webresource/index.html"
 
 # 4. Build the solution
-pac solution pack --zipfile ERDVisualizer_1_0_0.zip --folder . --packagetype Both
+pac solution pack --zipfile DataverseERDVisualizer_1_0_0_managed.zip --folder . --packagetype Managed
 
 # 5. Import to environment
-pac solution import --path ERDVisualizer_1_0_0.zip --publish-changes
+pac solution import --path DataverseERDVisualizer_1_0_0_managed.zip --publish-changes
 ```
 
 ## Solution Structure for Manual Packaging
 
 ```
-ERDVisualizer/
+DataverseERDVisualizer/
 ├── solution.xml
 ├── [Content_Types].xml
 ├── customizations.xml
 └── WebResources/
-    ├── adc_erdvisualizer.html
-    ├── adc_erdvisualizer.js
-    └── adc_erdvisualizer.css
+    ├── adc_dataverseerdvisualizer.html
+    ├── adc_dataverseerdvisualizer.js
+    ├── adc_dataverseerdvisualizer.css
+    └── adc_dataverseerdvisualizerlogo.svg
 ```
 
 ### Sample solution.xml
@@ -183,9 +192,9 @@ ERDVisualizer/
 <?xml version="1.0" encoding="utf-8"?>
 <ImportExportXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SolutionManifest>
-    <UniqueName>ERDVisualizer</UniqueName>
+    <UniqueName>DataverseERDVisualizer</UniqueName>
     <LocalizedNames>
-      <LocalizedName description="ERD Visualizer" languagecode="1033"/>
+      <LocalizedName description="Dataverse ERD Visualizer" languagecode="1033"/>
     </LocalizedNames>
     <Descriptions>
       <Description description="Entity Relationship Diagram Visualizer for Dataverse" languagecode="1033"/>
@@ -212,7 +221,7 @@ ERDVisualizer/
 **Solutions:**
 1. Ensure accessing via Dataverse URL (not localhost)
 2. Access through Model-Driven App navigation
-3. Use the full URL: `https://[org].crm.dynamics.com/WebResources/adc_erdvisualizer.html`
+3. Use the full URL: `https://[org].crm.dynamics.com/WebResources/adc_dataverseerdvisualizer.html`
 
 ### Issue: "Failed to fetch entity metadata"
 
@@ -259,8 +268,8 @@ ERDVisualizer/
 ## Best Practices
 
 ### Naming Convention
-- Use publisher prefix: `adc_erdvisualizer`
-- Include version for major updates: `adc_erdvisualizer_v2`
+- Use publisher prefix: `adc_dataverseerdvisualizer`
+- Include version for major updates: `adc_dataverseerdvisualizer_v2`
 
 ### Managed vs Unmanaged Solutions
 - **Development:** Use unmanaged solutions

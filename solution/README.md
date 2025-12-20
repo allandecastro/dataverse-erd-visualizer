@@ -1,85 +1,95 @@
 # Dataverse Solution Package
 
-This folder is for the **Managed Solution** that can be imported directly into Dataverse environments.
+This folder contains the unpacked Dataverse solution that gets automatically packaged by the CD pipeline.
 
 ## For Users
 
 ### Download
 
-Download the latest managed solution from [GitHub Releases](https://github.com/allandecastro/dataverse-erd-visualizer/releases):
+Download the latest solution from [GitHub Releases](https://github.com/allandecastro/dataverse-erd-visualizer/releases):
 
-- `DataverseERDVisualizer_x_x_x_managed.zip` - Full managed solution with Model-driven App
+| File | Description |
+|------|-------------|
+| `DataverseERDVisualizer_x.x.x_managed.zip` | **Managed Solution** - Recommended for production |
+| `DataverseERDVisualizer_x.x.x_unmanaged.zip` | Unmanaged Solution - For development |
 
 ### Installation
 
 1. Go to [make.powerapps.com](https://make.powerapps.com)
 2. Select your environment
 3. Navigate to **Solutions** → **Import solution**
-4. Upload `DataverseERDVisualizer_x_x_x_managed.zip`
+4. Upload the managed solution zip
 5. Click **Next** → **Import**
-6. Once imported, the **ERD Visualizer** app will be available in your environment
-
-### Using PAC CLI
-
-```bash
-pac auth create --environment "https://yourorg.crm.dynamics.com"
-pac solution import --path DataverseERDVisualizer_x_x_x_managed.zip
-```
+6. The **Dataverse ERD Visualizer** app will be available in your environment
 
 ---
 
 ## For Maintainers
 
-### Release Process
+### Creating a Release
 
-The managed solution is created manually since it includes a Model-driven App which cannot be easily automated.
-
-#### Step 1: Build Web Resources
-
-The CI/CD pipeline automatically builds web resources when you create a tag:
+Simply tag and push to create a new release:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
-Or trigger manually from GitHub Actions → Release → Run workflow.
+The CD pipeline will automatically:
 
-#### Step 2: Update Web Resources in Dataverse
+```
+┌─────────────────────────────────────────────────────────────┐
+│  git tag v0.2.0 && git push origin v0.2.0                   │
+│                         ↓                                    │
+│  GitHub Actions:                                             │
+│  ├─ Build web resources (npm run build:webresource)         │
+│  ├─ Update solution version to 0.2.0.0                      │
+│  ├─ Copy web resources to solution/src/WebResources/        │
+│  ├─ Pack managed solution (pac solution pack --Managed)     │
+│  ├─ Pack unmanaged solution (pac solution pack --Unmanaged) │
+│  └─ Create GitHub Release with versioned zips               │
+│                         ↓                                    │
+│  Release: DataverseERDVisualizer_0.2.0_managed.zip          │
+└─────────────────────────────────────────────────────────────┘
+```
 
-1. Download `webresources_x.x.x.zip` from the GitHub Release (draft)
-2. Go to your development environment in [make.powerapps.com](https://make.powerapps.com)
-3. Open the **Dataverse ERD Visualizer** solution
-4. Update the web resources with the new files:
-   - `adc_/erdvisualizer/adc_erdvisualizer.html`
-   - `adc_/erdvisualizer/adc_erdvisualizer.js`
-   - `adc_/erdvisualizer/adc_erdvisualizer.css`
-5. **Publish All Customizations**
+### Folder Structure
 
-#### Step 3: Export Managed Solution
+The `solution/src/` folder contains the unpacked solution:
 
-1. In [make.powerapps.com](https://make.powerapps.com), go to **Solutions**
-2. Select **Dataverse ERD Visualizer**
-3. Click **Export solution**
-4. Choose **Managed** → **Export**
-5. Download the zip file
-6. Rename to `DataverseERDVisualizer_x_x_x_managed.zip`
+```
+solution/src/
+├── AppModules/
+│   └── adc_DataverseERDVisualizerApp/
+│       └── AppModule.xml
+├── AppModuleSiteMaps/
+│   └── adc_DataverseERDVisualizerApp/
+│       └── AppModuleSiteMap.xml
+├── Other/
+│   ├── Customizations.xml
+│   └── Solution.xml          # Version updated by CD
+└── WebResources/
+    ├── adc_dataverseerdvisualizer.css
+    ├── adc_dataverseerdvisualizer.css.data.xml
+    ├── adc_dataverseerdvisualizer.html      # Updated by CD
+    ├── adc_dataverseerdvisualizer.html.data.xml
+    ├── adc_dataverseerdvisualizer.js        # Updated by CD
+    ├── adc_dataverseerdvisualizer.js.data.xml
+    ├── adc_dataverseerdvisualizerlogo.svg   # Updated by CD
+    └── adc_dataverseerdvisualizerlogo.svg.data.xml
+```
 
-#### Step 4: Upload to GitHub Release
+### Adding New Components
 
-1. Go to the draft release on GitHub
-2. Upload `DataverseERDVisualizer_x_x_x_managed.zip`
-3. Review the release notes
-4. **Publish release**
+If you need to add new components to the solution (new web resources, apps, etc.):
 
-### Solution Contents
+1. Make changes in Dataverse
+2. Export the unmanaged solution
+3. Unpack: `pac solution unpack --zipfile <solution.zip> --folder solution/src --packagetype Unmanaged`
+4. Commit the changes
+5. Create a new release tag
 
-| Component | Name | Description |
-|-----------|------|-------------|
-| Web Resource | `adc_/erdvisualizer/adc_erdvisualizer.html` | Main HTML page |
-| Web Resource | `adc_/erdvisualizer/adc_erdvisualizer.js` | Application bundle |
-| Web Resource | `adc_/erdvisualizer/adc_erdvisualizer.css` | Styles |
-| Model-driven App | `ERD Visualizer` | Standalone app for the visualizer |
+**Note:** For code-only changes, just commit your code and create a release tag. The CD handles everything automatically.
 
 ### Solution Properties
 
@@ -87,5 +97,14 @@ Or trigger manually from GitHub Actions → Release → Run workflow.
 |----------|-------|
 | Unique Name | `DataverseERDVisualizer` |
 | Display Name | Dataverse ERD Visualizer |
-| Publisher | Allan De Castro (`adc_`) |
-| Type | Managed |
+| Publisher | Allan De Castro |
+| Prefix | `adc_` |
+
+### Web Resources
+
+| Name | Type | Description |
+|------|------|-------------|
+| `adc_dataverseerdvisualizer.html` | Web Page (HTML) | Main entry point |
+| `adc_dataverseerdvisualizer.js` | Script (JS) | Application bundle |
+| `adc_dataverseerdvisualizer.css` | Style Sheet (CSS) | Styles |
+| `adc_dataverseerdvisualizerlogo.svg` | Image (SVG) | Application logo |

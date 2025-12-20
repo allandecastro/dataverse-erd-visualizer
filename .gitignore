@@ -20,6 +20,7 @@ pnpm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Editor / IDE
 .vscode/
@@ -37,5 +38,11 @@ Thumbs.db
 # Testing
 coverage/
 
+# Power Platform / Dataverse
+*.zip
+!solution/src/**
+
 # Misc
 *.local
+*.tmp
+*.temp
