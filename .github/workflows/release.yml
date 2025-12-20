@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -50,6 +50,7 @@ jobs:
       - name: Install Power Platform CLI
         uses: microsoft/powerplatform-actions/actions-install@v1
 
+<<<<<<< HEAD
       - name: Update solution version
         shell: pwsh
         run: |
@@ -100,6 +101,10 @@ jobs:
 
       - name: Upload managed solution artifact
         uses: actions/upload-artifact@v4
+=======
+      - name: Upload web resources artifact
+        uses: actions/upload-artifact@v6
+>>>>>>> 48ab0656a70ab4d55569b6052d5d24fffb4464eb
         with:
           name: managed-solution-${{ steps.version.outputs.VERSION }}
           path: DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip
@@ -114,7 +119,7 @@ jobs:
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: Dataverse ERD Visualizer v${{ steps.version.outputs.VERSION }}
           body: |
