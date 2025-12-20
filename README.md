@@ -5,7 +5,7 @@
 <h1 align="center">Dataverse ERD Visualizer</h1>
 
 <p align="center">
-  <strong>Interactive Entity Relationship Diagram Visualizer for Microsoft Dataverse / Dynamics 365 Power Platform</strong>
+  <strong>Interactive Entity Relationship Diagram Visualizer for Microsoft Dataverse / Dynamics 365 </strong>
 </p>
 
 <p align="center">
