@@ -166,10 +166,10 @@ pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer
 pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.html"
 
 # 4. Build the solution
-pac solution pack --zipfile DataverseERDVisualizer_1_0_0_managed.zip --folder . --packagetype Managed
+pac solution pack --folder . --zipfile DataverseERDVisualizer_0.1.0.0_managed.zip --managed
 
 # 5. Import to environment
-pac solution import --path DataverseERDVisualizer_1_0_0_managed.zip --publish-changes
+pac solution import --path DataverseERDVisualizer_0.1.0.0_managed.zip --publish-changes
 ```
 
 ## Solution Structure for Manual Packaging

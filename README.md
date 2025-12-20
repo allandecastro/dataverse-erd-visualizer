@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0_BETA-blue?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.1.0.0_BETA-blue?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
 </p>
 
@@ -110,7 +110,7 @@ Download and import the pre-built managed solution directly into your Dataverse 
   </a>
 </p>
 
-1. Download `DataverseERDVisualizer_managed.zip` from [Releases](https://github.com/allandecastro/dataverse-erd-visualizer/releases)
+1. Download `DataverseERDVisualizer_x.x.x_managed.zip` from [Releases](https://github.com/allandecastro/dataverse-erd-visualizer/releases)
 2. Go to [make.powerapps.com](https://make.powerapps.com) → Select your environment
 3. Navigate to **Solutions** → Click **Import solution**
 4. Browse and select the downloaded `.zip` file
@@ -119,7 +119,7 @@ Download and import the pre-built managed solution directly into your Dataverse 
 **Using PAC CLI:**
 ```bash
 pac auth create --environment "https://yourorg.crm.dynamics.com"
-pac solution import --path DataverseERDVisualizer_managed.zip
+pac solution import --path DataverseERDVisualizer_x.x.x_managed.zip
 ```
 
 ### Option 2: Build from Source
@@ -367,7 +367,7 @@ git push origin feature/amazing-feature
 
 ## Changelog
 
-### v0.1.0 BETA (December 2025)
+### v0.1.0.0 BETA (December 2025)
 
 **New Features**
 - Draw.io Export - Compatible with Draw.io and Microsoft Visio
