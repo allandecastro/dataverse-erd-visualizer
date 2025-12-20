@@ -214,7 +214,7 @@ export interface MinimapProps {
   entityPositions: Record<string, EntityPosition>;
   pan: { x: number; y: number };
   zoom: number;
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   isDarkMode: boolean;
   colorSettings: ColorSettings;
   themeColors: ThemeColors;

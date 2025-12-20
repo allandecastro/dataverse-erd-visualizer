@@ -18,7 +18,7 @@ export interface VirtualScrollResult {
   endIndex: number;
   scrollTop: number;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function useVirtualScroll({
