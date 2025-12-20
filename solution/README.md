@@ -1,6 +1,6 @@
 # Dataverse Solution Package
 
-This folder contains the unpacked Dataverse solution that gets automatically packaged by the CD pipeline.
+This folder contains the Dataverse solution files for distribution.
 
 ## For Users
 
@@ -10,8 +10,8 @@ Download the latest solution from [GitHub Releases](https://github.com/allandeca
 
 | File | Description |
 |------|-------------|
-| `DataverseERDVisualizer_x.x.x_managed.zip` | **Managed Solution** - Import to your environment |
-| `webresources_x.x.x.zip` | Web resources only (for manual deployment) |
+| `DataverseERDVisualizer_x.x.x.x_managed.zip` | **Managed Solution** - Import to your environment |
+| `webresources_x.x.x.x.zip` | Web resources only (for manual deployment) |
 
 ### Installation
 
@@ -28,71 +28,120 @@ Download the latest solution from [GitHub Releases](https://github.com/allandeca
 
 ### Creating a Release
 
-Simply tag and push to create a new release (using Dataverse 4-part versioning):
-
-```bash
-git tag v0.1.0.0
-git push origin v0.1.0.0
-```
-
-The CD pipeline will automatically:
+Follow these steps to create a new release:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  git tag v0.1.0.0 && git push origin v0.1.0.0               │
-│                         ↓                                    │
-│  GitHub Actions:                                             │
-│  ├─ Update package.json version to 0.1.0.0                  │
-│  ├─ Build web resources (npm run build:webresource)         │
-│  │   └─ App displays v0.1.0.0 in sidebar (injected at build)│
-│  ├─ Update Solution.xml version to 0.1.0.0                  │
-│  ├─ Copy web resources to solution/src/WebResources/        │
-│  ├─ Pack managed solution (pac solution pack --packagetype Managed)│
-│  └─ Create GitHub Release with zip files                    │
-│                         ↓                                    │
-│  Release: DataverseERDVisualizer_0.1.0.0_managed.zip        │
+│  1. Build web resources locally                             │
+│     npm run build:webresource                               │
+│                         ↓                                   │
+│  2. Import web resources to Dataverse                       │
+│     (via make.powerapps.com or PAC CLI)                     │
+│                         ↓                                   │
+│  3. Update solution version in Dataverse                    │
+│                         ↓                                   │
+│  4. Export MANAGED solution from Dataverse                  │
+│                         ↓                                   │
+│  5. Place ZIP in solution/ folder                           │
+│     solution/DataverseERDVisualizer_x.x.x.x_managed.zip     │
+│                         ↓                                   │
+│  6. Create GitHub Release                                   │
+│     - Tag: vX.X.X.X                                         │
+│     - Attach: managed.zip + webresources.zip                │
+│                         ↓                                   │
+│  7. CD auto-updates README version badge                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### Step-by-Step Guide
+
+#### 1. Build Web Resources
+
+```bash
+# Update version in package.json first
+npm version 0.1.0.1 --no-git-tag-version
+
+# Build for Dataverse
+npm run build:webresource
+```
+
+Output files in `dist/webresource/`:
+- `adc_dataverseerdvisualizer.html`
+- `adc_dataverseerdvisualizer.js`
+- `adc_dataverseerdvisualizer.css`
+- `adc_dataverseerdvisualizerlogo.svg`
+
+#### 2. Import to Dataverse
+
+Upload the built files to your Dataverse solution:
+- Go to **Solutions** → **Dataverse ERD Visualizer** → **Web Resources**
+- Update each web resource with the new built file
+- **Save** and **Publish All Customizations**
+
+Or use PAC CLI:
+```bash
+pac auth create --environment "https://yourorg.crm.dynamics.com"
+# Update each web resource...
+```
+
+#### 3. Update Solution Version
+
+In Dataverse:
+1. Open your solution
+2. Click **Settings** (gear icon)
+3. Update **Version** to match your release (e.g., `0.1.0.1`)
+4. Save
+
+#### 4. Export Managed Solution
+
+1. Go to **Solutions**
+2. Select **Dataverse ERD Visualizer**
+3. Click **Export solution**
+4. Choose **Managed**
+5. Download the ZIP
+
+#### 5. Place in Solution Folder
+
+Copy the exported ZIP to:
+```
+solution/DataverseERDVisualizer_0.1.0.1_managed.zip
+```
+
+#### 6. Create GitHub Release
+
+1. Go to **Releases** → **Create a new release**
+2. Create tag: `v0.1.0.1`
+3. Title: `Dataverse ERD Visualizer v0.1.0.1`
+4. Attach files:
+   - `solution/DataverseERDVisualizer_0.1.0.1_managed.zip`
+   - `dist/webresource/*` (zip as `webresources_0.1.0.1.zip`)
+5. Add release notes
+6. Publish release
+
+#### 7. Automatic README Update
+
+The CD workflow automatically updates the README version badge after you publish the release.
+
+---
+
 ### Folder Structure
 
-The `solution/src/` folder contains the unpacked solution:
-
 ```
-solution/src/
-├── AppModules/
-│   └── adc_DataverseERDVisualizerApp/
-│       └── AppModule.xml
-├── AppModuleSiteMaps/
-│   └── adc_DataverseERDVisualizerApp/
-│       └── AppModuleSiteMap.xml
-├── Other/
-│   ├── Customizations.xml
-│   └── Solution.xml          # Version updated by CD
-└── WebResources/
-    ├── adc_dataverseerdvisualizer.css
-    ├── adc_dataverseerdvisualizer.css.data.xml
-    ├── adc_dataverseerdvisualizer.html      # Updated by CD
-    ├── adc_dataverseerdvisualizer.html.data.xml
-    ├── adc_dataverseerdvisualizer.js        # Updated by CD
-    ├── adc_dataverseerdvisualizer.js.data.xml
-    ├── adc_dataverseerdvisualizerlogo.svg   # Updated by CD
-    └── adc_dataverseerdvisualizerlogo.svg.data.xml
+solution/
+├── README.md                                    # This file
+├── DataverseERDVisualizer_x.x.x.x_managed.zip   # Latest managed solution
+└── src/                                         # Unpacked solution (reference only)
+    ├── AppModules/
+    ├── AppModuleSiteMaps/
+    ├── Other/
+    │   ├── Customizations.xml
+    │   └── Solution.xml
+    └── WebResources/
+        ├── adc_dataverseerdvisualizer.css
+        ├── adc_dataverseerdvisualizer.html
+        ├── adc_dataverseerdvisualizer.js
+        └── adc_dataverseerdvisualizerlogo.svg
 ```
-
-### Adding New Components
-
-If you need to add new components to the solution (new web resources, apps, etc.):
-
-1. Make changes in Dataverse
-2. Export the solution as **UNMANAGED**
-3. Unpack: `pac solution unpack --zipfile <solution.zip> --folder solution/src --allowDelete --allowWrite`
-4. Commit the changes
-5. Create a new release tag
-
-> **Important:** Always export as **unmanaged**. The CD pipeline packs the unmanaged source with `--packagetype Managed` to produce the managed solution for distribution.
-
-**Note:** For code-only changes, just commit your code and create a release tag. The CD handles everything automatically.
 
 ### Solution Properties
 
