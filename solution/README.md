@@ -47,7 +47,7 @@ The CD pipeline will automatically:
 │  │   └─ App displays v0.1.0.0 in sidebar (injected at build)│
 │  ├─ Update Solution.xml version to 0.1.0.0                  │
 │  ├─ Copy web resources to solution/src/WebResources/        │
-│  ├─ Pack managed solution (pac solution pack --managed)     │
+│  ├─ Pack managed solution (pac solution pack --packagetype Managed)│
 │  └─ Create GitHub Release with zip files                    │
 │                         ↓                                    │
 │  Release: DataverseERDVisualizer_0.1.0.0_managed.zip        │
