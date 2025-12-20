@@ -13,10 +13,10 @@ npm run build:webresource
 ```
 
 This creates optimized files in `dist/webresource/`:
-- `adc_dataverseerdvisualizer.js` - Main JavaScript bundle (~266 KB, ~76 KB gzipped)
+- `adc_dataverseerdvisualizer.html` - HTML entry point
+- `adc_dataverseerdvisualizer.js` - Main JavaScript bundle (~274 KB, ~77 KB gzipped)
 - `adc_dataverseerdvisualizer.css` - Styles (~0.6 KB)
 - `adc_dataverseerdvisualizerlogo.svg` - Application logo
-- `index.html` - HTML wrapper (ready to use)
 
 ### 2. Upload to Dataverse
 
@@ -49,7 +49,7 @@ This creates optimized files in `dist/webresource/`:
 - Name: `adc_dataverseerdvisualizer.html`
 - Display Name: `Dataverse ERD Visualizer`
 - Type: **Web Page (HTML)**
-- Upload: `dist/webresource/index.html`
+- Upload: `dist/webresource/adc_dataverseerdvisualizer.html`
 
 5. **Save** and **Publish All Customizations**
 
@@ -163,7 +163,7 @@ pac solution init --publisher-name "YourPublisher" --publisher-prefix "adc"
 pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.js"
 pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.css"
 pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizerlogo.svg"
-pac solution add-reference --path "./dist/webresource/index.html"
+pac solution add-reference --path "./dist/webresource/adc_dataverseerdvisualizer.html"
 
 # 4. Build the solution
 pac solution pack --zipfile DataverseERDVisualizer_1_0_0_managed.zip --folder . --packagetype Managed

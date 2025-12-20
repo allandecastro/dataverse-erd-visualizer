@@ -148,10 +148,10 @@ npm run build:webresource
 Output files in `dist/webresource/`:
 | File | Description |
 |------|-------------|
-| `adc_dataverseerdvisualizer.js` | Main bundle (~266 KB, gzipped: ~76 KB) |
+| `adc_dataverseerdvisualizer.html` | HTML entry point |
+| `adc_dataverseerdvisualizer.js` | Main bundle (~274 KB, gzipped: ~77 KB) |
 | `adc_dataverseerdvisualizer.css` | Stylesheet |
 | `adc_dataverseerdvisualizerlogo.svg` | Application logo |
-| `index.html` | HTML entry point |
 
 #### Manual Deployment
 
@@ -161,7 +161,7 @@ Output files in `dist/webresource/`:
    - `adc_dataverseerdvisualizer.js` → Type: **Script (JS)**
    - `adc_dataverseerdvisualizer.css` → Type: **Style Sheet (CSS)**
    - `adc_dataverseerdvisualizerlogo.svg` → Type: **Image (SVG)**
-   - `index.html` → Type: **Web Page (HTML)**, Name: `adc_dataverseerdvisualizer.html`
+   - `adc_dataverseerdvisualizer.html` → Type: **Web Page (HTML)**
 4. **Save** and **Publish All Customizations**
 
 #### Package as Solution
