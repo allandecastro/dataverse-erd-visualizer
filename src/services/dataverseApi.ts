@@ -53,14 +53,7 @@ class DataverseApiService {
       return parentXrm.Utility.getGlobalContext().getClientUrl();
     }
 
-    // Fallback for development
-    // Check if VITE_DATAVERSE_URL is defined in .env file
-    const envUrl = import.meta.env.VITE_DATAVERSE_URL;
-    if (envUrl && envUrl.trim() !== '') {
-      return envUrl;
-    }
-
-    // Final fallback to current origin
+    // Final fallback to current origin (development mode uses mock data anyway)
     return typeof window !== 'undefined' ? window.location.origin : '';
   }
 

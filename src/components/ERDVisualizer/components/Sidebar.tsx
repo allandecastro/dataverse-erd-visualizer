@@ -201,7 +201,7 @@ export function Sidebar({
               Dataverse ERD Visualizer
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
-              <span style={{ fontSize: '10px', color: textSecondary, fontWeight: '500' }}>v0.1.0</span>
+              <span style={{ fontSize: '10px', color: textSecondary, fontWeight: '500' }}>v{__APP_VERSION__}</span>
               <span style={{
                 fontSize: '8px',
                 fontWeight: '700',
