@@ -36,8 +36,11 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "IS_TAG=false" >> $GITHUB_OUTPUT
           else
             echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+            echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "IS_TAG=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Update package.json version
@@ -97,17 +100,27 @@ jobs:
         run: |
           Compress-Archive -Path "dist/webresource/*" -DestinationPath "webresources_${{ steps.version.outputs.VERSION }}.zip"
 
-      - name: Upload solution artifact
+      - name: Upload managed solution artifact
         uses: actions/upload-artifact@v4
         with:
-          name: solution-${{ steps.version.outputs.VERSION }}
+          name: DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed
           path: DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip
           retention-days: 90
+          if-no-files-found: error
+
+      - name: Upload web resources artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webresources_${{ steps.version.outputs.VERSION }}
+          path: webresources_${{ steps.version.outputs.VERSION }}.zip
+          retention-days: 90
+          if-no-files-found: error
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: steps.version.outputs.IS_TAG == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.version.outputs.TAG_NAME }}
           name: Dataverse ERD Visualizer v${{ steps.version.outputs.VERSION }}
           body: |
             ## Dataverse ERD Visualizer v${{ steps.version.outputs.VERSION }}
@@ -133,12 +146,12 @@ jobs:
             DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip
             webresources_${{ steps.version.outputs.VERSION }}.zip
           draft: false
-          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update README version badge
-        if: startsWith(github.ref, 'refs/tags/')
+        if: steps.version.outputs.IS_TAG == 'true'
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.VERSION }}"
@@ -151,7 +164,7 @@ jobs:
           Write-Host "README.md version badge updated to $version"
 
       - name: Commit and push README update
-        if: startsWith(github.ref, 'refs/tags/')
+        if: steps.version.outputs.IS_TAG == 'true'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
