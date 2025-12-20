@@ -80,12 +80,17 @@ export function CanvasERD({
     return HEADER_HEIGHT + ATTRIBUTES_TITLE_HEIGHT + (visibleFieldCount * FIELD_HEIGHT) + 20;
   }, [collapsedEntities, selectedFields]);
 
-  // Get visible fields for an entity
+  // Get visible fields for an entity (primary key always first)
   const getVisibleFields = useCallback((entity: Entity) => {
     const entitySelectedFields = selectedFields[entity.logicalName] || new Set();
-    return entity.attributes.filter(attr =>
-      entitySelectedFields.has(attr.name) || attr.isPrimaryKey
-    );
+    return entity.attributes
+      .filter(attr => entitySelectedFields.has(attr.name) || attr.isPrimaryKey)
+      .sort((a, b) => {
+        // Primary key always first
+        if (a.isPrimaryKey && !b.isPrimaryKey) return -1;
+        if (!a.isPrimaryKey && b.isPrimaryKey) return 1;
+        return 0;
+      });
   }, [selectedFields]);
 
   // Calculate connection point for relationships

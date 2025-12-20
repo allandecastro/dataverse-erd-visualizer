@@ -196,7 +196,15 @@ export function EntityCard({
             Attributes ({entity.attributes.filter(attr => selectedFields.has(attr.name) || attr.isPrimaryKey).length})
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {entity.attributes.filter(attr => selectedFields.has(attr.name) || attr.isPrimaryKey).map(attr => (
+            {entity.attributes
+              .filter(attr => selectedFields.has(attr.name) || attr.isPrimaryKey)
+              .sort((a, b) => {
+                // Primary key always first
+                if (a.isPrimaryKey && !b.isPrimaryKey) return -1;
+                if (!a.isPrimaryKey && b.isPrimaryKey) return 1;
+                return 0;
+              })
+              .map(attr => (
               <div key={attr.name} style={{
                 padding: '6px 8px',
                 background: attr.isPrimaryKey ? (isDarkMode ? 'rgba(251, 191, 36, 0.1)' : 'rgba(251, 191, 36, 0.05)') : (isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'),
