@@ -10,8 +10,8 @@ Download the latest solution from [GitHub Releases](https://github.com/allandeca
 
 | File | Description |
 |------|-------------|
-| `DataverseERDVisualizer_x.x.x_managed.zip` | **Managed Solution** - Recommended for production |
-| `DataverseERDVisualizer_x.x.x_unmanaged.zip` | Unmanaged Solution - For development |
+| `DataverseERDVisualizer_x.x.x_managed.zip` | **Managed Solution** - Import to your environment |
+| `webresources_x.x.x.zip` | Web resources only (for manual deployment) |
 
 ### Installation
 
@@ -28,30 +28,29 @@ Download the latest solution from [GitHub Releases](https://github.com/allandeca
 
 ### Creating a Release
 
-Simply tag and push to create a new release:
+Simply tag and push to create a new release (using Dataverse 4-part versioning):
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.1.0.0
+git push origin v0.1.0.0
 ```
 
 The CD pipeline will automatically:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  git tag v0.2.0 && git push origin v0.2.0                   │
+│  git tag v0.1.0.0 && git push origin v0.1.0.0               │
 │                         ↓                                    │
 │  GitHub Actions:                                             │
-│  ├─ Update package.json version to 0.2.0                    │
+│  ├─ Update package.json version to 0.1.0.0                  │
 │  ├─ Build web resources (npm run build:webresource)         │
-│  │   └─ App displays v0.2.0 in sidebar (injected at build)  │
-│  ├─ Update solution version to 0.2.0.0                      │
+│  │   └─ App displays v0.1.0.0 in sidebar (injected at build)│
+│  ├─ Update Solution.xml version to 0.1.0.0                  │
 │  ├─ Copy web resources to solution/src/WebResources/        │
-│  ├─ Pack managed solution (pac solution pack --Managed)     │
-│  ├─ Pack unmanaged solution (pac solution pack --Unmanaged) │
-│  └─ Create GitHub Release with versioned zips               │
+│  ├─ Pack managed solution (pac solution pack --managed)     │
+│  └─ Create GitHub Release with zip files                    │
 │                         ↓                                    │
-│  Release: DataverseERDVisualizer_0.2.0_managed.zip          │
+│  Release: DataverseERDVisualizer_0.1.0.0_managed.zip        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -86,8 +85,8 @@ solution/src/
 If you need to add new components to the solution (new web resources, apps, etc.):
 
 1. Make changes in Dataverse
-2. Export the unmanaged solution
-3. Unpack: `pac solution unpack --zipfile <solution.zip> --folder solution/src --packagetype Unmanaged`
+2. Export the **managed** solution
+3. Unpack: `pac solution unpack --zipfile <solution.zip> --folder solution/src --allowDelete --allowWrite`
 4. Commit the changes
 5. Create a new release tag
 
