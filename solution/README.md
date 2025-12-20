@@ -42,7 +42,9 @@ The CD pipeline will automatically:
 │  git tag v0.2.0 && git push origin v0.2.0                   │
 │                         ↓                                    │
 │  GitHub Actions:                                             │
+│  ├─ Update package.json version to 0.2.0                    │
 │  ├─ Build web resources (npm run build:webresource)         │
+│  │   └─ App displays v0.2.0 in sidebar (injected at build)  │
 │  ├─ Update solution version to 0.2.0.0                      │
 │  ├─ Copy web resources to solution/src/WebResources/        │
 │  ├─ Pack managed solution (pac solution pack --Managed)     │

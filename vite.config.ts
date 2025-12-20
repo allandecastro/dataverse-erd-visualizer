@@ -3,11 +3,19 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
 
+// Read version from package.json
+const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
+const appVersion = packageJson.version;
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const isWebResource = mode === 'webresource';
 
   return {
+    // Inject version as global constant
+    define: {
+      __APP_VERSION__: JSON.stringify(appVersion),
+    },
     plugins: [
       react(),
       // Custom plugin to copy and rename logo for web resource

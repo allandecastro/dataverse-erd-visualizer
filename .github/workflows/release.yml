@@ -28,15 +28,6 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check
-        run: npx tsc --noEmit
-
-      - name: Build web resources
-        run: npm run build:webresource
-
       - name: Get version
         id: version
         shell: bash
@@ -46,6 +37,24 @@ jobs:
           else
             echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Update package.json version
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $packageJson = Get-Content "package.json" -Raw | ConvertFrom-Json
+          $packageJson.version = $version
+          $packageJson | ConvertTo-Json -Depth 100 | Set-Content "package.json" -Encoding UTF8
+          Write-Host "package.json version updated to $version"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build web resources
+        run: npm run build:webresource
 
       - name: Install Power Platform CLI
         uses: microsoft/powerplatform-actions/actions-install@v1
