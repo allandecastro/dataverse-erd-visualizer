@@ -176,7 +176,7 @@ pac webresource push --solution DataverseERDVisualizer --file "./dist/webresourc
 pac solution publish
 ```
 
-> **Note:** To create a managed solution, you must export it from Dataverse. PAC CLI cannot convert unmanaged source to managed locally.
+> **Note:** To pack a managed solution locally, the source must have `<Managed>1</Managed>` in Solution.xml (export as managed from Dataverse, then unpack).
 
 ## Solution Structure for Manual Packaging
 
