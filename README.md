@@ -11,6 +11,8 @@
 <p align="center">
   <img src="https://img.shields.io/badge/version-0.1.0.0_BETA-blue?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
+  <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml/badge.svg" alt="CD" /></a>
 </p>
 
 <p align="center">
