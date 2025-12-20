@@ -2,6 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// ESM-compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Read version from package.json
 const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
@@ -18,14 +23,28 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      // Custom plugin to copy and rename logo for web resource
+      // Custom plugin to copy logo and rename HTML for web resource
       isWebResource && {
-        name: 'copy-logo-webresource',
+        name: 'webresource-post-build',
         closeBundle() {
-          const srcPath = path.resolve(__dirname, 'public/logo.svg');
-          const destPath = path.resolve(__dirname, 'dist/webresource/adc_dataverseerdvisualizerlogo.svg');
-          if (fs.existsSync(srcPath)) {
-            fs.copyFileSync(srcPath, destPath);
+          const distPath = path.resolve(__dirname, 'dist/webresource');
+
+          // Copy and rename logo
+          const logoSrc = path.resolve(__dirname, 'public/logo.svg');
+          const logoDest = path.resolve(distPath, 'adc_dataverseerdvisualizerlogo.svg');
+          if (fs.existsSync(logoSrc)) {
+            fs.copyFileSync(logoSrc, logoDest);
+            console.log('✓ Logo copied: adc_dataverseerdvisualizerlogo.svg');
+          } else {
+            console.warn('⚠ Logo not found:', logoSrc);
+          }
+
+          // Rename index.html to adc_dataverseerdvisualizer.html
+          const htmlSrc = path.resolve(distPath, 'index.html');
+          const htmlDest = path.resolve(distPath, 'adc_dataverseerdvisualizer.html');
+          if (fs.existsSync(htmlSrc)) {
+            fs.renameSync(htmlSrc, htmlDest);
+            console.log('✓ HTML renamed: adc_dataverseerdvisualizer.html');
           }
         }
       },
