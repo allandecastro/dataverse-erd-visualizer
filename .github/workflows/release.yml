@@ -1,4 +1,4 @@
-name: Release
+name: CD - Create Release
 
 on:
   push:
@@ -14,9 +14,9 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build Web Resources
-    runs-on: ubuntu-latest
+  build-and-release:
+    name: Build & Package Solution
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -34,11 +34,12 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-      - name: Build web resource
+      - name: Build web resources
         run: npm run build:webresource
 
       - name: Get version
         id: version
+        shell: bash
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
@@ -46,17 +47,69 @@ jobs:
             echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create web resources zip
-        run: |
-          cd dist/webresource
-          zip -r ../../webresources_${{ steps.version.outputs.VERSION }}.zip .
-          cd ../..
+      - name: Install Power Platform CLI
+        uses: microsoft/powerplatform-actions/actions-install@v1
 
-      - name: Upload web resources artifact
+      - name: Update solution version
+        shell: pwsh
+        run: |
+          # Convert version to Dataverse format (x.x.x.0)
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $parts = $version.Split('.')
+          if ($parts.Length -eq 3) {
+            $dvVersion = "$version.0"
+          } else {
+            $dvVersion = $version
+          }
+
+          # Update Solution.xml with new version
+          $solutionFile = "solution/src/Other/Solution.xml"
+          $xml = [xml](Get-Content $solutionFile -Encoding UTF8)
+          $xml.ImportExportXml.SolutionManifest.Version = $dvVersion
+          $xml.Save($solutionFile)
+
+          Write-Host "Solution version updated to $dvVersion"
+
+      - name: Copy web resources to solution
+        shell: pwsh
+        run: |
+          # Copy built files to solution WebResources folder
+          $webResourcesPath = "solution/src/WebResources"
+
+          Copy-Item "dist/webresource/index.html" "$webResourcesPath/adc_dataverseerdvisualizer.html" -Force
+          Copy-Item "dist/webresource/adc_dataverseerdvisualizer.js" "$webResourcesPath/adc_dataverseerdvisualizer.js" -Force
+          Copy-Item "dist/webresource/adc_dataverseerdvisualizer.css" "$webResourcesPath/adc_dataverseerdvisualizer.css" -Force
+          Copy-Item "dist/webresource/adc_dataverseerdvisualizerlogo.svg" "$webResourcesPath/adc_dataverseerdvisualizerlogo.svg" -Force
+
+          Write-Host "Web resources copied successfully"
+
+      - name: Pack managed solution
+        shell: pwsh
+        run: |
+          pac solution pack --zipfile "DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip" --folder solution/src --packagetype Managed
+
+      - name: Pack unmanaged solution
+        shell: pwsh
+        run: |
+          pac solution pack --zipfile "DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_unmanaged.zip" --folder solution/src --packagetype Unmanaged
+
+      - name: Create web resources zip
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/webresource/*" -DestinationPath "webresources_${{ steps.version.outputs.VERSION }}.zip"
+
+      - name: Upload managed solution artifact
         uses: actions/upload-artifact@v4
         with:
-          name: webresources-${{ steps.version.outputs.VERSION }}
-          path: dist/webresource/
+          name: managed-solution-${{ steps.version.outputs.VERSION }}
+          path: DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip
+          retention-days: 90
+
+      - name: Upload unmanaged solution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unmanaged-solution-${{ steps.version.outputs.VERSION }}
+          path: DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_unmanaged.zip
           retention-days: 90
 
       - name: Create GitHub Release
@@ -71,26 +124,25 @@ jobs:
 
             | File | Description |
             |------|-------------|
-            | `DataverseERDVisualizer_x_x_x_managed.zip` | **Managed Solution** - Import directly into Dataverse |
-            | `webresources_${{ steps.version.outputs.VERSION }}.zip` | Web resources only (for manual deployment) |
+            | `DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip` | **Managed Solution** - Recommended for production |
+            | `DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_unmanaged.zip` | Unmanaged Solution - For development/customization |
+            | `webresources_${{ steps.version.outputs.VERSION }}.zip` | Web resources only |
 
-            ### Quick Install
+            ### Installation
 
-            1. Download `DataverseERDVisualizer_x_x_x_managed.zip`
+            1. Download `DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip`
             2. Go to [make.powerapps.com](https://make.powerapps.com) → **Solutions** → **Import solution**
             3. Upload and import the solution
-            4. The ERD Visualizer app will be available in your environment
-
-            ### Manual Deployment
-
-            If you prefer to deploy manually, download `webresources_${{ steps.version.outputs.VERSION }}.zip` and follow the [deployment guide](https://github.com/allandecastro/dataverse-erd-visualizer/blob/main/DEPLOYMENT.md).
+            4. The **Dataverse ERD Visualizer** app will be available in your environment
 
             ---
 
             See the [Changelog](https://github.com/allandecastro/dataverse-erd-visualizer#changelog) for what's new.
           files: |
+            DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip
+            DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_unmanaged.zip
             webresources_${{ steps.version.outputs.VERSION }}.zip
-          draft: true
+          draft: false
           prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

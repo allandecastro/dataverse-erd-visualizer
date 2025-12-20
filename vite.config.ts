@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -9,6 +10,17 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      // Custom plugin to copy and rename logo for web resource
+      isWebResource && {
+        name: 'copy-logo-webresource',
+        closeBundle() {
+          const srcPath = path.resolve(__dirname, 'public/logo.svg');
+          const destPath = path.resolve(__dirname, 'dist/webresource/adc_dataverseerdvisualizerlogo.svg');
+          if (fs.existsSync(srcPath)) {
+            fs.copyFileSync(srcPath, destPath);
+          }
+        }
+      },
       // Custom plugin to transform HTML for Dataverse web resources
       isWebResource && {
         name: 'transform-html-for-dataverse',
@@ -45,6 +57,8 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    // Disable public folder copy for webresource (we copy logo manually with correct name)
+    publicDir: isWebResource ? false : 'public',
     build: {
       outDir: isWebResource ? 'dist/webresource' : 'dist',
       sourcemap: !isWebResource,
@@ -56,9 +70,9 @@ export default defineConfig(({ mode }) => {
             'react-vendor': ['react', 'react-dom'],
           },
           // Web resource naming with adc_ prefix (Allan De Castro)
-          entryFileNames: isWebResource ? 'adc_erdvisualizer.js' : 'assets/[name]-[hash].js',
-          chunkFileNames: isWebResource ? 'adc_erdvisualizer-[name].js' : 'assets/[name]-[hash].js',
-          assetFileNames: isWebResource ? 'adc_erdvisualizer.[ext]' : 'assets/[name]-[hash].[ext]',
+          entryFileNames: isWebResource ? 'adc_dataverseerdvisualizer.js' : 'assets/[name]-[hash].js',
+          chunkFileNames: isWebResource ? 'adc_dataverseerdvisualizer-[name].js' : 'assets/[name]-[hash].js',
+          assetFileNames: isWebResource ? 'adc_dataverseerdvisualizer.[ext]' : 'assets/[name]-[hash].[ext]',
         },
       },
       // Optimize for web resource

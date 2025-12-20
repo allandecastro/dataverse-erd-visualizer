@@ -148,8 +148,9 @@ npm run build:webresource
 Output files in `dist/webresource/`:
 | File | Description |
 |------|-------------|
-| `adc_erdvisualizer.js` | Main bundle (~266 KB, gzipped: ~76 KB) |
-| `adc_erdvisualizer.css` | Stylesheet |
+| `adc_dataverseerdvisualizer.js` | Main bundle (~266 KB, gzipped: ~76 KB) |
+| `adc_dataverseerdvisualizer.css` | Stylesheet |
+| `adc_dataverseerdvisualizerlogo.svg` | Application logo |
 | `index.html` | HTML entry point |
 
 #### Manual Deployment
@@ -157,9 +158,10 @@ Output files in `dist/webresource/`:
 1. Go to [make.powerapps.com](https://make.powerapps.com) → **Solutions** → Your solution
 2. Click **+ New** → **More** → **Web resource**
 3. Upload each file with the appropriate type:
-   - `adc_erdvisualizer.js` → Type: **Script (JS)**
-   - `adc_erdvisualizer.css` → Type: **Style Sheet (CSS)**
-   - `index.html` → Type: **Web Page (HTML)**, Name: `adc_erdvisualizer.html`
+   - `adc_dataverseerdvisualizer.js` → Type: **Script (JS)**
+   - `adc_dataverseerdvisualizer.css` → Type: **Style Sheet (CSS)**
+   - `adc_dataverseerdvisualizerlogo.svg` → Type: **Image (SVG)**
+   - `index.html` → Type: **Web Page (HTML)**, Name: `adc_dataverseerdvisualizer.html`
 4. **Save** and **Publish All Customizations**
 
 #### Package as Solution
@@ -176,7 +178,7 @@ After importing or deploying the web resources:
 2. Add a new **Subarea** (or Page)
 3. Configure:
    - **Content Type:** Web Resource
-   - **Web Resource:** `adc_/erdvisualizer/adc_erdvisualizer.html`
+   - **Web Resource:** `adc_dataverseerdvisualizer.html`
 4. **Save** and **Publish**
 
 > **Detailed Instructions:** See [DEPLOYMENT.md](DEPLOYMENT.md) for additional deployment options and troubleshooting.

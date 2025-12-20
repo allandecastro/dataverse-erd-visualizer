@@ -1,4 +1,4 @@
-name: Stale Issues
+name: Close Stale Issues & PRs
 
 on:
   schedule:
