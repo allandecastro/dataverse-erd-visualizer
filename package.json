@@ -19,6 +19,7 @@
   "author": "Allan De Castro",
   "license": "MIT",
   "dependencies": {
+    "@xyflow/react": "^12.10.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.562.0",
     "react": "^19.0.0",

@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Dataverse-0B556A?style=for-the-badge&logo=microsoft-azure&logoColor=white" alt="Dataverse" />
+<img src="https://img.shields.io/badge/Dataverse-00C853?style=for-the-badge&logo=microsoft-azure&logoColor=white" alt="Dataverse" />
   <img src="https://img.shields.io/badge/Dynamics_365-0078D4?style=for-the-badge&logo=microsoft&logoColor=white" alt="Dynamics 365" />
   <img src="https://img.shields.io/badge/Power_Platform-742774?style=for-the-badge&logo=powerapps&logoColor=white" alt="Power Platform" />
 </p>

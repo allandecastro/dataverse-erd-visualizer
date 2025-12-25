@@ -3,25 +3,20 @@
  */
 
 import { useState } from 'react';
-import { Download, ZoomIn, ZoomOut, Maximize2, RefreshCw, Minimize2, Search, Keyboard, X, HelpCircle, ClipboardCopy, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Download, Maximize2, RefreshCw, Minimize2, Search, Keyboard, X, HelpCircle, ClipboardCopy, FileSpreadsheet, Loader2 } from 'lucide-react';
 import type { ThemeColors } from '../types';
 import { getKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 export interface ToolbarProps {
   filteredEntitiesCount: number;
   filteredRelationshipsCount: number;
-  zoom: number;
-  isSmartZoom: boolean;
   showMinimap: boolean;
   isDarkMode: boolean;
   themeColors: ThemeColors;
   isExportingDrawio?: boolean;
   drawioExportProgress?: { progress: number; message: string };
-  onZoomIn: () => void;
-  onZoomOut: () => void;
   onFitToScreen: () => void;
   onResetView: () => void;
-  onToggleSmartZoom: () => void;
   onToggleMinimap: () => void;
   onCopyPNG: () => void;
   onExportMermaid: () => void;
@@ -34,18 +29,13 @@ export interface ToolbarProps {
 export function Toolbar({
   filteredEntitiesCount,
   filteredRelationshipsCount,
-  zoom,
-  isSmartZoom,
   showMinimap,
   isDarkMode,
   themeColors,
   isExportingDrawio,
   drawioExportProgress,
-  onZoomIn,
-  onZoomOut,
   onFitToScreen,
   onResetView,
-  onToggleSmartZoom,
   onToggleMinimap,
   onCopyPNG,
   onExportMermaid,
@@ -213,19 +203,6 @@ export function Toolbar({
 
         <div style={{ width: '1px', height: '24px', background: borderColor }} />
 
-        {/* Smart Zoom - no ON/OFF text, just color indicates state */}
-        <button
-          onClick={onToggleSmartZoom}
-          title={isSmartZoom
-            ? "Smart Zoom: Adaptive zoom (click to disable)"
-            : "Enable Smart Zoom for adaptive zoom speed"
-          }
-          style={buttonStyle(isSmartZoom)}
-        >
-          <ZoomIn size={14} />
-          Smart Zoom
-        </button>
-
         {/* Minimap */}
         <button
           onClick={onToggleMinimap}
@@ -236,19 +213,6 @@ export function Toolbar({
         </button>
 
         <div style={{ width: '1px', height: '24px', background: borderColor }} />
-
-        {/* Zoom controls */}
-        <button onClick={onZoomOut} style={iconButtonStyle}>
-          <ZoomOut size={18} />
-        </button>
-        <div style={{ minWidth: '60px', textAlign: 'center', fontSize: '13px', color: textSecondary }}>
-          {Math.round(zoom * 100)}%
-        </div>
-        <button onClick={onZoomIn} style={iconButtonStyle}>
-          <ZoomIn size={18} />
-        </button>
-
-        <div style={{ width: '1px', height: '24px', background: borderColor, margin: '0 4px' }} />
 
         {/* View controls */}
         <button

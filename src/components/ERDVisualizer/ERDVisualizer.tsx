@@ -1,20 +1,19 @@
 /**
  * ERD Visualizer - Main Component
- * Refactored into smaller, reusable components
- * Now with viewport culling for performance
+ * Using React Flow for diagram visualization
  */
 
-import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import type { Entity, EntityRelationship } from '@/types';
 
 // Hooks
 import { useERDState } from './hooks/useERDState';
 import { useLayoutAlgorithms } from './hooks/useLayoutAlgorithms';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { useViewport } from './hooks/useViewport';
 
 // Components
-import { EntityCard, EntitySearch, FeatureGuide, Minimap, RelationshipLines, Sidebar, Toast, Toolbar } from './components';
+import { EntitySearch, FeatureGuide, Sidebar, Toast, Toolbar } from './components';
+import { ReactFlowERD, type ReactFlowERDRef } from './components/ReactFlowERD';
 
 // Types and utilities
 import { getThemeColors, type ColorSettings } from './types';
@@ -28,8 +27,7 @@ interface ERDVisualizerProps {
 
 export default function ERDVisualizer({ entities, relationships }: ERDVisualizerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const fieldSelectorRef = useRef<HTMLDivElement>(null);
+  const reactFlowRef = useRef<ReactFlowERDRef>(null);
 
   // State management
   const state = useERDState({ entities, relationships });
@@ -40,19 +38,13 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     publisherFilter, setPublisherFilter,
     solutionFilter, setSolutionFilter,
     publishers, solutions,
-    zoom, setZoom, pan, setPan,
-    isDragging, setIsDragging, dragStart, setDragStart,
+    setZoom, setPan,
     entityPositions, setEntityPositions, layoutMode, setLayoutMode,
-    collapsedEntities, toggleCollapse, collapseAll, expandAll,
-    hoveredEntity, setHoveredEntity,
-    draggingEntity, setDraggingEntity, dragEntityOffset, setDragEntityOffset,
-    selectedFields, showFieldSelector, setShowFieldSelector,
-    fieldSearchQueries, setFieldSearchQueries,
-    toggleFieldSelection, selectAllFields, clearAllFields,
+    collapsedEntities, collapseAll, expandAll,
+    selectedFields,
     showSettings, setShowSettings,
     colorSettings, setColorSettings,
     showMinimap, setShowMinimap,
-    isSmartZoom, setIsSmartZoom,
     toast, showToast,
     filteredEntities, filteredRelationships,
     handleZoomIn, handleZoomOut, handleResetView,
@@ -74,10 +66,6 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
 
   // Search dialog state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [highlightedEntity, setHighlightedEntity] = useState<string | null>(null);
-
-  // Container size for viewport calculations
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   // Feature guide state
   const [showGuide, setShowGuide] = useState(false);
@@ -105,50 +93,6 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     setShowGuide(false);
   }, []);
 
-  // Track container size for viewport calculations
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const updateSize = () => {
-      setContainerSize({
-        width: container.clientWidth,
-        height: container.clientHeight,
-      });
-    };
-
-    updateSize();
-    const resizeObserver = new ResizeObserver(updateSize);
-    resizeObserver.observe(container);
-
-    return () => resizeObserver.disconnect();
-  }, []);
-
-  // Viewport culling - only render visible entities
-  const {
-    visibleEntities,
-    visibleRelationships,
-  } = useViewport({
-    containerWidth: containerSize.width,
-    containerHeight: containerSize.height,
-    pan,
-    zoom,
-    entities: filteredEntities,
-    relationships: filteredRelationships,
-    entityPositions,
-    padding: 300, // Extra padding for smoother experience
-  });
-
-  // Performance stats for debugging
-  const perfStats = useMemo(() => ({
-    totalEntities: filteredEntities.length,
-    visibleEntities: visibleEntities.length,
-    culledEntities: filteredEntities.length - visibleEntities.length,
-    cullRate: filteredEntities.length > 0
-      ? Math.round((1 - visibleEntities.length / filteredEntities.length) * 100)
-      : 0,
-  }), [filteredEntities.length, visibleEntities.length]);
-
   // Keyboard navigation - pan step
   const PAN_STEP = 50;
 
@@ -169,26 +113,13 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     setPan(p => ({ ...p, y: p.y - PAN_STEP }));
   }, [setPan]);
 
-  // Navigate to entity (pan and highlight)
+  // Navigate to entity using React Flow's focusOnNode
   const navigateToEntity = useCallback((entityName: string) => {
-    const pos = entityPositions[entityName];
-    if (!pos) return;
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Center the entity on screen
-    const newZoom = Math.max(zoom, 0.8); // Ensure readable zoom level
-    setPan({
-      x: container.clientWidth / 2 - pos.x * newZoom - 150, // 150 = half card width
-      y: container.clientHeight / 2 - pos.y * newZoom - 100, // 100 = approx half card height
-    });
-    setZoom(newZoom);
-
-    // Highlight the entity temporarily
-    setHighlightedEntity(entityName);
-    setTimeout(() => setHighlightedEntity(null), 2000);
-  }, [entityPositions, zoom, setPan, setZoom]);
+    if (reactFlowRef.current) {
+      reactFlowRef.current.focusOnNode(entityName);
+    }
+    setIsSearchOpen(false);
+  }, []);
 
   // Setup keyboard shortcuts
   useKeyboardShortcuts({
@@ -204,120 +135,6 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     onDeselectAll: deselectAll,
     onOpenSearch: () => setIsSearchOpen(true),
   });
-
-  // Close field selector when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showFieldSelector && fieldSelectorRef.current && !fieldSelectorRef.current.contains(event.target as Node)) {
-        const settingsButton = (event.target as HTMLElement).closest('button');
-        if (!settingsButton || settingsButton.querySelector('svg')?.outerHTML?.includes('Settings') === false) {
-          setShowFieldSelector(null);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFieldSelector, setShowFieldSelector]);
-
-  // Wheel zoom handler
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-
-    if (isSmartZoom) {
-      const container = containerRef.current;
-      if (!container) return;
-
-      const mouseX = (e.clientX - pan.x) / zoom;
-      const mouseY = (e.clientY - pan.y) / zoom;
-
-      const nearbyEntities = filteredEntities.filter(entity => {
-        const pos = entityPositions[entity.logicalName] || { x: 0, y: 0 };
-        const distance = Math.sqrt(Math.pow(pos.x - mouseX, 2) + Math.pow(pos.y - mouseY, 2));
-        return distance < 500;
-      });
-
-      const densityFactor = Math.max(0.5, Math.min(2, nearbyEntities.length / 3));
-      const delta = e.deltaY > 0 ? -0.05 * densityFactor : 0.05 * densityFactor;
-
-      const newZoom = Math.max(0.3, Math.min(2, zoom + delta));
-
-      const mouseXAfter = (e.clientX - pan.x) / newZoom;
-      const mouseYAfter = (e.clientY - pan.y) / newZoom;
-
-      setPan({
-        x: pan.x - (mouseXAfter - mouseX) * newZoom,
-        y: pan.y - (mouseYAfter - mouseY) * newZoom
-      });
-      setZoom(newZoom);
-    } else {
-      const delta = e.deltaY > 0 ? -0.05 : 0.05;
-      setZoom(z => Math.max(0.3, Math.min(2, z + delta)));
-    }
-  }, [isSmartZoom, pan, zoom, filteredEntities, entityPositions, setPan, setZoom]);
-
-  // Mouse handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === canvasRef.current || (e.target as HTMLElement).closest('.erd-canvas')) {
-      setIsDragging(true);
-      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-    }
-  }, [pan, setIsDragging, setDragStart]);
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (isDragging && !draggingEntity) {
-      setPan({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
-    } else if (draggingEntity) {
-      // Convert mouse to world coordinates, then subtract the world-space offset
-      const newX = (e.clientX - pan.x) / zoom - dragEntityOffset.x;
-      const newY = (e.clientY - pan.y) / zoom - dragEntityOffset.y;
-
-      setEntityPositions(prev => ({
-        ...prev,
-        [draggingEntity]: { x: newX, y: newY }
-      }));
-    }
-  }, [isDragging, draggingEntity, dragStart, dragEntityOffset, pan, zoom, setPan, setEntityPositions]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    setDraggingEntity(null);
-  }, [setIsDragging, setDraggingEntity]);
-
-  const handleEntityMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>, entityName: string) => {
-    e.stopPropagation();
-    const pos = entityPositions[entityName] || { x: 0, y: 0 };
-
-    setDraggingEntity(entityName);
-    setDragEntityOffset({
-      x: (e.clientX - pan.x) / zoom - pos.x,
-      y: (e.clientY - pan.y) / zoom - pos.y
-    });
-  }, [entityPositions, pan, zoom, setDraggingEntity, setDragEntityOffset]);
-
-  // Setup wheel listener
-  useEffect(() => {
-    const canvas = containerRef.current;
-    if (canvas) {
-      canvas.addEventListener('wheel', handleWheel, { passive: false });
-      return () => canvas.removeEventListener('wheel', handleWheel);
-    }
-  }, [handleWheel]);
-
-  // Setup mouse move/up listeners
-  useEffect(() => {
-    if (isDragging || draggingEntity) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, draggingEntity, handleMouseMove, handleMouseUp]);
 
   // Fit to screen
   const fitToScreen = useCallback(() => {
@@ -436,21 +253,15 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     }
   }, [filteredEntities, filteredRelationships, entityPositions, selectedFields, collapsedEntities, colorSettings, showToast, isExportingDrawio]);
 
-  // Minimap navigation
-  const handleMinimapNavigate = useCallback((canvasX: number, canvasY: number) => {
-    const container = containerRef.current;
-    if (container) {
-      setPan({
-        x: container.clientWidth / 2 - canvasX * zoom,
-        y: container.clientHeight / 2 - canvasY * zoom
-      });
-    }
-  }, [zoom, setPan]);
-
   // Color settings change handler
   const handleColorSettingsChange = useCallback((key: keyof ColorSettings, value: string) => {
     setColorSettings(prev => ({ ...prev, [key]: value }));
   }, [setColorSettings]);
+
+  // Handle position changes from React Flow (when nodes are dragged)
+  const handlePositionsChange = useCallback((positions: Record<string, { x: number; y: number }>) => {
+    setEntityPositions(positions);
+  }, [setEntityPositions]);
 
   return (
     <div style={{
@@ -496,18 +307,13 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         <Toolbar
           filteredEntitiesCount={filteredEntities.length}
           filteredRelationshipsCount={filteredRelationships.length}
-          zoom={zoom}
-          isSmartZoom={isSmartZoom}
           showMinimap={showMinimap}
           isDarkMode={isDarkMode}
           themeColors={themeColors}
           isExportingDrawio={isExportingDrawio}
           drawioExportProgress={drawioExportProgress}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
           onFitToScreen={fitToScreen}
           onResetView={handleResetView}
-          onToggleSmartZoom={() => setIsSmartZoom(!isSmartZoom)}
           onToggleMinimap={() => setShowMinimap(!showMinimap)}
           onCopyPNG={handleCopyPNG}
           onExportMermaid={handleExportMermaid}
@@ -517,112 +323,27 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
           onOpenGuide={() => setShowGuide(true)}
         />
 
-        {/* Canvas */}
+        {/* React Flow Canvas */}
         <div
           ref={containerRef}
-          onMouseDown={handleMouseDown}
           style={{
             flex: 1,
             overflow: 'hidden',
-            cursor: isDragging ? 'grabbing' : 'grab',
             position: 'relative',
             background: bgColor
           }}
         >
-          {/* DOM Renderer with Viewport Culling */}
-          <div
-              ref={canvasRef}
-              className="erd-canvas"
-              style={{
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                transformOrigin: '0 0',
-                transition: isDragging ? 'none' : 'transform 0.1s ease-out',
-                position: 'relative',
-                width: '100%',
-                height: '100%'
-              }}
-            >
-              {/* Relationship Lines - Use visible relationships */}
-              <RelationshipLines
-                relationships={visibleRelationships}
-                entities={entities}
-                entityPositions={entityPositions}
-                selectedFields={selectedFields}
-                collapsedEntities={collapsedEntities}
-                isDarkMode={isDarkMode}
-                lookupColor={colorSettings.lookupColor}
-              />
-
-              {/* Entity Cards - Use visible entities (viewport culled) */}
-              {visibleEntities.map((entity) => {
-                const pos = entityPositions[entity.logicalName] || { x: 0, y: 0 };
-                const tableColor = entity.isCustomEntity ? colorSettings.customTableColor : colorSettings.standardTableColor;
-                const entitySelectedFields = selectedFields[entity.logicalName] || new Set();
-                const fieldSearch = fieldSearchQueries[entity.logicalName] || '';
-
-                return (
-                  <EntityCard
-                    key={entity.logicalName}
-                    entity={entity}
-                    position={pos}
-                    isHovered={hoveredEntity === entity.logicalName}
-                    isHighlighted={highlightedEntity === entity.logicalName}
-                    isDraggingThis={draggingEntity === entity.logicalName}
-                    isCollapsed={collapsedEntities.has(entity.logicalName)}
-                    tableColor={tableColor}
-                    selectedFields={entitySelectedFields}
-                    showFieldSelector={showFieldSelector === entity.logicalName}
-                    fieldSearchQuery={fieldSearch}
-                    isDarkMode={isDarkMode}
-                    colorSettings={colorSettings}
-                    themeColors={themeColors}
-                    onMouseEnter={() => setHoveredEntity(entity.logicalName)}
-                    onMouseLeave={() => setHoveredEntity(null)}
-                    onMouseDown={(e) => handleEntityMouseDown(e, entity.logicalName)}
-                    onToggleCollapse={() => toggleCollapse(entity.logicalName)}
-                    onToggleFieldSelector={() => setShowFieldSelector(showFieldSelector === entity.logicalName ? null : entity.logicalName)}
-                    onToggleField={(fieldName) => toggleFieldSelection(entity.logicalName, fieldName)}
-                    onSelectAllFields={() => selectAllFields(entity.logicalName)}
-                    onClearAllFields={() => clearAllFields(entity.logicalName)}
-                    onFieldSearchChange={(value) => setFieldSearchQueries(prev => ({ ...prev, [entity.logicalName]: value }))}
-                    onCloseFieldSelector={() => setShowFieldSelector(null)}
-                  />
-                );
-              })}
-            </div>
-
-          {/* Performance Stats Overlay */}
-          {perfStats.cullRate > 0 && (
-            <div style={{
-              position: 'absolute',
-              bottom: 10,
-              left: 10,
-              padding: '6px 10px',
-              background: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)',
-              borderRadius: '4px',
-              fontSize: '11px',
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              fontFamily: 'monospace',
-              zIndex: 10,
-            }}>
-              Rendering {perfStats.visibleEntities}/{perfStats.totalEntities} entities ({perfStats.cullRate}% culled)
-            </div>
-          )}
-
-          {/* Minimap */}
-          {showMinimap && (
-            <Minimap
-              entities={filteredEntities}
-              entityPositions={entityPositions}
-              pan={pan}
-              zoom={zoom}
-              containerRef={containerRef}
-              isDarkMode={isDarkMode}
-              colorSettings={colorSettings}
-              themeColors={themeColors}
-              onNavigate={handleMinimapNavigate}
-            />
-          )}
+          <ReactFlowERD
+            ref={reactFlowRef}
+            entities={filteredEntities}
+            relationships={filteredRelationships}
+            isDarkMode={isDarkMode}
+            colorSettings={colorSettings}
+            showMinimap={showMinimap}
+            layoutMode={layoutMode}
+            entityPositions={entityPositions}
+            onPositionsChange={handlePositionsChange}
+          />
         </div>
       </div>
 
