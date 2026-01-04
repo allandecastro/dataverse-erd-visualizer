@@ -1,10 +1,72 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { useDataverseData } from '@/hooks/useDataverseData';
 import App from './App';
 import './index.css';
 
+/**
+ * Root component that loads data and renders the ERD Visualizer
+ */
+function Root() {
+  const { entities, relationships, isLoading, loadingProgress, error, isMockMode } =
+    useDataverseData();
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          background: '#111827',
+          color: '#f3f4f6',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+        }}
+      >
+        <div style={{ fontSize: '24px', marginBottom: '16px' }}>Loading Dataverse Metadata...</div>
+        {loadingProgress && (
+          <div style={{ fontSize: '14px', color: '#9ca3af' }}>{loadingProgress.message}</div>
+        )}
+        {isMockMode && (
+          <div style={{ fontSize: '12px', color: '#60a5fa', marginTop: '8px' }}>
+            Mock Mode - Using sample data
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          background: '#111827',
+          color: '#f3f4f6',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+        }}
+      >
+        <div style={{ fontSize: '24px', marginBottom: '16px', color: '#ef4444' }}>
+          Error Loading Data
+        </div>
+        <div style={{ fontSize: '14px', color: '#9ca3af', maxWidth: '400px', textAlign: 'center' }}>
+          {error.message}
+        </div>
+      </div>
+    );
+  }
+
+  return <App entities={entities} relationships={relationships} />;
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <Root />
   </React.StrictMode>
 );

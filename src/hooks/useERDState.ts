@@ -1,0 +1,364 @@
+/**
+ * Custom hook for managing ERD Visualizer state
+ */
+
+import { useState, useCallback, useMemo } from 'react';
+import type { Entity, EntityRelationship, EntityPosition } from '@/types';
+import type { ToastType, ToastState, LayoutMode, ColorSettings } from '@/types/erdTypes';
+
+export interface UseERDStateProps {
+  entities: Entity[];
+  relationships: EntityRelationship[];
+}
+
+export function useERDState({ entities, relationships }: UseERDStateProps) {
+  // Theme
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Entity selection - start with none selected by default
+  const [selectedEntities, setSelectedEntities] = useState<Set<string>>(new Set());
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [publisherFilter, setPublisherFilter] = useState('all');
+  const [solutionFilter, setSolutionFilter] = useState('all');
+
+  // Zoom and pan
+  const [zoom, setZoom] = useState(0.8);
+  const [pan, setPan] = useState({ x: 400, y: 100 });
+
+  // Entity positions and layout
+  const [entityPositions, setEntityPositions] = useState<Record<string, EntityPosition>>({});
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('force');
+
+  // Collapse state
+  const [collapsedEntities, setCollapsedEntities] = useState<Set<string>>(new Set());
+
+  // Field selection
+  const [selectedFields, setSelectedFields] = useState<Record<string, Set<string>>>({});
+  const [showFieldSelector, setShowFieldSelector] = useState<string | null>(null);
+  const [fieldSearchQueries, setFieldSearchQueries] = useState<Record<string, string>>({});
+
+  // Field drawer state
+  const [fieldDrawerEntity, setFieldDrawerEntity] = useState<string | null>(null);
+  const [fieldOrder, setFieldOrder] = useState<Record<string, string[]>>({});
+
+  // Add related table dialog
+  const [pendingLookupField, setPendingLookupField] = useState<{
+    entityName: string;
+    fieldName: string;
+    targetEntity: string;
+  } | null>(null);
+
+  // Edge offsets for manual adjustment of relationship lines (x and y offsets)
+  const [edgeOffsets, setEdgeOffsets] = useState<Record<string, { x: number; y: number }>>({});
+
+  // Settings
+  const [showSettings, setShowSettings] = useState(false);
+  const [colorSettings, setColorSettings] = useState<ColorSettings>({
+    customTableColor: '#0ea5e9',
+    standardTableColor: '#64748b',
+    lookupColor: '#f97316',
+    edgeStyle: 'straight',
+  });
+
+  // Features
+  const [showMinimap, setShowMinimap] = useState(false);
+  const [isSmartZoom, setIsSmartZoom] = useState(false);
+
+  // Toast
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  // No auto-select - fields start empty, PK is shown automatically
+
+  // Show toast notification
+  const showToast = useCallback((message: string, type: ToastType = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  // Helper to get publisher from entity
+  const getEntityPublisher = (entity: Entity): string => {
+    if (entity.publisher) return entity.publisher;
+    if (!entity.isCustomEntity) return 'Microsoft';
+    const underscoreIndex = entity.logicalName.indexOf('_');
+    if (underscoreIndex > 0) {
+      return entity.logicalName.substring(0, underscoreIndex);
+    }
+    return 'Unknown';
+  };
+
+  // Filtered entities and relationships for the canvas
+  // Publisher/Solution filters only affect the sidebar list, NOT the canvas
+  // The canvas shows all selected entities regardless of filters
+  const filteredEntities = entities.filter((entity) => selectedEntities.has(entity.logicalName));
+
+  const filteredRelationships = relationships.filter(
+    (rel) => selectedEntities.has(rel.from) && selectedEntities.has(rel.to)
+  );
+
+  // Entity selection helpers
+  const toggleEntity = useCallback((entityName: string) => {
+    setSelectedEntities((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entityName)) {
+        newSet.delete(entityName);
+      } else {
+        newSet.add(entityName);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedEntities(new Set(entities.map((e) => e.logicalName)));
+  }, [entities]);
+
+  const deselectAll = useCallback(() => {
+    setSelectedEntities(new Set());
+  }, []);
+
+  // Collapse helpers
+  const toggleCollapse = useCallback((entityName: string) => {
+    setCollapsedEntities((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entityName)) {
+        newSet.delete(entityName);
+      } else {
+        newSet.add(entityName);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const collapseAll = useCallback(() => {
+    setCollapsedEntities(new Set(entities.map((e) => e.logicalName)));
+  }, [entities]);
+
+  const expandAll = useCallback(() => {
+    setCollapsedEntities(new Set());
+  }, []);
+
+  // Field selection helpers
+  const toggleFieldSelection = useCallback((entityName: string, fieldName: string) => {
+    setSelectedFields((prev) => {
+      const entityFields = prev[entityName] || new Set();
+      const newSet = new Set(entityFields);
+      if (newSet.has(fieldName)) {
+        newSet.delete(fieldName);
+      } else {
+        newSet.add(fieldName);
+      }
+      return { ...prev, [entityName]: newSet };
+    });
+  }, []);
+
+  const selectAllFields = useCallback(
+    (entityName: string) => {
+      const entity = entities.find((e) => e.logicalName === entityName);
+      if (entity) {
+        setSelectedFields((prev) => ({
+          ...prev,
+          [entityName]: new Set(entity.attributes.map((a) => a.name)),
+        }));
+      }
+    },
+    [entities]
+  );
+
+  const clearAllFields = useCallback((entityName: string) => {
+    setSelectedFields((prev) => ({
+      ...prev,
+      [entityName]: new Set(),
+    }));
+  }, []);
+
+  // Add field with FIFO ordering
+  const addField = useCallback((entityName: string, fieldName: string) => {
+    // Add to order if not already present
+    setFieldOrder((prev) => {
+      const currentOrder = prev[entityName] || [];
+      if (currentOrder.includes(fieldName)) return prev;
+      return {
+        ...prev,
+        [entityName]: [...currentOrder, fieldName],
+      };
+    });
+    // Add to selected fields
+    setSelectedFields((prev) => {
+      const fields = prev[entityName] || new Set();
+      return { ...prev, [entityName]: new Set([...fields, fieldName]) };
+    });
+  }, []);
+
+  // Remove field from selection and order
+  const removeField = useCallback((entityName: string, fieldName: string) => {
+    // Remove from order
+    setFieldOrder((prev) => ({
+      ...prev,
+      [entityName]: (prev[entityName] || []).filter((f) => f !== fieldName),
+    }));
+    // Remove from selected fields
+    setSelectedFields((prev) => {
+      const fields = new Set(prev[entityName] || []);
+      fields.delete(fieldName);
+      return { ...prev, [entityName]: fields };
+    });
+  }, []);
+
+  // Get ordered fields for an entity (PK first, then FIFO order)
+  const getOrderedFields = useCallback(
+    (entityName: string) => {
+      const entity = entities.find((e) => e.logicalName === entityName);
+      if (!entity) return [];
+
+      const selected = selectedFields[entityName] || new Set();
+      const order = fieldOrder[entityName] || [];
+
+      // Get PK attribute
+      const pkAttr = entity.attributes.find((a) => a.isPrimaryKey);
+      const pkName = pkAttr?.name;
+
+      // Build ordered list: PK first, then fields in FIFO order
+      const orderedFields: string[] = [];
+      if (pkName) orderedFields.push(pkName);
+
+      // Add fields in their FIFO order
+      for (const fieldName of order) {
+        if (fieldName !== pkName && selected.has(fieldName)) {
+          orderedFields.push(fieldName);
+        }
+      }
+
+      return orderedFields;
+    },
+    [entities, selectedFields, fieldOrder]
+  );
+
+  // Update edge offset for manual path adjustment (supports both x and y)
+  const updateEdgeOffset = useCallback((edgeId: string, offset: { x: number; y: number }) => {
+    setEdgeOffsets((prev) => ({
+      ...prev,
+      [edgeId]: offset,
+    }));
+  }, []);
+
+  // Zoom helpers
+  const handleZoomIn = useCallback(() => {
+    setZoom((z) => Math.min(z + 0.1, 2));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoom((z) => Math.max(z - 0.1, 0.3));
+  }, []);
+
+  const handleResetView = useCallback(() => {
+    setZoom(0.8);
+    setPan({ x: 400, y: 100 });
+  }, []);
+
+  // Derive publishers and solutions for filters (memoized to prevent recalculation)
+  const publishers = useMemo(
+    () => ['all', ...new Set(entities.map((e) => getEntityPublisher(e)))].sort(),
+    [entities]
+  );
+
+  // Flatten all solutions from all entities (each entity can belong to multiple solutions)
+  const solutions = useMemo(() => {
+    const allSolutions = entities.flatMap((e) => e.solutions || []);
+    return ['all', ...new Set(allSolutions)].sort();
+  }, [entities]);
+
+  return {
+    // Theme
+    isDarkMode,
+    setIsDarkMode,
+
+    // Entity selection
+    selectedEntities,
+    setSelectedEntities,
+    toggleEntity,
+    selectAll,
+    deselectAll,
+
+    // Filters
+    searchQuery,
+    setSearchQuery,
+    publisherFilter,
+    setPublisherFilter,
+    solutionFilter,
+    setSolutionFilter,
+    publishers,
+    solutions,
+
+    // Zoom and pan
+    zoom,
+    setZoom,
+    pan,
+    setPan,
+    handleZoomIn,
+    handleZoomOut,
+    handleResetView,
+
+    // Entity positions and layout
+    entityPositions,
+    setEntityPositions,
+    layoutMode,
+    setLayoutMode,
+
+    // Collapse state
+    collapsedEntities,
+    setCollapsedEntities,
+    toggleCollapse,
+    collapseAll,
+    expandAll,
+
+    // Field selection
+    selectedFields,
+    setSelectedFields,
+    showFieldSelector,
+    setShowFieldSelector,
+    fieldSearchQueries,
+    setFieldSearchQueries,
+    toggleFieldSelection,
+    selectAllFields,
+    clearAllFields,
+
+    // Field drawer
+    fieldDrawerEntity,
+    setFieldDrawerEntity,
+    fieldOrder,
+    setFieldOrder,
+    addField,
+    removeField,
+    getOrderedFields,
+
+    // Pending lookup dialog
+    pendingLookupField,
+    setPendingLookupField,
+
+    // Edge offsets for manual adjustment
+    edgeOffsets,
+    updateEdgeOffset,
+
+    // Settings
+    showSettings,
+    setShowSettings,
+    colorSettings,
+    setColorSettings,
+
+    // Features
+    showMinimap,
+    setShowMinimap,
+    isSmartZoom,
+    setIsSmartZoom,
+
+    // Toast
+    toast,
+    showToast,
+
+    // Filtered data
+    filteredEntities,
+    filteredRelationships,
+  };
+}

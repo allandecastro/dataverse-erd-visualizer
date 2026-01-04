@@ -195,7 +195,7 @@ declare global {
     Xrm?: XrmObject;
   }
   // Xrm is also available as a global variable (not just window.Xrm)
-  // eslint-disable-next-line no-var
+
   var Xrm: XrmObject | undefined;
 }
 
