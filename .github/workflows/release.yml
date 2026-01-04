@@ -101,7 +101,7 @@ jobs:
           Compress-Archive -Path "dist/webresource/*" -DestinationPath "webresources_${{ steps.version.outputs.VERSION }}.zip"
 
       - name: Upload managed solution artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed
           path: DataverseERDVisualizer_${{ steps.version.outputs.VERSION }}_managed.zip
@@ -109,7 +109,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload web resources artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: webresources_${{ steps.version.outputs.VERSION }}
           path: webresources_${{ steps.version.outputs.VERSION }}.zip
