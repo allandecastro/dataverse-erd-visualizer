@@ -6,7 +6,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { dataverseApi } from '@/services/dataverseApi';
-import { generateMockEntities, generateMockRelationships, simulateDelay } from '@/services/mockData';
+import {
+  generateMockEntities,
+  generateMockRelationships,
+  simulateDelay,
+} from '@/services/mockData';
 import type { Entity, EntityRelationship } from '@/types';
 
 export interface LoadingProgress {
@@ -79,10 +83,12 @@ function isDataverseEnvironment(): boolean {
 
     // Method 4: Check URL pattern for Dataverse domains
     const url = window.location.href.toLowerCase();
-    if (url.includes('.dynamics.com') ||
-        url.includes('.crm.dynamics.com') ||
-        url.includes('crm4.dynamics.com') ||
-        url.includes('webresources')) {
+    if (
+      url.includes('.dynamics.com') ||
+      url.includes('.crm.dynamics.com') ||
+      url.includes('crm4.dynamics.com') ||
+      url.includes('webresources')
+    ) {
       // We're on a Dataverse URL, assume Xrm will be available
       return true;
     }
@@ -103,13 +109,19 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
   // Determine if we should use mock data
   // Priority: 1) explicit option, 2) URL param, 3) auto-detect environment
   const urlMockParam = new URLSearchParams(window.location.search).get('mock');
-  const shouldUseMockData = options?.useMockData ??
+  const shouldUseMockData =
+    options?.useMockData ??
     (urlMockParam !== null ? urlMockParam === 'true' : !isDataverseEnvironment());
 
   const [isMockMode] = useState(shouldUseMockData);
 
   const fetchMockData = useCallback(async () => {
-    setLoadingProgress({ phase: 'mock_loading', page: 0, totalEntities: 0, message: 'Loading mock data...' });
+    setLoadingProgress({
+      phase: 'mock_loading',
+      page: 0,
+      totalEntities: 0,
+      message: 'Loading mock data...',
+    });
 
     // Simulate network delay for realistic testing
     await simulateDelay(800);
@@ -126,7 +138,7 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
     const result = await dataverseApi.fetchEntityMetadata((info) => {
       setLoadingProgress({
         ...info,
-        message: getProgressMessage(info)
+        message: getProgressMessage(info),
       });
     });
 
@@ -138,7 +150,12 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
     try {
       setIsLoading(true);
       setError(null);
-      setLoadingProgress({ phase: 'starting', page: 0, totalEntities: 0, message: 'Initializing...' });
+      setLoadingProgress({
+        phase: 'starting',
+        page: 0,
+        totalEntities: 0,
+        message: 'Initializing...',
+      });
 
       if (isMockMode) {
         await fetchMockData();

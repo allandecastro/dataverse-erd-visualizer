@@ -1280,5 +1280,5 @@ export function generateMockRelationships(): EntityRelationship[] {
  * Simulate API delay for more realistic testing
  */
 export function simulateDelay(ms: number = 500): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -1,0 +1,25 @@
+/**
+ * Toolbar stats display styles
+ */
+
+.container {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.statLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.divider {
+  width: 1px;
+  height: 32px;
+}

@@ -64,39 +64,39 @@ class DataverseApiService {
   private mapAttributeType(dataverseType: string): AttributeType {
     const typeMap: Record<string, AttributeType> = {
       // Dataverse returns types without "Type" suffix
-      'String': 'String',
-      'Memo': 'Memo',
-      'Integer': 'Integer',
-      'Decimal': 'Decimal',
-      'Money': 'Money',
-      'DateTime': 'DateTime',
-      'Boolean': 'Boolean',
-      'Picklist': 'Picklist',
-      'Lookup': 'Lookup',
-      'Owner': 'Owner',
-      'Uniqueidentifier': 'UniqueIdentifier',
-      'Customer': 'Customer',
-      'State': 'State',
-      'Status': 'Status',
-      'Double': 'Double',
-      'BigInt': 'BigInt',
+      String: 'String',
+      Memo: 'Memo',
+      Integer: 'Integer',
+      Decimal: 'Decimal',
+      Money: 'Money',
+      DateTime: 'DateTime',
+      Boolean: 'Boolean',
+      Picklist: 'Picklist',
+      Lookup: 'Lookup',
+      Owner: 'Owner',
+      Uniqueidentifier: 'UniqueIdentifier',
+      Customer: 'Customer',
+      State: 'State',
+      Status: 'Status',
+      Double: 'Double',
+      BigInt: 'BigInt',
       // Also support legacy format with "Type" suffix (just in case)
-      'StringType': 'String',
-      'MemoType': 'Memo',
-      'IntegerType': 'Integer',
-      'DecimalType': 'Decimal',
-      'MoneyType': 'Money',
-      'DateTimeType': 'DateTime',
-      'BooleanType': 'Boolean',
-      'PicklistType': 'Picklist',
-      'LookupType': 'Lookup',
-      'OwnerType': 'Owner',
-      'UniqueidentifierType': 'UniqueIdentifier',
-      'CustomerType': 'Customer',
-      'StateType': 'State',
-      'StatusType': 'Status',
-      'DoubleType': 'Double',
-      'BigIntType': 'BigInt',
+      StringType: 'String',
+      MemoType: 'Memo',
+      IntegerType: 'Integer',
+      DecimalType: 'Decimal',
+      MoneyType: 'Money',
+      DateTimeType: 'DateTime',
+      BooleanType: 'Boolean',
+      PicklistType: 'Picklist',
+      LookupType: 'Lookup',
+      OwnerType: 'Owner',
+      UniqueidentifierType: 'UniqueIdentifier',
+      CustomerType: 'Customer',
+      StateType: 'State',
+      StatusType: 'Status',
+      DoubleType: 'Double',
+      BigIntType: 'BigInt',
     };
 
     return typeMap[dataverseType] || 'String';
@@ -121,19 +121,35 @@ class DataverseApiService {
       // Step 1: Fetch all entity definitions with relationships (handles pagination)
       const allEntityMetadata = await this.fetchAllEntityDefinitions(onProgress);
 
-      onProgress?.({ page: 0, totalEntities: allEntityMetadata.length, phase: 'extracting_relationships' });
+      onProgress?.({
+        page: 0,
+        totalEntities: allEntityMetadata.length,
+        phase: 'extracting_relationships',
+      });
 
       // Extract relationships from raw metadata BEFORE transformation (they would be lost otherwise)
       const relationships = this.extractRelationshipsFromMetadata(allEntityMetadata);
 
       // Step 2: Fetch solutions and entity-solution mappings in parallel with attributes
-      onProgress?.({ page: 0, totalEntities: allEntityMetadata.length, phase: 'fetching_solutions' });
+      onProgress?.({
+        page: 0,
+        totalEntities: allEntityMetadata.length,
+        phase: 'fetching_solutions',
+      });
       const solutions = await this.fetchSolutions();
       const entitySolutionMap = await this.fetchEntitySolutionMappings(solutions);
 
       // Step 3: Fetch attributes separately for each entity to get polymorphic types (including Targets)
-      onProgress?.({ page: 0, totalEntities: allEntityMetadata.length, phase: 'fetching_attributes' });
-      const entities = await this.enrichEntitiesWithAttributes(allEntityMetadata, onProgress, entitySolutionMap);
+      onProgress?.({
+        page: 0,
+        totalEntities: allEntityMetadata.length,
+        phase: 'fetching_attributes',
+      });
+      const entities = await this.enrichEntitiesWithAttributes(
+        allEntityMetadata,
+        onProgress,
+        entitySolutionMap
+      );
 
       return { entities, relationships };
     } catch (error) {
@@ -155,7 +171,8 @@ class DataverseApiService {
     // Initial query
     // Note: Attributes are excluded because Dataverse Web API v8.2+ doesn't support
     // polymorphic casting in complex-type collections ($expand with derived types)
-    let url = `${this.baseUrl}/EntityDefinitions?$select=MetadataId,LogicalName,DisplayName,ObjectTypeCode,IsCustomEntity,PrimaryIdAttribute,PrimaryNameAttribute` +
+    let url =
+      `${this.baseUrl}/EntityDefinitions?$select=MetadataId,LogicalName,DisplayName,ObjectTypeCode,IsCustomEntity,PrimaryIdAttribute,PrimaryNameAttribute` +
       `&$expand=` +
       `Keys($select=LogicalName,DisplayName,KeyAttributes),` +
       `OneToManyRelationships($select=SchemaName,ReferencingEntity,ReferencingAttribute,ReferencedEntity,ReferencedAttribute),` +
@@ -164,16 +181,20 @@ class DataverseApiService {
       `&$filter=IsValidForAdvancedFind eq true and IsCustomizable/Value eq true`;
 
     while (url) {
-      onProgress?.({ page: pageNumber, totalEntities: allEntities.length, phase: 'fetching_entities' });
+      onProgress?.({
+        page: pageNumber,
+        totalEntities: allEntities.length,
+        phase: 'fetching_entities',
+      });
 
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'OData-MaxVersion': '4.0',
           'OData-Version': '4.0',
           'Content-Type': 'application/json',
-          'Prefer': 'odata.maxpagesize=100', // Request 100 entities per page
+          Prefer: 'odata.maxpagesize=100', // Request 100 entities per page
         },
       });
 
@@ -216,7 +237,7 @@ class DataverseApiService {
       onProgress?.({
         page: Math.floor(i / batchSize) + 1,
         totalEntities: enrichedEntities.length,
-        phase: `fetching_attributes:${i}/${entities.length}`
+        phase: `fetching_attributes:${i}/${entities.length}`,
       });
 
       const batchPromises = batch.map(async (entityMeta) => {
@@ -226,7 +247,7 @@ class DataverseApiService {
           const attrResponse = await fetch(`${this.baseUrl}/${attributesQuery}`, {
             method: 'GET',
             headers: {
-              'Accept': 'application/json',
+              Accept: 'application/json',
               'OData-MaxVersion': '4.0',
               'OData-Version': '4.0',
               'Content-Type': 'application/json',
@@ -237,7 +258,9 @@ class DataverseApiService {
           const solutionNames = entitySolutionMap?.[entityMeta.MetadataId] || [];
 
           if (!attrResponse.ok) {
-            console.warn(`Failed to fetch attributes for ${entityMeta.LogicalName}: ${attrResponse.statusText}`);
+            console.warn(
+              `Failed to fetch attributes for ${entityMeta.LogicalName}: ${attrResponse.statusText}`
+            );
             // Return entity without attributes rather than failing
             return this.createEntityWithoutAttributes(entityMeta, solutionNames);
           }
@@ -260,9 +283,12 @@ class DataverseApiService {
   /**
    * Create entity object without attributes (fallback)
    */
-  private createEntityWithoutAttributes(entityMeta: DataverseEntityMetadata, solutionNames: string[] = []): Entity {
+  private createEntityWithoutAttributes(
+    entityMeta: DataverseEntityMetadata,
+    solutionNames: string[] = []
+  ): Entity {
     // Transform alternate keys
-    const alternateKeys: AlternateKey[] | undefined = entityMeta.Keys?.map(key => ({
+    const alternateKeys: AlternateKey[] | undefined = entityMeta.Keys?.map((key) => ({
       logicalName: key.LogicalName,
       displayName: key.DisplayName?.UserLocalizedLabel?.Label || key.LogicalName,
       keyAttributes: key.KeyAttributes || [],
@@ -284,26 +310,32 @@ class DataverseApiService {
   /**
    * Transform entity metadata with separately fetched attributes
    */
-  private transformEntityWithAttributes(entityMeta: DataverseEntityMetadata, attributes: any[], solutionNames: string[] = []): Entity {
+  private transformEntityWithAttributes(
+    entityMeta: DataverseEntityMetadata,
+    attributes: any[],
+    solutionNames: string[] = []
+  ): Entity {
     // Get the primary key attribute name from entity metadata
     const primaryIdAttribute = entityMeta.PrimaryIdAttribute;
 
     const mappedAttributes: EntityAttribute[] = attributes.map((attr) => {
       // Check if this is a LookupAttributeMetadata (has @odata.type)
-      const isLookupType = attr['@odata.type'] === '#Microsoft.Dynamics.CRM.LookupAttributeMetadata';
+      const isLookupType =
+        attr['@odata.type'] === '#Microsoft.Dynamics.CRM.LookupAttributeMetadata';
       const attrType = attr.AttributeType;
 
       // PK is identified by matching the entity's PrimaryIdAttribute, not IsPrimaryId flag
       const isPrimaryKey = attr.LogicalName === primaryIdAttribute;
 
       // Check for lookup types (Dataverse returns "Lookup", "Customer", "Owner" without "Type" suffix)
-      const isLookup = isLookupType ||
-                       attrType === 'Lookup' ||
-                       attrType === 'LookupType' ||
-                       attrType === 'Customer' ||
-                       attrType === 'CustomerType' ||
-                       attrType === 'Owner' ||
-                       attrType === 'OwnerType';
+      const isLookup =
+        isLookupType ||
+        attrType === 'Lookup' ||
+        attrType === 'LookupType' ||
+        attrType === 'Customer' ||
+        attrType === 'CustomerType' ||
+        attrType === 'Owner' ||
+        attrType === 'OwnerType';
 
       return {
         name: attr.LogicalName,
@@ -316,7 +348,7 @@ class DataverseApiService {
     });
 
     // Transform alternate keys
-    const alternateKeys: AlternateKey[] | undefined = entityMeta.Keys?.map(key => ({
+    const alternateKeys: AlternateKey[] | undefined = entityMeta.Keys?.map((key) => ({
       logicalName: key.LogicalName,
       displayName: key.DisplayName?.UserLocalizedLabel?.Label || key.LogicalName,
       keyAttributes: key.KeyAttributes || [],
@@ -342,7 +374,9 @@ class DataverseApiService {
   async fetchRelationships(_entities: Entity[]): Promise<EntityRelationship[]> {
     // This method is deprecated - relationships are now extracted from entity metadata
     // in fetchEntityMetadata() to avoid an extra API call
-    console.warn('fetchRelationships is deprecated. Use fetchEntityMetadata() which returns both entities and relationships.');
+    console.warn(
+      'fetchRelationships is deprecated. Use fetchEntityMetadata() which returns both entities and relationships.'
+    );
     return [];
   }
 
@@ -424,7 +458,7 @@ class DataverseApiService {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'OData-MaxVersion': '4.0',
           'OData-Version': '4.0',
           'Content-Type': 'application/json',
@@ -462,11 +496,11 @@ class DataverseApiService {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'OData-MaxVersion': '4.0',
           'OData-Version': '4.0',
           'Content-Type': 'application/json',
-          'Prefer': 'odata.maxpagesize=5000',
+          Prefer: 'odata.maxpagesize=5000',
         },
       });
 
@@ -479,7 +513,7 @@ class DataverseApiService {
 
       // Create a lookup map for solution IDs to names
       const solutionIdToName: Record<string, string> = {};
-      solutions.forEach(sol => {
+      solutions.forEach((sol) => {
         solutionIdToName[sol.solutionId] = sol.uniqueName;
       });
 
