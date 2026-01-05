@@ -23,10 +23,13 @@ import {
   useReactFlow,
   ReactFlowProvider,
   MarkerType,
+  getNodesBounds,
+  getViewportForBounds,
   type Node,
   type Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { toPng, toSvg } from 'html-to-image';
 import { Map } from 'lucide-react';
 
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
@@ -64,11 +67,16 @@ export interface ReactFlowERDProps {
   // Edge offset support for manual path adjustment (x and y)
   edgeOffsets?: Record<string, { x: number; y: number }>;
   onEdgeOffsetChange?: (edgeId: string, offset: { x: number; y: number }) => void;
+  // Collapse support
+  collapsedEntities?: Set<string>;
+  onToggleCollapse?: (entityName: string) => void;
 }
 
 export interface ReactFlowERDRef {
   focusOnNode: (nodeId: string) => void;
   fitView: () => void;
+  exportToPng: () => Promise<Blob>;
+  exportToSvg: () => Promise<string>;
 }
 
 const initialNodes: Node[] = [];
@@ -90,14 +98,16 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     onRemoveField,
     edgeOffsets,
     onEdgeOffsetChange,
+    collapsedEntities,
+    onToggleCollapse,
   },
   ref
 ) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const { setCenter, getZoom, fitView: rfFitView } = useReactFlow();
+  const { setCenter, getZoom, fitView: rfFitView, getNodes } = useReactFlow();
 
-  // Expose focusOnNode and fitView methods via ref
+  // Expose focusOnNode, fitView, and export methods via ref
   useImperativeHandle(
     ref,
     () => ({
@@ -111,8 +121,112 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       fitView: () => {
         rfFitView({ padding: 0.2, duration: 300 });
       },
+      exportToPng: async (): Promise<Blob> => {
+        const nodesBounds = getNodesBounds(getNodes());
+        // Add very generous padding to include edges and labels that extend beyond nodes
+        const padding = 300;
+        const imageWidth = Math.ceil(nodesBounds.width + padding * 2);
+        const imageHeight = Math.ceil(nodesBounds.height + padding * 2);
+
+        // Expand bounds to include padding for edges
+        const expandedBounds = {
+          x: nodesBounds.x - padding,
+          y: nodesBounds.y - padding,
+          width: nodesBounds.width + padding * 2,
+          height: nodesBounds.height + padding * 2,
+        };
+
+        const viewport = getViewportForBounds(
+          expandedBounds,
+          imageWidth,
+          imageHeight,
+          0.5,
+          2,
+          0
+        );
+
+        const viewportEl = document.querySelector('.react-flow__viewport') as HTMLElement;
+        if (!viewportEl) throw new Error('React Flow viewport not found');
+
+        const dataUrl = await toPng(viewportEl, {
+          backgroundColor: 'transparent',
+          width: imageWidth,
+          height: imageHeight,
+          style: {
+            width: `${imageWidth}px`,
+            height: `${imageHeight}px`,
+            transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+          },
+          filter: (node) => {
+            // Exclude minimap and controls from export
+            const classList = node.classList;
+            if (!classList) return true;
+            return !classList.contains('react-flow__minimap') &&
+                   !classList.contains('react-flow__controls') &&
+                   !classList.contains('react-flow__panel');
+          },
+        });
+
+        // Convert data URL to Blob
+        const res = await fetch(dataUrl);
+        return res.blob();
+      },
+      exportToSvg: async (): Promise<string> => {
+        const nodesBounds = getNodesBounds(getNodes());
+        // Add very generous padding to include edges and labels that extend beyond nodes
+        const padding = 300;
+        const imageWidth = Math.ceil(nodesBounds.width + padding * 2);
+        const imageHeight = Math.ceil(nodesBounds.height + padding * 2);
+
+        // Expand bounds to include padding for edges
+        const expandedBounds = {
+          x: nodesBounds.x - padding,
+          y: nodesBounds.y - padding,
+          width: nodesBounds.width + padding * 2,
+          height: nodesBounds.height + padding * 2,
+        };
+
+        const viewport = getViewportForBounds(
+          expandedBounds,
+          imageWidth,
+          imageHeight,
+          0.5,
+          2,
+          0
+        );
+
+        const viewportEl = document.querySelector('.react-flow__viewport') as HTMLElement;
+        if (!viewportEl) throw new Error('React Flow viewport not found');
+
+        const dataUrl = await toSvg(viewportEl, {
+          backgroundColor: 'transparent',
+          width: imageWidth,
+          height: imageHeight,
+          style: {
+            width: `${imageWidth}px`,
+            height: `${imageHeight}px`,
+            transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+          },
+          filter: (node) => {
+            // Exclude minimap and controls from export
+            const classList = node.classList;
+            if (!classList) return true;
+            return !classList.contains('react-flow__minimap') &&
+                   !classList.contains('react-flow__controls') &&
+                   !classList.contains('react-flow__panel');
+          },
+        });
+
+        // toSvg returns a data URL - decode it based on format
+        // Can be: data:image/svg+xml;charset=utf-8,<url-encoded> or data:image/svg+xml;base64,<base64>
+        const [header, content] = dataUrl.split(',');
+        if (header.includes('base64')) {
+          return atob(content);
+        }
+        return decodeURIComponent(content);
+      },
     }),
-    [nodes, setCenter, getZoom, rfFitView]
+    [nodes, setCenter, getZoom, rfFitView, getNodes]
   );
 
   // Update nodes when entities or positions change
@@ -144,6 +258,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
           orderedFields: orderedFieldsMap?.[entity.logicalName],
           onOpenFieldDrawer,
           onRemoveField,
+          isCollapsed: collapsedEntities?.has(entity.logicalName) ?? false,
+          onToggleCollapse,
         } as TableNodeData,
       };
     });
@@ -246,6 +362,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     onRemoveField,
     edgeOffsets,
     onEdgeOffsetChange,
+    collapsedEntities,
+    onToggleCollapse,
     setNodes,
     setEdges,
   ]);

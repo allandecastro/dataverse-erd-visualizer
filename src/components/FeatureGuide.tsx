@@ -47,23 +47,20 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       {
         title: 'Pan the Canvas',
         description: 'Click and drag on empty space to pan around the diagram.',
-        shortcut: 'Arrow Keys',
         tip: 'Hold and drag for smooth navigation',
       },
       {
         title: 'Zoom In/Out',
-        description:
-          'Use mouse wheel or zoom buttons to zoom. Smart zoom adjusts based on entity density.',
-        shortcut: '+ / -',
+        description: 'Use mouse wheel or the zoom controls in the top-left corner.',
+        tip: 'Scroll to zoom, click controls for precise adjustment',
       },
       {
         title: 'Fit to Screen',
-        description: 'Automatically fits all entities in the visible area.',
-        shortcut: 'F',
+        description: 'Click the fit view button to automatically fit all entities in the visible area.',
       },
       {
         title: 'Search & Navigate',
-        description: 'Search for entities by name and jump directly to them.',
+        description: 'Use the search icon in the header to find entities by name and jump directly to them.',
         shortcut: '/',
       },
     ],
@@ -75,21 +72,26 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Drag Entities',
-        description: 'Click and drag any entity card to reposition it on the canvas.',
+        description: 'Click and drag any entity card to reposition it on the canvas. Positions are saved automatically.',
       },
       {
-        title: 'Expand/Collapse',
-        description: 'Click the chevron on entity cards to show/hide field details.',
-        tip: 'Use Expand All / Collapse All in sidebar for bulk actions',
+        title: 'Expand/Collapse Fields',
+        description: 'Click the chevron button (↑/↓) in the table header to expand or collapse fields.',
+        tip: 'Collapsed tables show only the Primary Key. Use Expand All / Collapse All in sidebar for bulk actions',
       },
       {
-        title: 'Field Selection',
-        description: 'Click the settings icon on an entity to choose which fields to display.',
+        title: 'Add Fields',
+        description: 'Click the + button on an entity header to open the field drawer and choose which fields to display.',
+        tip: 'Click + again or on another table to switch/close the drawer',
+      },
+      {
+        title: 'Remove Fields',
+        description: 'Click the X button next to any field (except Primary Key) to remove it from display.',
       },
       {
         title: 'Select Entities',
         description: 'Use the sidebar checkboxes to show/hide entities on the canvas.',
-        shortcut: 'Ctrl+A / Ctrl+D',
+        shortcut: 'Ctrl+A / Esc',
       },
     ],
   },
@@ -100,22 +102,17 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Layout Modes',
-        description: 'Choose between Grid, Hierarchical, or Force-Directed layouts in the sidebar.',
+        description: 'Choose between Force-Directed (organic), Grid (structured), or Auto (hybrid) layouts.',
+        tip: 'Click the layout button in the sidebar to cycle through modes',
       },
       {
         title: 'Minimap',
-        description: 'Toggle the minimap for an overview of your entire diagram.',
-        tip: 'Click on minimap to navigate quickly',
+        description: 'Toggle the minimap using the map button below the zoom controls.',
+        tip: 'Click on the minimap to navigate quickly to that area',
       },
       {
         title: 'Dark/Light Mode',
-        description: 'Switch between dark and light themes for comfortable viewing.',
-      },
-      {
-        title: 'Canvas Mode',
-        description:
-          'Toggle Canvas Mode for better performance with large diagrams (100+ entities).',
-        tip: 'Look for the toggle in the bottom-right corner',
+        description: 'Switch between dark and light themes using the sun/moon icon in the sidebar header.',
       },
     ],
   },
@@ -126,20 +123,20 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Copy as PNG',
-        description: 'Copy the current diagram to clipboard as a high-quality PNG image.',
-        tip: 'Perfect for pasting into documents or presentations',
+        description: 'Copy the current diagram to clipboard as a transparent PNG image.',
+        tip: 'Perfect for pasting into documents, presentations, or chat apps',
       },
       {
         title: 'Export SVG',
-        description: 'Download the diagram as a scalable SVG file for further editing.',
+        description: 'Download the diagram as a scalable SVG file. Ideal for further editing or high-quality prints.',
       },
       {
         title: 'Mermaid Code',
-        description: 'Generate Mermaid.js code to embed diagrams in markdown documentation.',
+        description: 'Copy Mermaid.js code to embed diagrams in markdown documentation or wikis.',
       },
       {
         title: 'Draw.io Export',
-        description: 'Export to Draw.io format with proper connectors between tables.',
+        description: 'Export to Draw.io (.drawio) format with proper connectors and editable elements.',
         tip: 'Open in draw.io (free) or import into Microsoft Visio',
       },
     ],
@@ -150,17 +147,22 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     icon: <Palette size={20} />,
     features: [
       {
-        title: 'Color Settings',
-        description: 'Customize colors for custom tables, standard tables, and lookup fields.',
-        tip: 'Click the settings icon in the sidebar to access color options',
+        title: 'Table Colors',
+        description: 'Customize colors for custom tables (your entities) and standard tables (Microsoft entities).',
+        tip: 'Click the gear icon in the sidebar to access settings',
+      },
+      {
+        title: 'Relationship Line Style',
+        description: 'Choose between Smooth Step (default), Bezier Curve, or Straight lines for relationships.',
+        tip: 'Smooth Step is recommended for readability',
       },
       {
         title: 'Filter by Publisher',
-        description: 'Filter entities by their publisher prefix to focus on specific solutions.',
+        description: 'Filter entities by their publisher prefix to focus on specific customizations.',
       },
       {
         title: 'Filter by Solution',
-        description: 'Show only entities from a specific solution.',
+        description: 'Show only entities from a specific solution for targeted analysis.',
       },
     ],
   },
@@ -171,16 +173,20 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Relationship Lines',
-        description: 'Lines connect related entities showing lookup relationships.',
-        tip: 'Hover over lines to highlight them',
+        description: 'Dotted lines connect related entities, showing lookup relationships between tables.',
       },
       {
         title: 'Cardinality Markers',
-        description: "Crow's foot notation shows relationship types: 1:N, N:1, N:N.",
+        description: 'Small badges show "N" on the lookup side and "1" on the target side to indicate many-to-one relationships.',
       },
       {
-        title: 'Field Connections',
-        description: 'Lines connect from lookup fields to primary keys when fields are visible.',
+        title: 'Field-to-Field Connections',
+        description: 'When lookup and primary key fields are visible, lines connect directly between them.',
+        tip: 'Add the lookup field and primary key to see precise connections',
+      },
+      {
+        title: 'Self-Reference Loops',
+        description: 'Entities that reference themselves (like parent-child hierarchies) show a loop on the right side.',
       },
     ],
   },

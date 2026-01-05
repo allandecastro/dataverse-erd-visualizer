@@ -24,6 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "@xyflow/react": "^12.10.0",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^0.562.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
