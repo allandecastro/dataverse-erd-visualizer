@@ -91,10 +91,14 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   // Filtered entities and relationships for the canvas
   // Publisher/Solution filters only affect the sidebar list, NOT the canvas
   // The canvas shows all selected entities regardless of filters
-  const filteredEntities = entities.filter((entity) => selectedEntities.has(entity.logicalName));
+  const filteredEntities = useMemo(
+    () => entities.filter((entity) => selectedEntities.has(entity.logicalName)),
+    [entities, selectedEntities]
+  );
 
-  const filteredRelationships = relationships.filter(
-    (rel) => selectedEntities.has(rel.from) && selectedEntities.has(rel.to)
+  const filteredRelationships = useMemo(
+    () => relationships.filter((rel) => selectedEntities.has(rel.from) && selectedEntities.has(rel.to)),
+    [relationships, selectedEntities]
   );
 
   // Entity selection helpers

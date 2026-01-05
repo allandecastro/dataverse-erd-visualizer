@@ -1,0 +1,176 @@
+/**
+ * AddRelatedTableDialog component styles
+ */
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.overlayDark {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.overlayLight {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Dialog */
+.dialog {
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  overflow: hidden;
+}
+
+.dialogDark {
+  background: #1f2937;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.dialogLight {
+  background: #ffffff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+}
+
+.headerDark {
+  border-bottom: 1px solid #374151;
+}
+
+.headerLight {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.titleDark {
+  color: #f3f4f6;
+}
+
+.titleLight {
+  color: #1f2937;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButtonDark {
+  color: #9ca3af;
+}
+
+.closeButtonLight {
+  color: #6b7280;
+}
+
+/* Content */
+.content {
+  padding: 20px;
+}
+
+.message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.messageDark {
+  color: #f3f4f6;
+}
+
+.messageLight {
+  color: #1f2937;
+}
+
+.fieldName {
+  color: #3b82f6;
+}
+
+.targetEntity {
+  color: #f59e0b;
+}
+
+.subMessage {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.subMessageDark {
+  color: #9ca3af;
+}
+
+.subMessageLight {
+  color: #6b7280;
+}
+
+/* Actions */
+.actions {
+  padding: 16px 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.actionsDark {
+  border-top: 1px solid #374151;
+}
+
+.actionsLight {
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cancelButtonDark {
+  background: #374151;
+  border: 1px solid #374151;
+  color: #f3f4f6;
+}
+
+.cancelButtonLight {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #1f2937;
+}
+
+.confirmButton {
+  padding: 8px 16px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}

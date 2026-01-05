@@ -106,19 +106,18 @@ export interface ERDState {
   showToast: (message: string, type?: ToastType) => void;
 }
 
-// Props for Sidebar component
+// Props for Sidebar component (uses useTheme() for dark mode and theme colors)
 export interface SidebarProps {
   entities: Entity[];
   selectedEntities: Set<string>;
   searchQuery: string;
   publisherFilter: string;
   solutionFilter: string;
+  publishers: string[];
+  solutions: string[];
   layoutMode: LayoutMode;
-  isDarkMode: boolean;
   showSettings: boolean;
   colorSettings: ColorSettings;
-  collapsedEntities: Set<string>;
-  themeColors: ThemeColors;
   onToggleEntity: (entityName: string) => void;
   onSelectAll: () => void;
   onDeselectAll: () => void;
@@ -128,17 +127,14 @@ export interface SidebarProps {
   onPublisherFilterChange: (value: string) => void;
   onSolutionFilterChange: (value: string) => void;
   onLayoutModeChange: (mode: LayoutMode) => void;
-  onToggleDarkMode: () => void;
   onToggleSettings: () => void;
-  onColorSettingsChange: (settings: Partial<ColorSettings>) => void;
+  onColorSettingsChange: (key: keyof ColorSettings, value: string) => void;
 }
 
-// Props for Toolbar component (matches Toolbar.tsx)
+// Props for Toolbar component (uses useTheme() for dark mode and theme colors)
 export interface ToolbarProps {
   filteredEntitiesCount: number;
   filteredRelationshipsCount: number;
-  isDarkMode: boolean;
-  themeColors: ThemeColors;
   isExportingDrawio?: boolean;
   drawioExportProgress?: { progress: number; message: string };
   onCopyPNG: () => void;
@@ -149,11 +145,10 @@ export interface ToolbarProps {
   onOpenGuide: () => void;
 }
 
-// Props for Toast component
+// Props for Toast component (uses useTheme() for dark mode)
 export interface ToastProps {
   message: string;
   type: ToastType;
-  isDarkMode: boolean;
 }
 
 // Mermaid type mapping

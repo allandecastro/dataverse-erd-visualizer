@@ -1,0 +1,311 @@
+/**
+ * Sidebar component styles
+ */
+
+/* Main Sidebar Container */
+.sidebar {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.headerSection {
+  padding: 20px;
+}
+
+/* Entity List Section */
+.entityListContainer {
+  flex: 1;
+  overflow: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.entityListHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.entityCount {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.filterCount {
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 6px;
+}
+
+.smallButton {
+  padding: 4px 10px;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.entityListWrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Header Component */
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.logoLink {
+  display: flex;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.titleContainer {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.versionRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.version {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.betaBadge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  color: #ffffff;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.socialButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  transition: opacity 0.2s;
+}
+
+.themeButtonGroup {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.themeButton {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.settingsButton {
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* Filters Component */
+.searchContainer {
+  margin-bottom: 12px;
+}
+
+.searchWrapper {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.select {
+  width: 100%;
+  padding: 10px 32px 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 8px;
+  appearance: none;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 16px) calc(1em + 2px), calc(100% - 11px) calc(1em + 2px);
+  background-size: 5px 5px, 5px 5px;
+}
+
+.layoutButtonGroup {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.layoutButton {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.expandCollapseGroup {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.expandCollapseButton {
+  flex: 1;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Settings Component */
+.settingsPanel {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.settingsTitle {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.settingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settingsLabel {
+  font-size: 11px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.colorInput {
+  width: 100%;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.settingsSelect {
+  width: 100%;
+  padding: 8px 32px 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 16px) calc(1em + 2px), calc(100% - 11px) calc(1em + 2px);
+  background-size: 5px 5px, 5px 5px;
+}
+
+/* Legend Component */
+.legend {
+  padding: 16px;
+}
+
+.legendTitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.legendItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendColor {
+  width: 16px;
+  height: 12px;
+  border-radius: 2px;
+}

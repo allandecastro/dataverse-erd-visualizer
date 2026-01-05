@@ -5,14 +5,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, X, MapPin } from 'lucide-react';
 import type { Entity } from '@/types';
-import type { ThemeColors } from '@/types/erdTypes';
+import { useTheme } from '@/context';
 import styles from '@/styles/EntitySearch.module.css';
 
 export interface EntitySearchProps {
   entities: Entity[];
   isOpen: boolean;
-  isDarkMode: boolean;
-  themeColors: ThemeColors;
   onClose: () => void;
   onNavigateToEntity: (entityName: string) => void;
 }
@@ -20,8 +18,6 @@ export interface EntitySearchProps {
 export function EntitySearch({
   entities,
   isOpen,
-  isDarkMode,
-  themeColors,
   onClose,
   onNavigateToEntity,
 }: EntitySearchProps) {
@@ -30,6 +26,7 @@ export function EntitySearch({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const { isDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
 
   // Filter entities based on search

@@ -4,17 +4,16 @@
 
 import { useState } from 'react';
 import { Search, HelpCircle } from 'lucide-react';
-import type { ThemeColors } from '@/types/erdTypes';
+import { useTheme } from '@/context';
 import { getKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { ToolbarStats } from './ToolbarStats';
 import { ToolbarExportButtons } from './ToolbarExportButtons';
 import { KeyboardShortcutsPopup } from './KeyboardShortcutsPopup';
+import styles from '@/styles/Toolbar.module.css';
 
 export interface ToolbarProps {
   filteredEntitiesCount: number;
   filteredRelationshipsCount: number;
-  isDarkMode: boolean;
-  themeColors: ThemeColors;
   isExportingDrawio?: boolean;
   drawioExportProgress?: { progress: number; message: string };
   onCopyPNG: () => void;
@@ -28,8 +27,6 @@ export interface ToolbarProps {
 export function Toolbar({
   filteredEntitiesCount,
   filteredRelationshipsCount,
-  isDarkMode,
-  themeColors,
   isExportingDrawio,
   drawioExportProgress,
   onCopyPNG,
@@ -39,39 +36,22 @@ export function Toolbar({
   onOpenSearch,
   onOpenGuide,
 }: ToolbarProps) {
+  const { isDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
   const [showShortcuts, setShowShortcuts] = useState(false);
   const shortcuts = getKeyboardShortcuts();
 
-  const iconButtonStyle = {
-    padding: '8px',
-    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-    border: `1px solid ${borderColor}`,
-    borderRadius: '6px',
-    color: textColor,
-    cursor: 'pointer',
-    display: 'flex' as const,
-    alignItems: 'center' as const,
-  };
+  const buttonBg = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
+  const shortcutBg = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
 
   return (
     <div
+      className={styles.toolbar}
       style={{
-        padding: '12px 20px',
         borderBottom: `1px solid ${borderColor}`,
         background: panelBg,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
       }}
     >
-      {/* Spinner animation for Draw.io export */}
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
 
       {/* Stats */}
       <ToolbarStats
@@ -82,15 +62,7 @@ export function Toolbar({
       />
 
       {/* Controls */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '8px',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          justifyContent: 'flex-end',
-        }}
-      >
+      <div className={styles.controls}>
         {/* Export buttons */}
         <ToolbarExportButtons
           isDarkMode={isDarkMode}
@@ -102,30 +74,22 @@ export function Toolbar({
           onExportDrawio={onExportDrawio}
         />
 
-        <div style={{ width: '1px', height: '24px', background: borderColor }} />
+        <div className={styles.divider} style={{ background: borderColor }} />
 
         {/* Search */}
         <button
           onClick={onOpenSearch}
           title="Search entities (press /)"
+          className={styles.searchButton}
           style={{
-            ...iconButtonStyle,
-            padding: '8px 12px',
-            gap: '6px',
-            fontSize: '13px',
+            background: buttonBg,
+            border: `1px solid ${borderColor}`,
+            color: textColor,
           }}
         >
           <Search size={16} />
           Search
-          <span
-            style={{
-              fontSize: '10px',
-              padding: '2px 6px',
-              background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-              borderRadius: '3px',
-              marginLeft: '4px',
-            }}
-          >
+          <span className={styles.shortcutBadge} style={{ background: shortcutBg }}>
             /
           </span>
         </button>
@@ -147,20 +111,7 @@ export function Toolbar({
         <button
           onClick={onOpenGuide}
           title="Feature Guide - Learn all features"
-          style={{
-            padding: '8px 12px',
-            background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(139, 92, 246, 0.2))',
-            border: '1px solid',
-            borderImage: 'linear-gradient(135deg, #60a5fa, #8b5cf6) 1',
-            borderRadius: '6px',
-            color: isDarkMode ? '#a78bfa' : '#7c3aed',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '13px',
-            fontWeight: '600',
-          }}
+          className={`${styles.guideButton} ${isDarkMode ? styles.dark : styles.light}`}
         >
           <HelpCircle size={16} />
           Guide

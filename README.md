@@ -230,58 +230,89 @@ You'll see a **"MOCK MODE"** banner indicating you're using simulated data.
 ```
 dataverse-erd-visualizer/
 ├── public/
-│   └── logo.svg                    # Application logo
+│   └── logo.svg                       # Application logo
 ├── src/
-│   ├── components/
-│   │   └── ERDVisualizer/          # Main ERD component
-│   │       ├── components/         # UI sub-components
-│   │       │   ├── CanvasERD.tsx       # Canvas rendering mode
-│   │       │   ├── EntityCard.tsx      # Entity table card
-│   │       │   ├── EntitySearch.tsx    # Search component
-│   │       │   ├── FeatureGuide.tsx    # Onboarding modal
-│   │       │   ├── FieldSelector.tsx   # Field visibility picker
-│   │       │   ├── Minimap.tsx         # Navigation minimap
-│   │       │   ├── RelationshipLines.tsx # SVG relationship arrows
-│   │       │   ├── Sidebar.tsx         # Filter sidebar
-│   │       │   ├── Toast.tsx           # Notification toasts
-│   │       │   ├── Toolbar.tsx         # Top action bar
-│   │       │   └── VirtualEntityList.tsx # Virtual scrolling
-│   │       ├── hooks/              # Custom React hooks
-│   │       │   ├── useERDState.ts      # Main state management
-│   │       │   ├── useKeyboardShortcuts.ts # Keyboard handling
-│   │       │   ├── useLayoutAlgorithms.ts  # Layout engines
-│   │       │   ├── useViewport.ts      # Viewport culling
-│   │       │   └── useVirtualScroll.ts # Virtual scroll logic
-│   │       ├── utils/              # Utility functions
-│   │       │   ├── drawioExport.ts     # Draw.io/Visio export
-│   │       │   └── exportUtils.ts      # PNG/SVG/Mermaid export
-│   │       ├── ERDVisualizer.tsx   # Root ERD component
-│   │       └── types.ts            # Component-specific types
-│   ├── hooks/
-│   │   └── useDataverseData.ts     # Dataverse API hook
-│   ├── services/
-│   │   ├── dataverseApi.ts         # Dataverse Web API client
-│   │   └── mockData.ts             # Mock data for development
-│   ├── types/
-│   │   └── index.ts                # TypeScript definitions
-│   ├── App.tsx                     # App wrapper
-│   ├── main.tsx                    # Entry point
-│   └── index.css                   # Global styles
-├── solution/                       # Dataverse solution package
-├── docs/                           # Documentation assets
-├── dist/                           # Build output
-│   └── webresource/                # Dataverse web resource build
-├── index.html                      # HTML template
-├── vite.config.ts                  # Vite configuration
-├── tsconfig.json                   # TypeScript configuration
-├── package.json                    # Dependencies & scripts
-├── DEPLOYMENT.md                   # Detailed deployment guide
-├── CONTRIBUTING.md                 # Contribution guidelines
-├── LICENSE                         # MIT License
-└── README.md                       # This file
+│   ├── components/                    # React components
+│   │   ├── ReactFlowERD.tsx              # Main React Flow canvas
+│   │   ├── TableNode.tsx                 # Custom entity table node
+│   │   ├── DraggableEdge.tsx             # Adjustable relationship edge
+│   │   ├── SelfReferenceEdge.tsx         # Self-referencing edge (loops)
+│   │   ├── RelationshipEdge.tsx          # Standard relationship edge
+│   │   ├── Sidebar.tsx                   # Left panel with filters
+│   │   ├── SidebarHeader.tsx             # Logo, theme toggle, settings
+│   │   ├── SidebarFilters.tsx            # Search, publisher, solution filters
+│   │   ├── SidebarSettings.tsx           # Color customization panel
+│   │   ├── SidebarLegend.tsx             # Color legend
+│   │   ├── Toolbar.tsx                   # Top bar with stats & exports
+│   │   ├── ToolbarStats.tsx              # Entity/relationship counts
+│   │   ├── ToolbarExportButtons.tsx      # Export action buttons
+│   │   ├── EntitySearch.tsx              # Entity search dialog
+│   │   ├── FeatureGuide.tsx              # Onboarding modal
+│   │   ├── FieldDrawer.tsx               # Field selection drawer
+│   │   ├── FieldSelector.tsx             # In-node field picker
+│   │   ├── Toast.tsx                     # Notification toasts
+│   │   ├── VirtualEntityList.tsx         # Virtualized entity list
+│   │   ├── AddRelatedTableDialog.tsx     # Lookup field confirmation
+│   │   ├── KeyboardShortcutsPopup.tsx    # Shortcuts reference
+│   │   ├── ErrorBoundary.tsx             # Error handling wrapper
+│   │   └── index.ts                      # Component exports
+│   ├── context/                       # React Context
+│   │   ├── ThemeContext.tsx              # Theme provider (dark/light)
+│   │   ├── useThemeHooks.ts              # useTheme() hook
+│   │   └── index.ts                      # Context exports
+│   ├── hooks/                         # Custom React hooks
+│   │   ├── useDataverseData.ts           # Dataverse API data fetching
+│   │   ├── useERDState.ts                # Main ERD state management
+│   │   ├── useKeyboardShortcuts.ts       # Keyboard event handling
+│   │   ├── useLayoutAlgorithms.ts        # Force/Grid/Auto layouts
+│   │   ├── useVirtualScroll.ts           # Virtual scroll logic
+│   │   └── index.ts                      # Hook exports
+│   ├── services/                      # API services
+│   │   ├── dataverseApi.ts               # Dataverse Web API client
+│   │   └── mockData.ts                   # Mock data for development
+│   ├── styles/                        # CSS Modules
+│   │   ├── Sidebar.module.css            # Sidebar styles
+│   │   ├── Toolbar.module.css            # Toolbar styles
+│   │   ├── EntitySearch.module.css       # Search dialog styles
+│   │   ├── FeatureGuide.module.css       # Guide modal styles
+│   │   ├── TableNode.module.css          # Entity card styles
+│   │   ├── Toast.module.css              # Notification styles
+│   │   └── ...                           # Additional CSS modules
+│   ├── types/                         # TypeScript definitions
+│   │   ├── index.ts                      # Core types (Entity, etc.)
+│   │   └── erdTypes.ts                   # ERD-specific types
+│   ├── utils/                         # Utility functions
+│   │   ├── badges.ts                     # Field type badges
+│   │   ├── drawioExport.ts               # Draw.io/Visio export
+│   │   └── exportUtils.ts                # PNG/SVG/Mermaid export
+│   ├── App.tsx                        # Main application component
+│   ├── Root.tsx                       # Root with providers
+│   ├── main.tsx                       # Entry point
+│   ├── constants.ts                   # App constants (logo, etc.)
+│   └── index.css                      # Global styles
+├── solution/                          # Dataverse solution package
+├── docs/                              # Documentation assets
+├── dist/                              # Build output
+│   └── webresource/                      # Dataverse web resource build
+├── index.html                         # HTML template
+├── vite.config.ts                     # Vite configuration
+├── tsconfig.json                      # TypeScript configuration
+├── eslint.config.js                   # ESLint configuration
+├── package.json                       # Dependencies & scripts
+├── TODO.md                            # Development task tracking
+├── DEPLOYMENT.md                      # Detailed deployment guide
+├── CONTRIBUTING.md                    # Contribution guidelines
+├── LICENSE                            # MIT License
+└── README.md                          # This file
 ```
 
 ### Architecture
+
+**Visualization Engine**
+- Built on [React Flow](https://reactflow.dev/) for node-based diagram rendering
+- Custom `TableNode` for entity cards with field-level handles
+- Custom edge types: `DraggableEdge` (adjustable paths), `SelfReferenceEdge` (loops)
+- Precise field-to-field connections (Lookup → Primary Key)
 
 **Dataverse Integration**
 - Uses Dataverse Web API for metadata fetching
@@ -289,14 +320,16 @@ dataverse-erd-visualizer/
 - Fetches entities, attributes, relationships, and alternate keys
 
 **State Management**
-- React hooks for local state
+- React Context for theme state (`ThemeContext`)
+- Custom hooks for feature-specific state (`useERDState`, `useLayoutAlgorithms`)
 - Custom `useDataverseData` hook for API data
 - No external state library (keeps bundle small)
 
 **Performance**
-- Viewport culling for large schemas
-- Canvas mode for 100+ entities
-- Debounced search and filters
+- `React.memo` on all frequently-rendered components
+- Virtual scrolling for entity list (`useVirtualScroll`)
+- Lazy loading for modals (FeatureGuide, FieldDrawer)
+- CSS Modules for scoped, optimized styles
 - Tree-shaking via Vite
 
 ---
@@ -364,29 +397,6 @@ git commit -m 'Add amazing feature'
 # Push and create PR
 git push origin feature/amazing-feature
 ```
-
----
-
-## Changelog
-
-### v0.1.0.0 BETA (December 2025)
-
-**New Features**
-- Draw.io Export - Compatible with Draw.io and Microsoft Visio
-- Solution Filter - Filter entities by Dataverse solution
-- Alternate Keys - Display entity alternate keys with composite key support
-
-**Core Features**
-- Dataverse metadata integration via Web API
-- Force-directed, Grid, and Auto-arrange layouts
-- Primary Key indicators on entity cards
-- Precise lookup→PK relationship visualization
-- Export to PNG, SVG, Mermaid, Draw.io
-- Dark/Light themes with persistence
-- Smart Zoom with fit-to-screen
-- Interactive Minimap
-- Field selector per table
-- Viewport Culling & Canvas Mode for performance
 
 ---
 
