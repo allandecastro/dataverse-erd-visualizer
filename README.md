@@ -39,19 +39,6 @@
 
 ## Preview
 
-<!--
-  Add your screenshot or video here!
-
-  For a screenshot:
-  ![Dataverse ERD Visualizer Screenshot](docs/screenshot.png)
-
-  For a video/GIF:
-  ![Dataverse ERD Visualizer Demo](docs/demo.gif)
-
-  For an embedded video (GitHub supports this):
-  https://user-images.githubusercontent.com/YOUR_ID/VIDEO_ID.mp4
--->
-
 <p align="center">
   <img src="docs/screenshot.png" alt="Dataverse ERD Visualizer Screenshot" width="100%">
 </p>
