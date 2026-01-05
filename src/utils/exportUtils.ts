@@ -1,18 +1,60 @@
 /**
  * Export utilities for ERD diagrams
+ * Matches the on-screen TableNode design exactly
  */
 
-import type { Entity, EntityRelationship, EntityPosition } from '@/types';
-import type { ColorSettings } from '@/types/erdTypes';
-import { MERMAID_TYPE_MAP, getFieldTypeColor } from '@/types/erdTypes';
-import {
-  CARD_WIDTH,
-  HEADER_HEIGHT,
-  ATTRIBUTES_TITLE_HEIGHT,
-  FIELD_HEIGHT,
-  FIELD_HALF_HEIGHT,
-  CARDINALITY_SYMBOLS,
-} from '@/constants';
+import type { Entity, EntityRelationship, EntityPosition, EntityAttribute } from '@/types';
+import type { ColorSettings, EdgeStyle } from '@/types/erdTypes';
+import { MERMAID_TYPE_MAP } from '@/types/erdTypes';
+import { CARD_WIDTH, CARDINALITY_SYMBOLS } from '@/constants';
+import { getAttributeBadge } from './badges';
+
+// Layout constants matching TableNode.tsx exactly
+const HEADER_HEIGHT = 36; // Header with display name only
+const SUBHEADER_HEIGHT = 24; // Logical name row
+const FIELD_ROW_HEIGHT = 28; // Each field row height
+const FIELD_PADDING_TOP = 4; // Padding at top of fields section
+
+// Get type label (matching TableNode.tsx getTypeLabel)
+function getTypeLabel(attr: EntityAttribute): string {
+  if (attr.isPrimaryKey) return 'Unique Identifier';
+  switch (attr.type) {
+    case 'Lookup':
+      return 'Lookup';
+    case 'Owner':
+      return 'Owner';
+    case 'Customer':
+      return 'Customer';
+    case 'String':
+      return 'Text';
+    case 'Memo':
+      return 'Multiline Text';
+    case 'Integer':
+      return 'Whole Number';
+    case 'BigInt':
+      return 'Big Integer';
+    case 'Decimal':
+      return 'Decimal Number';
+    case 'Double':
+      return 'Floating Point';
+    case 'Money':
+      return 'Currency';
+    case 'DateTime':
+      return 'Date and Time';
+    case 'Boolean':
+      return 'Yes/No';
+    case 'Picklist':
+      return 'Choice';
+    case 'State':
+      return 'Status';
+    case 'Status':
+      return 'Status Reason';
+    case 'UniqueIdentifier':
+      return 'Unique Identifier';
+    default:
+      return attr.type;
+  }
+}
 
 export interface ExportOptions {
   entities: Entity[];
@@ -22,57 +64,120 @@ export interface ExportOptions {
   collapsedEntities: Set<string>;
   isDarkMode: boolean;
   colorSettings: ColorSettings;
+  /** Ordered field names per entity (PK first, then FIFO order) - matches on-screen display */
+  orderedFieldsMap?: Record<string, string[]>;
 }
 
 /**
- * Generate a smooth cubic bezier curve path between two points
+ * Get visible fields for an entity in display order
+ * Uses orderedFieldsMap if available, otherwise falls back to filtering entity.attributes
  */
-function generateBezierPath(
+function getVisibleFields(
+  entity: Entity,
+  orderedFieldsMap?: Record<string, string[]>,
+  selectedFields?: Record<string, Set<string>>
+): EntityAttribute[] {
+  // If orderedFieldsMap is available, use it (matches on-screen display)
+  if (orderedFieldsMap && orderedFieldsMap[entity.logicalName]) {
+    const orderedFieldNames = orderedFieldsMap[entity.logicalName];
+    return orderedFieldNames
+      .map((fieldName) => entity.attributes.find((a) => a.name === fieldName))
+      .filter((attr): attr is EntityAttribute => attr !== undefined);
+  }
+
+  // Fallback: filter by selectedFields + isPrimaryKey
+  const entitySelectedFields = selectedFields?.[entity.logicalName] || new Set();
+  return entity.attributes.filter(
+    (attr) => entitySelectedFields.has(attr.name) || attr.isPrimaryKey
+  );
+}
+
+/**
+ * Generate path based on edge style
+ */
+function generateEdgePath(
   start: { x: number; y: number },
-  end: { x: number; y: number }
+  end: { x: number; y: number },
+  edgeStyle: EdgeStyle
 ): string {
   const dx = end.x - start.x;
-  const curveStrength = Math.min(Math.abs(dx) * 0.4, 100);
-  const cp1x = start.x + curveStrength;
-  const cp1y = start.y;
-  const cp2x = end.x - curveStrength;
-  const cp2y = end.y;
-  return `M ${start.x} ${start.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${end.x} ${end.y}`;
+  const midX = (start.x + end.x) / 2;
+
+  if (edgeStyle === 'bezier') {
+    // Bezier curve
+    const curveStrength = Math.min(Math.abs(dx) * 0.4, 100);
+    const cp1x = start.x + curveStrength;
+    const cp1y = start.y;
+    const cp2x = end.x - curveStrength;
+    const cp2y = end.y;
+    return `M ${start.x} ${start.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${end.x} ${end.y}`;
+  } else if (edgeStyle === 'straight') {
+    // Orthogonal path with right angles
+    return `M ${start.x} ${start.y} L ${midX} ${start.y} L ${midX} ${end.y} L ${end.x} ${end.y}`;
+  } else {
+    // Smoothstep (default) - orthogonal with rounded corners
+    const radius = 8;
+    const dir = dx > 0 ? 1 : -1;
+
+    // Simple smoothstep path
+    const pathParts = [`M ${start.x} ${start.y}`];
+    pathParts.push(`L ${midX - dir * radius} ${start.y}`);
+
+    // First corner
+    if (end.y > start.y) {
+      pathParts.push(`Q ${midX} ${start.y} ${midX} ${start.y + radius}`);
+    } else {
+      pathParts.push(`Q ${midX} ${start.y} ${midX} ${start.y - radius}`);
+    }
+
+    // Vertical segment
+    if (end.y > start.y) {
+      pathParts.push(`L ${midX} ${end.y - radius}`);
+      pathParts.push(`Q ${midX} ${end.y} ${midX + dir * radius} ${end.y}`);
+    } else {
+      pathParts.push(`L ${midX} ${end.y + radius}`);
+      pathParts.push(`Q ${midX} ${end.y} ${midX + dir * radius} ${end.y}`);
+    }
+
+    pathParts.push(`L ${end.x} ${end.y}`);
+    return pathParts.join(' ');
+  }
 }
 
 /**
- * Calculate connection point for an entity
+ * Calculate connection point for an entity (matching TableNode.tsx handle positions)
  */
 function getConnectionPoint(
   entities: Entity[],
   entityPositions: Record<string, EntityPosition>,
-  selectedFields: Record<string, Set<string>>,
   collapsedEntities: Set<string>,
   entityName: string,
   fieldName: string | undefined,
-  side: 'left' | 'right'
+  side: 'left' | 'right',
+  orderedFieldsMap?: Record<string, string[]>,
+  selectedFields?: Record<string, Set<string>>
 ): { x: number; y: number } {
   const entity = entities.find((e) => e.logicalName === entityName);
   const pos = entityPositions[entityName];
   if (!pos) return { x: 0, y: 0 };
 
   const x = side === 'left' ? pos.x : pos.x + CARD_WIDTH;
+  // Default to header center
   let y = pos.y + HEADER_HEIGHT / 2;
 
   if (entity && fieldName && !collapsedEntities.has(entityName)) {
-    const entitySelectedFields = selectedFields[entityName] || new Set();
-    const visibleFields = entity.attributes.filter(
-      (attr) => entitySelectedFields.has(attr.name) || attr.isPrimaryKey
-    );
+    const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
     const fieldIndex = visibleFields.findIndex((attr) => attr.name === fieldName);
 
     if (fieldIndex >= 0) {
+      // Match TableNode.tsx getFieldHandleTop calculation
       y =
         pos.y +
         HEADER_HEIGHT +
-        ATTRIBUTES_TITLE_HEIGHT +
-        fieldIndex * FIELD_HEIGHT +
-        FIELD_HALF_HEIGHT;
+        SUBHEADER_HEIGHT +
+        FIELD_PADDING_TOP +
+        fieldIndex * FIELD_ROW_HEIGHT +
+        FIELD_ROW_HEIGHT / 2;
     }
   }
 
@@ -163,6 +268,7 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
     collapsedEntities,
     isDarkMode,
     colorSettings,
+    orderedFieldsMap,
   } = options;
 
   const { customTableColor, standardTableColor, lookupColor } = colorSettings;
@@ -175,6 +281,16 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
     throw new Error('Failed to create canvas context');
   }
 
+  const { edgeStyle } = colorSettings;
+
+  // Calculate card height for an entity (matching TableNode design)
+  const getCardHeight = (entity: Entity, isCollapsed: boolean): number => {
+    if (isCollapsed) return HEADER_HEIGHT + SUBHEADER_HEIGHT;
+    const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
+    if (visibleFields.length === 0) return HEADER_HEIGHT + SUBHEADER_HEIGHT;
+    return HEADER_HEIGHT + SUBHEADER_HEIGHT + FIELD_PADDING_TOP + visibleFields.length * FIELD_ROW_HEIGHT + 8;
+  };
+
   // Calculate bounds with proper card heights
   const positions = Object.values(entityPositions);
   if (positions.length === 0) {
@@ -182,19 +298,11 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
   }
 
   // Calculate max card height considering expanded entities
-  let maxCardHeight = 80;
+  let maxCardHeight = HEADER_HEIGHT + SUBHEADER_HEIGHT;
   entities.forEach((entity) => {
     const isCollapsed = collapsedEntities.has(entity.logicalName);
-    const entitySelectedFields = selectedFields[entity.logicalName] || new Set();
-    const visibleFieldCount = entity.attributes.filter(
-      (attr) => entitySelectedFields.has(attr.name) || attr.isPrimaryKey
-    ).length;
-
-    if (!isCollapsed && visibleFieldCount > 0) {
-      const cardHeight =
-        HEADER_HEIGHT + ATTRIBUTES_TITLE_HEIGHT + visibleFieldCount * FIELD_HEIGHT + 20;
-      maxCardHeight = Math.max(maxCardHeight, cardHeight);
-    }
+    const cardHeight = getCardHeight(entity, isCollapsed);
+    maxCardHeight = Math.max(maxCardHeight, cardHeight);
   });
 
   const minX = Math.min(...positions.map((p) => p.x)) - 80;
@@ -250,44 +358,36 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
     const start = getConnectionPoint(
       entities,
       entityPositions,
-      selectedFields,
       collapsedEntities,
       rel.from,
       lookupField?.name,
-      startSide
+      startSide,
+      orderedFieldsMap,
+      selectedFields
     );
     const end = getConnectionPoint(
       entities,
       entityPositions,
-      selectedFields,
       collapsedEntities,
       rel.to,
       toEntity.primaryIdAttribute,
-      endSide
+      endSide,
+      orderedFieldsMap,
+      selectedFields
     );
 
     // Adjust for canvas offset
     const adjStart = { x: start.x - minX, y: start.y - minY };
     const adjEnd = { x: end.x - minX, y: end.y - minY };
 
-    // Generate bezier curve
-    const dx = adjEnd.x - adjStart.x;
-    const curveStrength = Math.min(Math.abs(dx) * 0.4, 100);
+    // Generate path based on edge style
+    const pathData = generateEdgePath(adjStart, adjEnd, edgeStyle);
 
-    // Draw the bezier curve
+    // Draw the path
     ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.2)';
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(adjStart.x, adjStart.y);
-    ctx.bezierCurveTo(
-      adjStart.x + curveStrength,
-      adjStart.y,
-      adjEnd.x - curveStrength,
-      adjEnd.y,
-      adjEnd.x,
-      adjEnd.y
-    );
-    ctx.stroke();
+    const path2D = new Path2D(pathData);
+    ctx.stroke(path2D);
 
     // Draw connector circles
     ctx.fillStyle = lookupColor;
@@ -330,7 +430,7 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
     drawCardinalityLabelCanvas(ctx, endLabelX, adjEnd.y, cardinality.to, isDarkMode);
   });
 
-  // Draw entities
+  // Draw entities (matching TableNode.tsx design exactly)
   entities.forEach((entity) => {
     const pos = entityPositions[entity.logicalName];
     if (!pos) return;
@@ -339,114 +439,87 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
     const y = pos.y - minY;
     const tableColor = entity.isCustomEntity ? customTableColor : standardTableColor;
     const isCollapsed = collapsedEntities.has(entity.logicalName);
-    const entitySelectedFields = selectedFields[entity.logicalName] || new Set();
-    const visibleFields = entity.attributes.filter(
-      (attr) => entitySelectedFields.has(attr.name) || attr.isPrimaryKey
-    );
-
-    // Calculate card height
-    const cardHeight =
-      isCollapsed || visibleFields.length === 0
-        ? 80
-        : HEADER_HEIGHT + ATTRIBUTES_TITLE_HEIGHT + visibleFields.length * FIELD_HEIGHT + 20;
+    const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
+    const cardHeight = getCardHeight(entity, isCollapsed);
 
     // Card background with rounded corners
-    ctx.fillStyle = isDarkMode ? '#2d2d2d' : '#ffffff';
+    ctx.fillStyle = isDarkMode ? '#1e1e1e' : '#ffffff';
     ctx.beginPath();
-    ctx.roundRect(x, y, CARD_WIDTH, cardHeight, 6);
+    ctx.roundRect(x, y, CARD_WIDTH, cardHeight, 8);
     ctx.fill();
 
     // Card border
-    ctx.strokeStyle = tableColor;
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = isDarkMode ? '#404040' : '#e2e8f0';
+    ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Header background
+    // Header background (36px)
     ctx.fillStyle = tableColor;
     ctx.beginPath();
-    ctx.roundRect(x, y, CARD_WIDTH, HEADER_HEIGHT, [6, 6, 0, 0]);
+    ctx.roundRect(x, y, CARD_WIDTH, HEADER_HEIGHT, [8, 8, 0, 0]);
     ctx.fill();
 
-    // Display name
+    // Display name in header
     ctx.fillStyle = '#ffffff';
-    ctx.font = '600 15px system-ui';
+    ctx.font = '600 14px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(entity.displayName, x + 12, y + 25);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(entity.displayName.substring(0, 30), x + 12, y + HEADER_HEIGHT / 2);
 
-    // Logical name
+    // Subheader background (24px) with logical name
+    const subheaderY = y + HEADER_HEIGHT;
+    ctx.fillStyle = isDarkMode ? '#2a2a2a' : '#f8fafc';
+    ctx.beginPath();
+    ctx.rect(x, subheaderY, CARD_WIDTH, SUBHEADER_HEIGHT);
+    ctx.fill();
+
+    // Logical name in subheader
+    ctx.fillStyle = isDarkMode ? '#94a3b8' : '#64748b';
     ctx.font = '11px monospace';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fillText(entity.logicalName, x + 12, y + 45);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(entity.logicalName, x + 12, subheaderY + SUBHEADER_HEIGHT / 2);
 
-    // Draw fields if not collapsed
+    // Draw fields if not collapsed (matching TableNode field row design)
     if (!isCollapsed && visibleFields.length > 0) {
-      // Attributes title
-      ctx.fillStyle = isDarkMode ? '#94a3b8' : '#64748b';
-      ctx.font = '600 10px system-ui';
-      ctx.fillText(`ATTRIBUTES (${visibleFields.length})`, x + 12, y + HEADER_HEIGHT + 18);
+      let fieldY = y + HEADER_HEIGHT + SUBHEADER_HEIGHT + FIELD_PADDING_TOP;
 
-      let fieldY = y + HEADER_HEIGHT + ATTRIBUTES_TITLE_HEIGHT;
       visibleFields.forEach((attr) => {
-        // Field background
-        const fieldBg = attr.isPrimaryKey
-          ? isDarkMode
-            ? 'rgba(251, 191, 36, 0.1)'
-            : 'rgba(251, 191, 36, 0.05)'
-          : isDarkMode
-            ? 'rgba(255,255,255,0.05)'
-            : 'rgba(0,0,0,0.02)';
+        const badge = getAttributeBadge(attr);
+        const typeLabel = getTypeLabel(attr);
 
-        ctx.fillStyle = fieldBg;
+        // Field row background on hover area
+        ctx.fillStyle = isDarkMode ? '#252525' : '#fafafa';
         ctx.beginPath();
-        ctx.roundRect(x + 12, fieldY, CARD_WIDTH - 24, FIELD_HEIGHT - 4, 3);
+        ctx.rect(x + 4, fieldY, CARD_WIDTH - 8, FIELD_ROW_HEIGHT - 2);
         ctx.fill();
 
-        // Field border
-        ctx.strokeStyle = attr.isPrimaryKey
-          ? '#fbbf24'
-          : isDarkMode
-            ? 'rgba(255,255,255,0.1)'
-            : 'rgba(0,0,0,0.1)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Primary key icon (simplified)
-        if (attr.isPrimaryKey) {
-          ctx.fillStyle = '#fbbf24';
-          ctx.font = '12px system-ui';
-          ctx.fillText('🔑', x + 18, fieldY + 18);
-        }
-
-        // Display name
-        ctx.fillStyle = isDarkMode ? '#e2e8f0' : '#1e293b';
-        ctx.font = attr.isPrimaryKey ? '600 11px system-ui' : '500 11px system-ui';
-        ctx.fillText(
-          attr.displayName.substring(0, 25),
-          x + (attr.isPrimaryKey ? 36 : 20),
-          fieldY + 16
-        );
-
-        // Technical name
-        ctx.fillStyle = isDarkMode ? '#94a3b8' : '#64748b';
-        ctx.font = '9px monospace';
-        ctx.fillText(attr.name.substring(0, 30), x + 20, fieldY + 30);
-
-        // Type badge
-        const typeColor = getFieldTypeColor(attr.type, lookupColor);
-        ctx.fillStyle = typeColor;
+        // Badge (left side)
+        ctx.fillStyle = badge.color;
         ctx.beginPath();
-        ctx.roundRect(x + CARD_WIDTH - 70, fieldY + 8, 50, 16, 3);
+        ctx.roundRect(x + 8, fieldY + 6, 28, 16, 3);
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
         ctx.font = '600 9px system-ui';
         ctx.textAlign = 'center';
-        const typeLabel = attr.isPrimaryKey ? 'PK' : attr.type.toUpperCase().substring(0, 8);
-        ctx.fillText(typeLabel, x + CARD_WIDTH - 45, fieldY + 19);
-        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badge.label, x + 22, fieldY + 14);
 
-        fieldY += FIELD_HEIGHT;
+        // Field display name (middle)
+        ctx.fillStyle = isDarkMode ? '#e2e8f0' : '#1e293b';
+        ctx.font = '500 12px system-ui';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        const displayName = attr.displayName || attr.name;
+        ctx.fillText(displayName.substring(0, 20), x + 44, fieldY + FIELD_ROW_HEIGHT / 2);
+
+        // Type label (right side)
+        ctx.fillStyle = isDarkMode ? '#64748b' : '#94a3b8';
+        ctx.font = '11px system-ui';
+        ctx.textAlign = 'right';
+        ctx.fillText(typeLabel.substring(0, 15), x + CARD_WIDTH - 12, fieldY + FIELD_ROW_HEIGHT / 2);
+
+        fieldY += FIELD_ROW_HEIGHT;
       });
     }
   });
@@ -604,30 +677,31 @@ export function exportToSVG(options: ExportOptions): string {
     collapsedEntities,
     isDarkMode,
     colorSettings,
+    orderedFieldsMap,
   } = options;
 
-  const { customTableColor, standardTableColor, lookupColor } = colorSettings;
+  const { customTableColor, standardTableColor, lookupColor, edgeStyle } = colorSettings;
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
+
+  // Calculate card height for an entity (matching TableNode design)
+  const getCardHeight = (entity: Entity, isCollapsed: boolean): number => {
+    if (isCollapsed) return HEADER_HEIGHT + SUBHEADER_HEIGHT;
+    const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
+    if (visibleFields.length === 0) return HEADER_HEIGHT + SUBHEADER_HEIGHT;
+    return HEADER_HEIGHT + SUBHEADER_HEIGHT + FIELD_PADDING_TOP + visibleFields.length * FIELD_ROW_HEIGHT + 8;
+  };
 
   // Calculate bounds with proper card heights
   const positions = Object.values(entityPositions);
   if (positions.length === 0) return '';
 
   // Calculate max card height considering expanded entities
-  let maxCardHeight = 80;
+  let maxCardHeight = HEADER_HEIGHT + SUBHEADER_HEIGHT;
   entities.forEach((entity) => {
     const isCollapsed = collapsedEntities.has(entity.logicalName);
-    const entitySelectedFields = selectedFields[entity.logicalName] || new Set();
-    const visibleFieldCount = entity.attributes.filter(
-      (attr) => entitySelectedFields.has(attr.name) || attr.isPrimaryKey
-    ).length;
-
-    if (!isCollapsed && visibleFieldCount > 0) {
-      const cardHeight =
-        HEADER_HEIGHT + ATTRIBUTES_TITLE_HEIGHT + visibleFieldCount * FIELD_HEIGHT + 20;
-      maxCardHeight = Math.max(maxCardHeight, cardHeight);
-    }
+    const cardHeight = getCardHeight(entity, isCollapsed);
+    maxCardHeight = Math.max(maxCardHeight, cardHeight);
   });
 
   const minX = Math.min(...positions.map((p) => p.x)) - 80;
@@ -690,26 +764,28 @@ export function exportToSVG(options: ExportOptions): string {
     const start = getConnectionPoint(
       entities,
       entityPositions,
-      selectedFields,
       collapsedEntities,
       rel.from,
       lookupField?.name,
-      startSide
+      startSide,
+      orderedFieldsMap,
+      selectedFields
     );
     const end = getConnectionPoint(
       entities,
       entityPositions,
-      selectedFields,
       collapsedEntities,
       rel.to,
       toEntity.primaryIdAttribute,
-      endSide
+      endSide,
+      orderedFieldsMap,
+      selectedFields
     );
 
-    // Generate bezier path
-    const pathD = generateBezierPath(start, end);
+    // Generate path based on edge style
+    const pathD = generateEdgePath(start, end, edgeStyle);
 
-    // Draw the bezier curve
+    // Draw the path
     const path = document.createElementNS(svgNS, 'path');
     path.setAttribute('d', pathD);
     path.setAttribute('fill', 'none');
@@ -769,154 +845,140 @@ export function exportToSVG(options: ExportOptions): string {
     svg.appendChild(createCardinalityLabelSVG(svgNS, endLabelX, end.y, cardinality.to, isDarkMode));
   });
 
-  // Draw entities
+  // Draw entities (matching TableNode.tsx design exactly)
   entities.forEach((entity) => {
     const pos = entityPositions[entity.logicalName];
     if (!pos) return;
 
-    const isCustom = entity.isCustomEntity;
-    const tableColor = isCustom ? customTableColor : standardTableColor;
-    const entitySelectedFields = selectedFields[entity.logicalName] || new Set();
+    const tableColor = entity.isCustomEntity ? customTableColor : standardTableColor;
     const isCollapsed = collapsedEntities.has(entity.logicalName);
+    const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
+    const cardHeight = getCardHeight(entity, isCollapsed);
 
-    // Get visible fields (selected + primary key)
-    const visibleFields = entity.attributes.filter(
-      (attr) => entitySelectedFields.has(attr.name) || attr.isPrimaryKey
-    );
-
-    // Entity card background - use proper dimensions
-    const cardHeight =
-      isCollapsed || visibleFields.length === 0
-        ? 80
-        : HEADER_HEIGHT + ATTRIBUTES_TITLE_HEIGHT + visibleFields.length * FIELD_HEIGHT + 20;
-
+    // Card background with rounded corners
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('x', pos.x.toString());
     rect.setAttribute('y', pos.y.toString());
     rect.setAttribute('width', CARD_WIDTH.toString());
     rect.setAttribute('height', cardHeight.toString());
-    rect.setAttribute('fill', isDarkMode ? '#2d2d2d' : '#ffffff');
-    rect.setAttribute('stroke', tableColor);
-    rect.setAttribute('stroke-width', '2');
-    rect.setAttribute('rx', '6');
+    rect.setAttribute('fill', isDarkMode ? '#1e1e1e' : '#ffffff');
+    rect.setAttribute('stroke', isDarkMode ? '#404040' : '#e2e8f0');
+    rect.setAttribute('stroke-width', '1');
+    rect.setAttribute('rx', '8');
     svg.appendChild(rect);
 
-    // Header background
+    // Header background (36px)
     const header = document.createElementNS(svgNS, 'rect');
     header.setAttribute('x', pos.x.toString());
     header.setAttribute('y', pos.y.toString());
     header.setAttribute('width', CARD_WIDTH.toString());
     header.setAttribute('height', HEADER_HEIGHT.toString());
     header.setAttribute('fill', tableColor);
-    header.setAttribute('rx', '6');
+    header.setAttribute('rx', '8');
     svg.appendChild(header);
 
-    // Display name
+    // Cover bottom corners of header to make them square
+    const headerBottom = document.createElementNS(svgNS, 'rect');
+    headerBottom.setAttribute('x', pos.x.toString());
+    headerBottom.setAttribute('y', (pos.y + HEADER_HEIGHT - 8).toString());
+    headerBottom.setAttribute('width', CARD_WIDTH.toString());
+    headerBottom.setAttribute('height', '8');
+    headerBottom.setAttribute('fill', tableColor);
+    svg.appendChild(headerBottom);
+
+    // Display name in header
     const displayNameText = document.createElementNS(svgNS, 'text');
     displayNameText.setAttribute('x', (pos.x + 12).toString());
-    displayNameText.setAttribute('y', (pos.y + 25).toString());
+    displayNameText.setAttribute('y', (pos.y + HEADER_HEIGHT / 2 + 5).toString());
     displayNameText.setAttribute('fill', '#ffffff');
-    displayNameText.setAttribute('font-size', '15');
+    displayNameText.setAttribute('font-size', '14');
     displayNameText.setAttribute('font-weight', '600');
-    displayNameText.textContent = entity.displayName;
+    displayNameText.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
+    displayNameText.textContent = entity.displayName.substring(0, 30);
     svg.appendChild(displayNameText);
 
-    // Logical name
+    // Subheader background (24px) with logical name
+    const subheaderY = pos.y + HEADER_HEIGHT;
+    const subheader = document.createElementNS(svgNS, 'rect');
+    subheader.setAttribute('x', pos.x.toString());
+    subheader.setAttribute('y', subheaderY.toString());
+    subheader.setAttribute('width', CARD_WIDTH.toString());
+    subheader.setAttribute('height', SUBHEADER_HEIGHT.toString());
+    subheader.setAttribute('fill', isDarkMode ? '#2a2a2a' : '#f8fafc');
+    svg.appendChild(subheader);
+
+    // Logical name in subheader
     const logicalNameText = document.createElementNS(svgNS, 'text');
     logicalNameText.setAttribute('x', (pos.x + 12).toString());
-    logicalNameText.setAttribute('y', (pos.y + 45).toString());
-    logicalNameText.setAttribute('fill', 'rgba(255, 255, 255, 0.8)');
+    logicalNameText.setAttribute('y', (subheaderY + SUBHEADER_HEIGHT / 2 + 4).toString());
+    logicalNameText.setAttribute('fill', isDarkMode ? '#94a3b8' : '#64748b');
     logicalNameText.setAttribute('font-size', '11');
     logicalNameText.setAttribute('font-family', 'monospace');
     logicalNameText.textContent = entity.logicalName;
     svg.appendChild(logicalNameText);
 
-    // Fields
+    // Draw fields if not collapsed (matching TableNode field row design)
     if (!isCollapsed && visibleFields.length > 0) {
-      const fieldsTitle = document.createElementNS(svgNS, 'text');
-      fieldsTitle.setAttribute('x', (pos.x + 12).toString());
-      fieldsTitle.setAttribute('y', (pos.y + HEADER_HEIGHT + 18).toString());
-      fieldsTitle.setAttribute('fill', isDarkMode ? '#94a3b8' : '#64748b');
-      fieldsTitle.setAttribute('font-size', '10');
-      fieldsTitle.setAttribute('font-weight', '600');
-      fieldsTitle.textContent = `ATTRIBUTES (${visibleFields.length})`;
-      svg.appendChild(fieldsTitle);
+      let fieldY = pos.y + HEADER_HEIGHT + SUBHEADER_HEIGHT + FIELD_PADDING_TOP;
 
-      let yOffset = pos.y + HEADER_HEIGHT + ATTRIBUTES_TITLE_HEIGHT;
       visibleFields.forEach((attr) => {
-        // Field background
-        const fieldBgColor = attr.isPrimaryKey
-          ? isDarkMode
-            ? 'rgba(251, 191, 36, 0.1)'
-            : 'rgba(251, 191, 36, 0.05)'
-          : isDarkMode
-            ? 'rgba(255,255,255,0.05)'
-            : 'rgba(0,0,0,0.02)';
+        const badge = getAttributeBadge(attr);
+        const typeLabelText = getTypeLabel(attr);
 
+        // Field row background
         const fieldBg = document.createElementNS(svgNS, 'rect');
-        fieldBg.setAttribute('x', (pos.x + 12).toString());
-        fieldBg.setAttribute('y', yOffset.toString());
-        fieldBg.setAttribute('width', (CARD_WIDTH - 24).toString());
-        fieldBg.setAttribute('height', (FIELD_HEIGHT - 4).toString());
-        fieldBg.setAttribute('fill', fieldBgColor);
-        fieldBg.setAttribute(
-          'stroke',
-          attr.isPrimaryKey ? '#fbbf24' : isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-        );
-        fieldBg.setAttribute('rx', '3');
+        fieldBg.setAttribute('x', (pos.x + 4).toString());
+        fieldBg.setAttribute('y', fieldY.toString());
+        fieldBg.setAttribute('width', (CARD_WIDTH - 8).toString());
+        fieldBg.setAttribute('height', (FIELD_ROW_HEIGHT - 2).toString());
+        fieldBg.setAttribute('fill', isDarkMode ? '#252525' : '#fafafa');
         svg.appendChild(fieldBg);
 
-        // Primary key indicator
-        const textXOffset = attr.isPrimaryKey ? 36 : 20;
-        if (attr.isPrimaryKey) {
-          const keyText = document.createElementNS(svgNS, 'text');
-          keyText.setAttribute('x', (pos.x + 20).toString());
-          keyText.setAttribute('y', (yOffset + 18).toString());
-          keyText.setAttribute('font-size', '12');
-          keyText.textContent = '🔑';
-          svg.appendChild(keyText);
-        }
+        // Badge (left side)
+        const badgeRect = document.createElementNS(svgNS, 'rect');
+        badgeRect.setAttribute('x', (pos.x + 8).toString());
+        badgeRect.setAttribute('y', (fieldY + 6).toString());
+        badgeRect.setAttribute('width', '28');
+        badgeRect.setAttribute('height', '16');
+        badgeRect.setAttribute('fill', badge.color);
+        badgeRect.setAttribute('rx', '3');
+        svg.appendChild(badgeRect);
 
-        const displayName = document.createElementNS(svgNS, 'text');
-        displayName.setAttribute('x', (pos.x + textXOffset).toString());
-        displayName.setAttribute('y', (yOffset + 16).toString());
-        displayName.setAttribute('fill', isDarkMode ? '#e2e8f0' : '#1e293b');
-        displayName.setAttribute('font-size', '11');
-        displayName.setAttribute('font-weight', attr.isPrimaryKey ? '600' : '500');
-        displayName.textContent = attr.displayName.substring(0, 25);
-        svg.appendChild(displayName);
+        const badgeText = document.createElementNS(svgNS, 'text');
+        badgeText.setAttribute('x', (pos.x + 22).toString());
+        badgeText.setAttribute('y', (fieldY + 18).toString());
+        badgeText.setAttribute('fill', '#ffffff');
+        badgeText.setAttribute('font-size', '9');
+        badgeText.setAttribute('font-weight', '600');
+        badgeText.setAttribute('text-anchor', 'middle');
+        badgeText.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
+        badgeText.textContent = badge.label;
+        svg.appendChild(badgeText);
 
-        const technicalName = document.createElementNS(svgNS, 'text');
-        technicalName.setAttribute('x', (pos.x + 20).toString());
-        technicalName.setAttribute('y', (yOffset + 30).toString());
-        technicalName.setAttribute('fill', isDarkMode ? '#94a3b8' : '#64748b');
-        technicalName.setAttribute('font-size', '9');
-        technicalName.setAttribute('font-family', 'monospace');
-        technicalName.textContent = attr.name.substring(0, 30);
-        svg.appendChild(technicalName);
+        // Field display name (middle)
+        const fieldName = document.createElementNS(svgNS, 'text');
+        fieldName.setAttribute('x', (pos.x + 44).toString());
+        fieldName.setAttribute('y', (fieldY + FIELD_ROW_HEIGHT / 2 + 4).toString());
+        fieldName.setAttribute('fill', isDarkMode ? '#e2e8f0' : '#1e293b');
+        fieldName.setAttribute('font-size', '12');
+        fieldName.setAttribute('font-weight', '500');
+        fieldName.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
+        const displayName = attr.displayName || attr.name;
+        fieldName.textContent = displayName.substring(0, 20);
+        svg.appendChild(fieldName);
 
-        // Type badge
-        const typeBadge = document.createElementNS(svgNS, 'rect');
-        typeBadge.setAttribute('x', (pos.x + CARD_WIDTH - 70).toString());
-        typeBadge.setAttribute('y', (yOffset + 8).toString());
-        typeBadge.setAttribute('width', '50');
-        typeBadge.setAttribute('height', '16');
-        typeBadge.setAttribute('fill', getFieldTypeColor(attr.type, lookupColor));
-        typeBadge.setAttribute('rx', '3');
-        svg.appendChild(typeBadge);
+        // Type label (right side)
+        const typeLabel = document.createElementNS(svgNS, 'text');
+        typeLabel.setAttribute('x', (pos.x + CARD_WIDTH - 12).toString());
+        typeLabel.setAttribute('y', (fieldY + FIELD_ROW_HEIGHT / 2 + 4).toString());
+        typeLabel.setAttribute('fill', isDarkMode ? '#64748b' : '#94a3b8');
+        typeLabel.setAttribute('font-size', '11');
+        typeLabel.setAttribute('text-anchor', 'end');
+        typeLabel.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
+        typeLabel.textContent = typeLabelText.substring(0, 15);
+        svg.appendChild(typeLabel);
 
-        const typeLabel = attr.isPrimaryKey ? 'PK' : attr.type.toUpperCase().substring(0, 8);
-        const typeText = document.createElementNS(svgNS, 'text');
-        typeText.setAttribute('x', (pos.x + CARD_WIDTH - 45).toString());
-        typeText.setAttribute('y', (yOffset + 19).toString());
-        typeText.setAttribute('fill', '#ffffff');
-        typeText.setAttribute('font-size', '9');
-        typeText.setAttribute('font-weight', '600');
-        typeText.setAttribute('text-anchor', 'middle');
-        typeText.textContent = typeLabel;
-        svg.appendChild(typeText);
-
-        yOffset += FIELD_HEIGHT;
+        fieldY += FIELD_ROW_HEIGHT;
       });
     }
   });

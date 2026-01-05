@@ -4,7 +4,7 @@
 
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Entity, EntityAttribute, AlternateKey } from '@/types';
 import { getAttributeBadge, isLookupType } from '../utils/badges';
 import styles from '@/styles/TableNode.module.css';
@@ -16,6 +16,8 @@ export interface TableNodeData extends Record<string, unknown> {
   orderedFields?: string[]; // Fields to display in order (PK first, then FIFO)
   onOpenFieldDrawer?: (entityName: string) => void;
   onRemoveField?: (entityName: string, fieldName: string) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: (entityName: string) => void;
 }
 
 interface TableNodeProps {
@@ -89,6 +91,8 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
     orderedFields,
     onOpenFieldDrawer,
     onRemoveField,
+    isCollapsed = false,
+    onToggleCollapse,
   } = data;
 
   // Get attributes to display based on orderedFields or just PK
@@ -183,18 +187,34 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
       {/* Header */}
       <div className={styles.header} style={{ background: color, height: HEADER_HEIGHT }}>
         <span className={styles.headerTitle}>{entity.displayName}</span>
-        {onOpenFieldDrawer && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenFieldDrawer(entity.logicalName);
-            }}
-            className={styles.addFieldButton}
-            title="Add fields"
-          >
-            <Plus size={14} />
-          </button>
-        )}
+        <div className={styles.headerButtons}>
+          {onToggleCollapse && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleCollapse(entity.logicalName);
+              }}
+              className={styles.collapseButton}
+              title={isCollapsed ? 'Expand fields' : 'Collapse fields'}
+              aria-expanded={!isCollapsed}
+              aria-label={isCollapsed ? 'Expand fields' : 'Collapse fields'}
+            >
+              {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+            </button>
+          )}
+          {onOpenFieldDrawer && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenFieldDrawer(entity.logicalName);
+              }}
+              className={styles.addFieldButton}
+              title="Add fields"
+            >
+              <Plus size={14} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Logical name */}

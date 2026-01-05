@@ -48,7 +48,9 @@ export const SidebarFilters = memo(function SidebarFilters({
   const smallButtonBg = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
   const inputBg = isDarkMode ? '#1a1a1a' : '#ffffff';
 
-  const selectArrowBg = `linear-gradient(45deg, transparent 50%, ${textColor} 50%), linear-gradient(135deg, ${textColor} 50%, transparent 50%)`;
+  // SVG chevron arrow for select dropdown - properly encoded for CSS url()
+  const arrowColor = isDarkMode ? '%23e2e8f0' : '%231e293b';
+  const selectArrowBg = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${arrowColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`;
 
   const cycleLayoutMode = () => {
     const modes: LayoutMode[] = ['force', 'grid', 'auto'];
@@ -85,10 +87,13 @@ export const SidebarFilters = memo(function SidebarFilters({
         onChange={(e) => onPublisherFilterChange(e.target.value)}
         className={styles.select}
         style={{
-          background: inputBg,
+          backgroundColor: inputBg,
           border: `1px solid ${borderColor}`,
           color: textColor,
           backgroundImage: selectArrowBg,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'calc(100% - 12px) center',
+          backgroundSize: '12px 12px',
         }}
       >
         <option value="all">All Publishers</option>
@@ -107,10 +112,13 @@ export const SidebarFilters = memo(function SidebarFilters({
         onChange={(e) => onSolutionFilterChange(e.target.value)}
         className={styles.select}
         style={{
-          background: inputBg,
+          backgroundColor: inputBg,
           border: `1px solid ${borderColor}`,
           color: textColor,
           backgroundImage: selectArrowBg,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'calc(100% - 12px) center',
+          backgroundSize: '12px 12px',
           marginBottom: '12px',
         }}
       >

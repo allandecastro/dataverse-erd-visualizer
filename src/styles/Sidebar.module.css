@@ -187,16 +187,29 @@
 
 .select {
   width: 100%;
-  padding: 10px 32px 10px 12px;
+  padding: 10px 36px 10px 12px;
   border-radius: 6px;
   font-size: 14px;
   outline: none;
   cursor: pointer;
   margin-bottom: 8px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
   background-repeat: no-repeat;
-  background-position: calc(100% - 16px) calc(1em + 2px), calc(100% - 11px) calc(1em + 2px);
-  background-size: 5px 5px, 5px 5px;
+  background-position: calc(100% - 12px) center;
+  background-size: 12px 12px;
+}
+
+/* Hide IE arrow */
+.select::-ms-expand {
+  display: none;
+}
+
+/* Style dropdown options for dark mode support */
+.select option {
+  background: inherit;
+  color: inherit;
 }
 
 .layoutButtonGroup {
@@ -274,10 +287,21 @@
   font-size: 12px;
   outline: none;
   cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
   background-repeat: no-repeat;
-  background-position: calc(100% - 16px) calc(1em + 2px), calc(100% - 11px) calc(1em + 2px);
-  background-size: 5px 5px, 5px 5px;
+  background-position: calc(100% - 10px) center;
+  background-size: 12px 12px;
+}
+
+.settingsSelect::-ms-expand {
+  display: none;
+}
+
+.settingsSelect option {
+  background: inherit;
+  color: inherit;
 }
 
 /* Legend Component */

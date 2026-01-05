@@ -44,6 +44,12 @@
   white-space: nowrap;
 }
 
+.headerButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .addFieldButton {
   background: rgba(255, 255, 255, 0.2);
   border: none;
@@ -54,6 +60,28 @@
   align-items: center;
   justify-content: center;
   color: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+.addFieldButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.collapseButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+.collapseButton:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Logical Name Subheader */

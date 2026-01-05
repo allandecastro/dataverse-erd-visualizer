@@ -59,7 +59,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     customTableColor: '#0ea5e9',
     standardTableColor: '#64748b',
     lookupColor: '#f97316',
-    edgeStyle: 'straight',
+    edgeStyle: 'smoothstep',
   });
 
   // Features
@@ -211,17 +211,23 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   }, []);
 
   // Get ordered fields for an entity (PK first, then FIFO order)
+  // Respects collapsedEntities state - collapsed entities only show PK
   const getOrderedFields = useCallback(
     (entityName: string) => {
       const entity = entities.find((e) => e.logicalName === entityName);
       if (!entity) return [];
 
-      const selected = selectedFields[entityName] || new Set();
-      const order = fieldOrder[entityName] || [];
-
       // Get PK attribute
       const pkAttr = entity.attributes.find((a) => a.isPrimaryKey);
       const pkName = pkAttr?.name;
+
+      // If entity is collapsed, only show PK (minimal view)
+      if (collapsedEntities.has(entityName)) {
+        return pkName ? [pkName] : [];
+      }
+
+      const selected = selectedFields[entityName] || new Set();
+      const order = fieldOrder[entityName] || [];
 
       // Build ordered list: PK first, then fields in FIFO order
       const orderedFields: string[] = [];
@@ -236,7 +242,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
 
       return orderedFields;
     },
-    [entities, selectedFields, fieldOrder]
+    [entities, selectedFields, fieldOrder, collapsedEntities]
   );
 
   // Update edge offset for manual path adjustment (supports both x and y)

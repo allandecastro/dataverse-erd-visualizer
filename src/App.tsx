@@ -29,12 +29,7 @@ const FieldDrawer = lazy(() =>
 
 // Types and utilities
 import type { ColorSettings } from './types/erdTypes';
-import {
-  copyToClipboardAsPNG,
-  exportToMermaid,
-  exportToSVG,
-  downloadSVG,
-} from './utils/exportUtils';
+import { exportToMermaid } from './utils/exportUtils';
 import { exportToDrawio, downloadDrawio } from './utils/drawioExport';
 
 interface ERDVisualizerProps {
@@ -69,6 +64,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     layoutMode,
     setLayoutMode,
     collapsedEntities,
+    toggleCollapse,
     collapseAll,
     expandAll,
     selectedFields,
@@ -165,33 +161,31 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     onOpenSearch: () => setIsSearchOpen(true),
   });
 
+  // Build ordered fields map for all entities (needed by export handlers)
+  const orderedFieldsMap = filteredEntities.reduce(
+    (acc, entity) => {
+      acc[entity.logicalName] = getOrderedFields(entity.logicalName);
+      return acc;
+    },
+    {} as Record<string, string[]>
+  );
+
   // Export handlers
   const handleCopyPNG = useCallback(async () => {
     try {
-      await copyToClipboardAsPNG({
-        entities: filteredEntities,
-        relationships: filteredRelationships,
-        entityPositions,
-        selectedFields,
-        collapsedEntities,
-        isDarkMode,
-        colorSettings,
-      });
+      if (!reactFlowRef.current) {
+        throw new Error('React Flow not initialized');
+      }
+      const blob = await reactFlowRef.current.exportToPng();
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob }),
+      ]);
       showToast('Diagram copied to clipboard as PNG!', 'success');
     } catch (err) {
       console.error('Error copying PNG:', err);
       showToast('Failed to copy to clipboard', 'error');
     }
-  }, [
-    filteredEntities,
-    filteredRelationships,
-    entityPositions,
-    selectedFields,
-    collapsedEntities,
-    isDarkMode,
-    colorSettings,
-    showToast,
-  ]);
+  }, [showToast]);
 
   const handleExportMermaid = useCallback(() => {
     try {
@@ -203,6 +197,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         collapsedEntities,
         isDarkMode,
         colorSettings,
+        orderedFieldsMap,
       });
       navigator.clipboard
         .writeText(mermaid)
@@ -225,36 +220,32 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     collapsedEntities,
     isDarkMode,
     colorSettings,
+    orderedFieldsMap,
     showToast,
   ]);
 
-  const handleExportSVG = useCallback(() => {
+  const handleExportSVG = useCallback(async () => {
     try {
-      const svgString = exportToSVG({
-        entities: filteredEntities,
-        relationships: filteredRelationships,
-        entityPositions,
-        selectedFields,
-        collapsedEntities,
-        isDarkMode,
-        colorSettings,
-      });
-      downloadSVG(svgString);
+      if (!reactFlowRef.current) {
+        throw new Error('React Flow not initialized');
+      }
+      const svgString = await reactFlowRef.current.exportToSvg();
+      // Download the SVG
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'erd-diagram.svg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       showToast('SVG diagram downloaded!', 'success');
     } catch (err) {
       console.error('Error exporting SVG:', err);
       showToast('Failed to export SVG', 'error');
     }
-  }, [
-    filteredEntities,
-    filteredRelationships,
-    entityPositions,
-    selectedFields,
-    collapsedEntities,
-    isDarkMode,
-    colorSettings,
-    showToast,
-  ]);
+  }, [showToast]);
 
   const handleExportDrawio = useCallback(async () => {
     if (isExportingDrawio) return;
@@ -311,19 +302,11 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     [setEntityPositions]
   );
 
-  // Build ordered fields map for all entities
-  const orderedFieldsMap = filteredEntities.reduce(
-    (acc, entity) => {
-      acc[entity.logicalName] = getOrderedFields(entity.logicalName);
-      return acc;
-    },
-    {} as Record<string, string[]>
-  );
-
   // Field drawer handlers
   const handleOpenFieldDrawer = useCallback(
     (entityName: string) => {
-      setFieldDrawerEntity(entityName);
+      // Toggle: close if clicking the same table, otherwise switch to the new one
+      setFieldDrawerEntity((current) => (current === entityName ? null : entityName));
     },
     [setFieldDrawerEntity]
   );
@@ -429,6 +412,8 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         onDeselectAll={deselectAll}
         onExpandAll={expandAll}
         onCollapseAll={collapseAll}
+        collapsedEntities={collapsedEntities}
+        onToggleCollapse={toggleCollapse}
         onSearchChange={setSearchQuery}
         onPublisherFilterChange={setPublisherFilter}
         onSolutionFilterChange={setSolutionFilter}
@@ -496,6 +481,8 @@ interface ERDVisualizerContentProps {
   onDeselectAll: () => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
+  collapsedEntities: Set<string>;
+  onToggleCollapse: (entityName: string) => void;
   onSearchChange: (value: string) => void;
   onPublisherFilterChange: (value: string) => void;
   onSolutionFilterChange: (value: string) => void;
@@ -557,6 +544,8 @@ function ERDVisualizerContent({
   onDeselectAll,
   onExpandAll,
   onCollapseAll,
+  collapsedEntities,
+  onToggleCollapse,
   onSearchChange,
   onPublisherFilterChange,
   onSolutionFilterChange,
@@ -678,6 +667,8 @@ function ERDVisualizerContent({
             onRemoveField={onRemoveField}
             edgeOffsets={edgeOffsets}
             onEdgeOffsetChange={onEdgeOffsetChange}
+            collapsedEntities={collapsedEntities}
+            onToggleCollapse={onToggleCollapse}
           />
         </main>
       </div>
