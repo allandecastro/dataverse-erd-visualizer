@@ -92,6 +92,8 @@ export default defineConfig(({ mode }) => {
       minify: isWebResource ? 'terser' : 'esbuild',
       rollupOptions: {
         output: {
+          // For web resource, output IIFE format (not ESM) for Dataverse compatibility
+          format: isWebResource ? 'iife' : undefined,
           // For web resource, create a single bundle
           manualChunks: isWebResource ? undefined : {
             'react-vendor': ['react', 'react-dom'],
