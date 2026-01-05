@@ -90,6 +90,8 @@ export default defineConfig(({ mode }) => {
       outDir: isWebResource ? 'dist/webresource' : 'dist',
       sourcemap: !isWebResource,
       minify: isWebResource ? 'terser' : 'esbuild',
+      // Extract CSS to separate file (required for Dataverse solution structure)
+      cssCodeSplit: false,
       rollupOptions: {
         output: {
           // For web resource, output IIFE format (not ESM) for Dataverse compatibility
