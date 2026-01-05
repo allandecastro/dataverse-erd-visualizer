@@ -351,11 +351,11 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
 
     setNodes(newNodes);
     setEdges(newEdges);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- colorSettings handled by separate effects below
   }, [
     entities,
     relationships,
     entityPositions,
-    colorSettings,
     isDarkMode,
     orderedFieldsMap,
     onOpenFieldDrawer,
@@ -367,6 +367,66 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     setNodes,
     setEdges,
   ]);
+
+  // Separate effect for color updates - updates node data in-place without recreating nodes
+  // This prevents tables from disappearing when color picker is dragged (rapid onChange events)
+  useEffect(() => {
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => {
+        const entity = entities.find((e) => e.logicalName === node.id);
+        if (!entity) return node;
+
+        const isCustom =
+          entity.publisher &&
+          !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
+            entity.publisher
+          );
+        const color = isCustom
+          ? colorSettings.customTableColor
+          : colorSettings.standardTableColor;
+
+        // Only update if color actually changed
+        if ((node.data as TableNodeData).color === color) return node;
+
+        return {
+          ...node,
+          data: { ...node.data, color },
+        };
+      })
+    );
+  }, [colorSettings.customTableColor, colorSettings.standardTableColor, entities, setNodes]);
+
+  // Separate effect for edge color and style updates
+  useEffect(() => {
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) => {
+        // Preserve existing markerEnd structure, only update color
+        const existingMarker = edge.markerEnd;
+        const updatedMarkerEnd =
+          typeof existingMarker === 'object'
+            ? { ...existingMarker, color: colorSettings.lookupColor || '#f59e0b' }
+            : {
+                type: MarkerType.ArrowClosed,
+                color: colorSettings.lookupColor || '#f59e0b',
+                width: 20,
+                height: 20,
+              };
+
+        return {
+          ...edge,
+          style: {
+            ...edge.style,
+            stroke: colorSettings.lookupColor || '#f59e0b',
+          },
+          markerEnd: updatedMarkerEnd,
+          data: {
+            ...edge.data,
+            edgeStyle: colorSettings.edgeStyle,
+          },
+        };
+      })
+    );
+  }, [colorSettings.lookupColor, colorSettings.edgeStyle, setEdges]);
 
   // Handle node drag end to update positions
   const onNodeDragStop = useCallback(

@@ -3,7 +3,7 @@
  * Using React Flow for diagram visualization
  */
 
-import { useRef, useEffect, useCallback, useState, lazy, Suspense } from 'react';
+import { useRef, useEffect, useCallback, useState, useMemo, lazy, Suspense } from 'react';
 import type { Entity, EntityRelationship } from '@/types';
 
 // Hooks
@@ -161,13 +161,17 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     onOpenSearch: () => setIsSearchOpen(true),
   });
 
-  // Build ordered fields map for all entities (needed by export handlers)
-  const orderedFieldsMap = filteredEntities.reduce(
-    (acc, entity) => {
-      acc[entity.logicalName] = getOrderedFields(entity.logicalName);
-      return acc;
-    },
-    {} as Record<string, string[]>
+  // Build ordered fields map for all entities (memoized to prevent unnecessary re-renders)
+  const orderedFieldsMap = useMemo(
+    () =>
+      filteredEntities.reduce(
+        (acc, entity) => {
+          acc[entity.logicalName] = getOrderedFields(entity.logicalName);
+          return acc;
+        },
+        {} as Record<string, string[]>
+      ),
+    [filteredEntities, getOrderedFields]
   );
 
   // Export handlers
