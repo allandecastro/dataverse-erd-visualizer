@@ -2,8 +2,10 @@
  * Sidebar filters: search, publisher, solution, layout mode, expand/collapse
  */
 
+import { memo } from 'react';
 import { Search, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import type { LayoutMode } from '@/types/erdTypes';
+import styles from '@/styles/Sidebar.module.css';
 
 export interface SidebarFiltersProps {
   searchQuery: string;
@@ -24,7 +26,7 @@ export interface SidebarFiltersProps {
   onCollapseAll: () => void;
 }
 
-export function SidebarFilters({
+export const SidebarFilters = memo(function SidebarFilters({
   searchQuery,
   publisherFilter,
   solutionFilter,
@@ -42,55 +44,11 @@ export function SidebarFilters({
   onExpandAll,
   onCollapseAll,
 }: SidebarFiltersProps) {
-  const buttonStyle = {
-    flex: 1,
-    padding: '8px',
-    background: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-    border: `1px solid ${borderColor}`,
-    borderRadius: '6px',
-    color: textColor,
-    cursor: 'pointer',
-    display: 'flex' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    gap: '6px',
-    fontSize: '12px',
-  };
+  const buttonBg = isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+  const smallButtonBg = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
+  const inputBg = isDarkMode ? '#1a1a1a' : '#ffffff';
 
-  const smallButtonStyle = {
-    flex: 1,
-    padding: '6px',
-    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-    border: `1px solid ${borderColor}`,
-    borderRadius: '4px',
-    color: textColor,
-    fontSize: '11px',
-    cursor: 'pointer',
-    display: 'flex' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    gap: '4px',
-  };
-
-  const selectStyle = {
-    width: '100%',
-    padding: '10px 32px 10px 12px',
-    background: isDarkMode ? '#1a1a1a' : '#ffffff',
-    border: `1px solid ${borderColor}`,
-    borderRadius: '6px',
-    color: textColor,
-    fontSize: '14px',
-    outline: 'none',
-    cursor: 'pointer',
-    marginBottom: '8px',
-    WebkitAppearance: 'none' as const,
-    MozAppearance: 'none' as const,
-    appearance: 'none' as const,
-    backgroundImage: `linear-gradient(45deg, transparent 50%, ${textColor} 50%), linear-gradient(135deg, ${textColor} 50%, transparent 50%)`,
-    backgroundPosition: 'calc(100% - 16px) calc(1em + 2px), calc(100% - 11px) calc(1em + 2px)',
-    backgroundSize: '5px 5px, 5px 5px',
-    backgroundRepeat: 'no-repeat',
-  };
+  const selectArrowBg = `linear-gradient(45deg, transparent 50%, ${textColor} 50%), linear-gradient(135deg, ${textColor} 50%, transparent 50%)`;
 
   const cycleLayoutMode = () => {
     const modes: LayoutMode[] = ['force', 'grid', 'auto'];
@@ -102,33 +60,19 @@ export function SidebarFilters({
   return (
     <>
       {/* Search */}
-      <div style={{ marginBottom: '12px' }}>
-        <div style={{ position: 'relative' }}>
-          <Search
-            size={16}
-            style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: textSecondary,
-            }}
-          />
+      <div className={styles.searchContainer}>
+        <div className={styles.searchWrapper}>
+          <Search size={16} className={styles.searchIcon} style={{ color: textSecondary }} />
           <input
             type="text"
             placeholder="Search tables..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
+            className={styles.searchInput}
             style={{
-              width: '100%',
-              padding: '10px 12px 10px 36px',
-              background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+              background: smallButtonBg,
               border: `1px solid ${borderColor}`,
-              borderRadius: '6px',
               color: textColor,
-              fontSize: '14px',
-              outline: 'none',
-              boxSizing: 'border-box',
             }}
           />
         </div>
@@ -139,7 +83,13 @@ export function SidebarFilters({
         key={`publisher-${isDarkMode}`}
         value={publisherFilter}
         onChange={(e) => onPublisherFilterChange(e.target.value)}
-        style={selectStyle}
+        className={styles.select}
+        style={{
+          background: inputBg,
+          border: `1px solid ${borderColor}`,
+          color: textColor,
+          backgroundImage: selectArrowBg,
+        }}
       >
         <option value="all">All Publishers</option>
         {publishers
@@ -155,7 +105,14 @@ export function SidebarFilters({
         key={`solution-${isDarkMode}`}
         value={solutionFilter}
         onChange={(e) => onSolutionFilterChange(e.target.value)}
-        style={{ ...selectStyle, marginBottom: '12px' }}
+        className={styles.select}
+        style={{
+          background: inputBg,
+          border: `1px solid ${borderColor}`,
+          color: textColor,
+          backgroundImage: selectArrowBg,
+          marginBottom: '12px',
+        }}
       >
         <option value="all">All Solutions</option>
         {solutions
@@ -168,24 +125,48 @@ export function SidebarFilters({
       </select>
 
       {/* Layout Mode */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-        <button onClick={cycleLayoutMode} style={buttonStyle}>
+      <div className={styles.layoutButtonGroup}>
+        <button
+          onClick={cycleLayoutMode}
+          className={styles.layoutButton}
+          style={{
+            background: buttonBg,
+            border: `1px solid ${borderColor}`,
+            color: textColor,
+          }}
+        >
           <RefreshCw size={14} />
           {layoutMode === 'force' ? 'Force' : layoutMode === 'grid' ? 'Grid' : 'Auto'}
         </button>
       </div>
 
       {/* Expand/Collapse */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-        <button onClick={onExpandAll} style={smallButtonStyle}>
+      <div className={styles.expandCollapseGroup}>
+        <button
+          onClick={onExpandAll}
+          className={styles.expandCollapseButton}
+          style={{
+            background: smallButtonBg,
+            border: `1px solid ${borderColor}`,
+            color: textColor,
+          }}
+        >
           <Eye size={12} />
           Expand All
         </button>
-        <button onClick={onCollapseAll} style={smallButtonStyle}>
+        <button
+          onClick={onCollapseAll}
+          className={styles.expandCollapseButton}
+          style={{
+            background: smallButtonBg,
+            border: `1px solid ${borderColor}`,
+            color: textColor,
+          }}
+        >
           <EyeOff size={12} />
           Collapse All
         </button>
       </div>
     </>
   );
-}
+});

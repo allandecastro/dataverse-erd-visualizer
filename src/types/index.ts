@@ -169,6 +169,25 @@ export interface DataverseContext {
   getOrgUniqueName(): string;
 }
 
+/** Generic record type for Xrm WebApi responses */
+export interface XrmRecord {
+  [key: string]: unknown;
+}
+
+/** Request object for Xrm WebApi execute method */
+export interface XrmExecuteRequest {
+  getMetadata(): { boundParameter: string | null; operationType: number; operationName: string };
+}
+
+/** Response object from Xrm WebApi execute method */
+export interface XrmExecuteResponse {
+  ok: boolean;
+  status: number;
+  statusText: string;
+  json(): Promise<unknown>;
+  text(): Promise<string>;
+}
+
 // Xrm type definition
 export interface XrmObject {
   Utility: {
@@ -180,11 +199,11 @@ export interface XrmObject {
       options?: string,
       maxPageSize?: number
     ): Promise<{
-      entities: any[];
+      entities: XrmRecord[];
       nextLink?: string;
     }>;
     online: {
-      execute(request: any): Promise<any>;
+      execute(request: XrmExecuteRequest): Promise<XrmExecuteResponse>;
     };
   };
 }

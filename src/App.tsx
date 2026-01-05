@@ -585,7 +585,7 @@ function ERDVisualizerContent({
   onCancelAddRelatedTable,
 }: ERDVisualizerContentProps) {
   // Use theme from context
-  const { isDarkMode, themeColors, toggleDarkMode } = useTheme();
+  const { isDarkMode, themeColors } = useTheme();
   const { bgColor, textColor } = themeColors;
 
   return (
@@ -600,6 +600,14 @@ function ERDVisualizerContent({
         color: textColor,
       }}
     >
+      {/* Skip Links for Accessibility */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      <a href="#entity-list" className="skip-link" style={{ left: 180 }}>
+        Skip to entity list
+      </a>
+
       {/* Sidebar */}
       <Sidebar
         entities={entities}
@@ -610,10 +618,8 @@ function ERDVisualizerContent({
         publishers={publishers}
         solutions={solutions}
         layoutMode={layoutMode}
-        isDarkMode={isDarkMode}
         showSettings={showSettings}
         colorSettings={colorSettings}
-        themeColors={themeColors}
         onToggleEntity={onToggleEntity}
         onSelectAll={onSelectAll}
         onDeselectAll={onDeselectAll}
@@ -623,7 +629,6 @@ function ERDVisualizerContent({
         onPublisherFilterChange={onPublisherFilterChange}
         onSolutionFilterChange={onSolutionFilterChange}
         onLayoutModeChange={onLayoutModeChange}
-        onToggleDarkMode={toggleDarkMode}
         onToggleSettings={onToggleSettings}
         onColorSettingsChange={onColorSettingsChange}
       />
@@ -634,8 +639,6 @@ function ERDVisualizerContent({
         <Toolbar
           filteredEntitiesCount={filteredEntities.length}
           filteredRelationshipsCount={filteredRelationships.length}
-          isDarkMode={isDarkMode}
-          themeColors={themeColors}
           isExportingDrawio={isExportingDrawio}
           drawioExportProgress={drawioExportProgress}
           onCopyPNG={onCopyPNG}
@@ -647,8 +650,11 @@ function ERDVisualizerContent({
         />
 
         {/* React Flow Canvas */}
-        <div
+        <main
+          id="main-content"
           ref={containerRef}
+          role="main"
+          aria-label="Entity Relationship Diagram Canvas"
           style={{
             flex: 1,
             overflow: 'hidden',
@@ -673,18 +679,16 @@ function ERDVisualizerContent({
             edgeOffsets={edgeOffsets}
             onEdgeOffsetChange={onEdgeOffsetChange}
           />
-        </div>
+        </main>
       </div>
 
       {/* Toast Notification */}
-      {toast && <Toast message={toast.message} type={toast.type} isDarkMode={isDarkMode} />}
+      {toast && <Toast message={toast.message} type={toast.type} />}
 
       {/* Entity Search Dialog */}
       <EntitySearch
         entities={filteredEntities}
         isOpen={isSearchOpen}
-        isDarkMode={isDarkMode}
-        themeColors={themeColors}
         onClose={onCloseSearch}
         onNavigateToEntity={onNavigateToEntity}
       />
@@ -695,8 +699,6 @@ function ERDVisualizerContent({
           <Suspense fallback={null}>
             <FeatureGuide
               isOpen={showGuide}
-              isDarkMode={isDarkMode}
-              themeColors={themeColors}
               onClose={onCloseGuide}
               onDontShowAgain={onDontShowAgain}
             />
@@ -711,7 +713,6 @@ function ERDVisualizerContent({
             <FieldDrawer
               entity={fieldDrawerEntityData}
               selectedFields={selectedFields[fieldDrawerEntity!] || new Set()}
-              isDarkMode={isDarkMode}
               onAddField={onAddField}
               onRemoveField={(fieldName) => onRemoveField(fieldDrawerEntity!, fieldName)}
               onClose={onCloseFieldDrawer}

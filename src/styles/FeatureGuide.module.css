@@ -1,0 +1,291 @@
+/**
+ * Feature Guide Modal component styles
+ */
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Dialog */
+.dialog {
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerDark {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1));
+}
+
+.headerLight {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(139, 92, 246, 0.15));
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.headerSubtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+.closeButton {
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+/* Content Area */
+.content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Category Sidebar */
+.categorySidebar {
+  width: 220px;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.categorySidebarDark {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.categorySidebarLight {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.categoryButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  transition: all 0.2s;
+  margin-bottom: 4px;
+}
+
+.categoryButtonActive {
+  font-weight: 600;
+}
+
+.categoryButtonActiveDark {
+  background: rgba(96, 165, 250, 0.2);
+  color: #60a5fa;
+}
+
+.categoryButtonActiveLight {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.categoryButtonInactive {
+  background: transparent;
+  font-weight: 500;
+}
+
+/* Feature Details Panel */
+.featurePanel {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+.featureCategoryHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.featureCategoryIconDark {
+  color: #60a5fa;
+}
+
+.featureCategoryIconLight {
+  color: #2563eb;
+}
+
+.featureCategoryTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Feature Card */
+.featureCard {
+  padding: 16px;
+  border-radius: 10px;
+}
+
+.featureCardDark {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.featureCardLight {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.featureCardContent {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.featureCardText {
+  flex: 1;
+}
+
+.featureTitle {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.featureDescription {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.featureTip {
+  margin: 8px 0 0;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.featureTipDark {
+  color: #a78bfa;
+}
+
+.featureTipLight {
+  color: #7c3aed;
+}
+
+.featureShortcut {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: system-ui;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.featureShortcutDark {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.featureShortcutLight {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Footer */
+.footer {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footerDark {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.footerLight {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.footerActions {
+  display: flex;
+  gap: 10px;
+}
+
+.getStartedButton {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #60a5fa, #8b5cf6);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}

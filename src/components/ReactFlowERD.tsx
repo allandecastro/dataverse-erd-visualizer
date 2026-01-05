@@ -1,5 +1,14 @@
 /**
- * React Flow ERD with custom table nodes
+ * React Flow ERD component with custom table nodes and edge types.
+ *
+ * This is the main visualization component that renders the Entity Relationship Diagram
+ * using React Flow. It handles:
+ * - Entity nodes with the custom TableNode component
+ * - Relationship edges with DraggableEdge (normal) and SelfReferenceEdge (self-loops)
+ * - Node positioning and layout persistence
+ * - Edge offset persistence for manual path adjustments
+ *
+ * @module ReactFlowERD
  */
 
 import { useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
@@ -21,6 +30,7 @@ import '@xyflow/react/dist/style.css';
 import { Map } from 'lucide-react';
 
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
+import styles from '@/styles/ReactFlowERD.module.css';
 import type { ColorSettings, LayoutMode } from '@/types/erdTypes';
 import { TableNode, type TableNodeData } from './TableNode';
 import { SelfReferenceEdge } from './SelfReferenceEdge';
@@ -138,6 +148,24 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       };
     });
 
+    /**
+     * Map entity relationships to React Flow edges.
+     *
+     * **Edge Type Selection:**
+     * - `selfLoop`: Used for self-referencing relationships (e.g., Account → Account
+     *   for parent-child hierarchies). Renders as a loop on the right side of the node.
+     * - `draggable`: Used for all other relationships. Supports user-adjustable path
+     *   offsets via drag handle to prevent edge overlaps.
+     *
+     * **Handle Selection (for precise field-to-field connections):**
+     * - `sourceHandle`: Uses the lookup field name if that field is visible in the
+     *   source node, otherwise falls back to 'default-source' centered on the node.
+     * - `targetHandle`: Uses the primary key field name if visible in the target
+     *   node, otherwise falls back to 'default-target'.
+     *
+     * This enables visual connections from Lookup fields → Primary Keys when both
+     * fields are displayed, providing an accurate representation of the relationship.
+     */
     const newEdges: Edge[] = relationships.map((rel) => {
       const isSelfReference = rel.from === rel.to;
 
@@ -259,39 +287,11 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         <button
           onClick={onToggleMinimap}
           title={showMinimap ? 'Hide minimap' : 'Show minimap'}
-          style={{
-            width: '26px',
-            height: '26px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: showMinimap
-              ? isDarkMode
-                ? 'rgba(96, 165, 250, 0.3)'
-                : 'rgba(59, 130, 246, 0.2)'
-              : isDarkMode
-                ? '#2d3748'
-                : '#ffffff',
-            border: `1px solid ${
-              showMinimap
-                ? isDarkMode
-                  ? '#60a5fa'
-                  : '#3b82f6'
-                : isDarkMode
-                  ? '#4a5568'
-                  : '#e2e8f0'
-            }`,
-            borderRadius: '4px',
-            cursor: 'pointer',
-            color: showMinimap
-              ? isDarkMode
-                ? '#60a5fa'
-                : '#3b82f6'
-              : isDarkMode
-                ? '#a0aec0'
-                : '#4a5568',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          }}
+          className={[
+            styles.minimapToggle,
+            isDarkMode ? styles.dark : styles.light,
+            showMinimap ? styles.active : '',
+          ].join(' ')}
         >
           <Map size={14} />
         </button>
@@ -312,7 +312,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
 export const ReactFlowERD = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(
   function ReactFlowERD(props, ref) {
     return (
-      <div style={{ width: '100%', height: '100%' }}>
+      <div className={styles.container}>
         <ReactFlowProvider>
           <ReactFlowERDInner {...props} ref={ref} />
         </ReactFlowProvider>

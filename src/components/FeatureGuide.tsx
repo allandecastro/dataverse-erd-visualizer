@@ -14,13 +14,12 @@ import {
   HelpCircle,
   ChevronRight,
 } from 'lucide-react';
-import type { ThemeColors } from '@/types/erdTypes';
 import { LOGO_DATA_URL } from '@/constants';
+import { useTheme } from '@/context';
+import styles from '@/styles/FeatureGuide.module.css';
 
 export interface FeatureGuideProps {
   isOpen: boolean;
-  isDarkMode: boolean;
-  themeColors: ThemeColors;
   onClose: () => void;
   onDontShowAgain: () => void;
 }
@@ -189,12 +188,11 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
 
 export function FeatureGuide({
   isOpen,
-  isDarkMode,
-  themeColors,
   onClose,
   onDontShowAgain,
 }: FeatureGuideProps) {
   const [activeCategory, setActiveCategory] = useState('navigation');
+  const { isDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
 
   if (!isOpen) return null;
@@ -207,20 +205,7 @@ export function FeatureGuide({
     <div
       role="presentation"
       aria-hidden="true"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(4px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '20px',
-      }}
+      className={styles.overlay}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -230,53 +215,28 @@ export function FeatureGuide({
         aria-modal="true"
         aria-labelledby={dialogTitleId}
         aria-describedby={dialogDescId}
+        className={styles.dialog}
         style={{
           background: panelBg,
-          borderRadius: '16px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-          width: '100%',
-          maxWidth: '800px',
-          maxHeight: '85vh',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
           border: `1px solid ${borderColor}`,
         }}
       >
         {/* Header */}
         <div
-          style={{
-            padding: '20px 24px',
-            borderBottom: `1px solid ${borderColor}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: isDarkMode
-              ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))'
-              : 'linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(139, 92, 246, 0.15))',
-          }}
+          className={`${styles.header} ${isDarkMode ? styles.headerDark : styles.headerLight}`}
+          style={{ borderBottom: `1px solid ${borderColor}` }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className={styles.headerContent}>
             <img
               src={LOGO_DATA_URL}
               alt="Dataverse ERD Visualizer"
-              style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '12px',
-              }}
+              className={styles.logo}
             />
             <div>
-              <h2
-                id={dialogTitleId}
-                style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: textColor }}
-              >
+              <h2 id={dialogTitleId} className={styles.headerTitle} style={{ color: textColor }}>
                 Welcome to Dataverse ERD Visualizer
               </h2>
-              <p
-                id={dialogDescId}
-                style={{ margin: '4px 0 0', fontSize: '14px', color: textSecondary }}
-              >
+              <p id={dialogDescId} className={styles.headerSubtitle} style={{ color: textSecondary }}>
                 Discover all the features to visualize your Dataverse schema
               </p>
             </div>
@@ -284,17 +244,10 @@ export function FeatureGuide({
           <button
             onClick={onClose}
             aria-label="Close feature guide"
+            className={styles.closeButton}
             style={{
               background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               color: textSecondary,
-              transition: 'background 0.2s',
             }}
           >
             <X size={20} aria-hidden="true" />
@@ -302,62 +255,45 @@ export function FeatureGuide({
         </div>
 
         {/* Content */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div className={styles.content}>
           {/* Category Sidebar */}
           <nav
             role="tablist"
             aria-label="Feature categories"
-            style={{
-              width: '220px',
-              borderRight: `1px solid ${borderColor}`,
-              padding: '12px',
-              overflowY: 'auto',
-              background: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
-            }}
+            className={`${styles.categorySidebar} ${isDarkMode ? styles.categorySidebarDark : styles.categorySidebarLight}`}
+            style={{ borderRight: `1px solid ${borderColor}` }}
           >
-            {FEATURE_CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                role="tab"
-                aria-selected={activeCategory === category.id}
-                aria-controls={`tabpanel-${category.id}`}
-                id={`tab-${category.id}`}
-                onClick={() => setActiveCategory(category.id)}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '12px 14px',
-                  background:
-                    activeCategory === category.id
-                      ? isDarkMode
-                        ? 'rgba(96, 165, 250, 0.2)'
-                        : 'rgba(37, 99, 235, 0.1)'
-                      : 'transparent',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  color:
-                    activeCategory === category.id
-                      ? isDarkMode
-                        ? '#60a5fa'
-                        : '#2563eb'
-                      : textColor,
-                  fontSize: '14px',
-                  fontWeight: activeCategory === category.id ? '600' : '500',
-                  textAlign: 'left',
-                  transition: 'all 0.2s',
-                  marginBottom: '4px',
-                }}
-              >
-                <span aria-hidden="true">{category.icon}</span>
-                {category.title}
-                {activeCategory === category.id && (
-                  <ChevronRight size={16} style={{ marginLeft: 'auto' }} aria-hidden="true" />
-                )}
-              </button>
-            ))}
+            {FEATURE_CATEGORIES.map((category) => {
+              const isActive = activeCategory === category.id;
+              const buttonClasses = [
+                styles.categoryButton,
+                isActive ? styles.categoryButtonActive : styles.categoryButtonInactive,
+                isActive
+                  ? isDarkMode
+                    ? styles.categoryButtonActiveDark
+                    : styles.categoryButtonActiveLight
+                  : '',
+              ].join(' ');
+
+              return (
+                <button
+                  key={category.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`tabpanel-${category.id}`}
+                  id={`tab-${category.id}`}
+                  onClick={() => setActiveCategory(category.id)}
+                  className={buttonClasses}
+                  style={{ color: isActive ? undefined : textColor }}
+                >
+                  <span aria-hidden="true">{category.icon}</span>
+                  {category.title}
+                  {isActive && (
+                    <ChevronRight size={16} style={{ marginLeft: 'auto' }} aria-hidden="true" />
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Feature Details */}
@@ -365,82 +301,39 @@ export function FeatureGuide({
             role="tabpanel"
             id={`tabpanel-${activeCategory}`}
             aria-labelledby={`tab-${activeCategory}`}
-            style={{ flex: 1, padding: '20px 24px', overflowY: 'auto' }}
+            className={styles.featurePanel}
           >
             {activeCategoryData && (
               <>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    marginBottom: '20px',
-                  }}
-                >
+                <div className={styles.featureCategoryHeader}>
                   <span
                     aria-hidden="true"
-                    style={{
-                      color: isDarkMode ? '#60a5fa' : '#2563eb',
-                    }}
+                    className={isDarkMode ? styles.featureCategoryIconDark : styles.featureCategoryIconLight}
                   >
                     {activeCategoryData.icon}
                   </span>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: textColor }}>
+                  <h3 className={styles.featureCategoryTitle} style={{ color: textColor }}>
                     {activeCategoryData.title}
                   </h3>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className={styles.featureList}>
                   {activeCategoryData.features.map((feature, index) => (
                     <div
                       key={index}
-                      style={{
-                        padding: '16px',
-                        background: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                        borderRadius: '10px',
-                        border: `1px solid ${borderColor}`,
-                      }}
+                      className={`${styles.featureCard} ${isDarkMode ? styles.featureCardDark : styles.featureCardLight}`}
+                      style={{ border: `1px solid ${borderColor}` }}
                     >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          justifyContent: 'space-between',
-                          gap: '12px',
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-                          <h4
-                            style={{
-                              margin: '0 0 6px',
-                              fontSize: '15px',
-                              fontWeight: '600',
-                              color: textColor,
-                            }}
-                          >
+                      <div className={styles.featureCardContent}>
+                        <div className={styles.featureCardText}>
+                          <h4 className={styles.featureTitle} style={{ color: textColor }}>
                             {feature.title}
                           </h4>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: '13px',
-                              color: textSecondary,
-                              lineHeight: '1.5',
-                            }}
-                          >
+                          <p className={styles.featureDescription} style={{ color: textSecondary }}>
                             {feature.description}
                           </p>
                           {feature.tip && (
-                            <p
-                              style={{
-                                margin: '8px 0 0',
-                                fontSize: '12px',
-                                color: isDarkMode ? '#a78bfa' : '#7c3aed',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                              }}
-                            >
+                            <p className={`${styles.featureTip} ${isDarkMode ? styles.featureTipDark : styles.featureTipLight}`}>
                               <HelpCircle size={12} aria-hidden="true" />
                               Tip: {feature.tip}
                             </p>
@@ -448,15 +341,9 @@ export function FeatureGuide({
                         </div>
                         {feature.shortcut && (
                           <kbd
+                            className={`${styles.featureShortcut} ${isDarkMode ? styles.featureShortcutDark : styles.featureShortcutLight}`}
                             style={{
-                              padding: '6px 10px',
-                              background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
-                              borderRadius: '6px',
-                              fontSize: '12px',
-                              fontFamily: 'system-ui',
-                              fontWeight: '600',
                               color: textColor,
-                              whiteSpace: 'nowrap',
                               border: `1px solid ${borderColor}`,
                             }}
                           >
@@ -474,59 +361,27 @@ export function FeatureGuide({
 
         {/* Footer */}
         <div
-          style={{
-            padding: '16px 24px',
-            borderTop: `1px solid ${borderColor}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
-          }}
+          className={`${styles.footer} ${isDarkMode ? styles.footerDark : styles.footerLight}`}
+          style={{ borderTop: `1px solid ${borderColor}` }}
         >
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '13px',
-              color: textSecondary,
-              cursor: 'pointer',
-            }}
-          >
+          <label className={styles.checkboxLabel} style={{ color: textSecondary }}>
             <input
               type="checkbox"
+              className={styles.checkbox}
               onChange={(e) => {
                 if (e.target.checked) {
                   onDontShowAgain();
                 }
               }}
-              style={{
-                width: '16px',
-                height: '16px',
-                cursor: 'pointer',
-              }}
             />
             Don't show this again
           </label>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className={styles.footerActions}>
             <button
               onClick={onClose}
               aria-label="Close guide and get started"
-              style={{
-                padding: '10px 20px',
-                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-                border: 'none',
-                borderRadius: '8px',
-                color: '#fff',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
-              }}
+              className={styles.getStartedButton}
             >
               Get Started
               <ChevronRight size={18} aria-hidden="true" />

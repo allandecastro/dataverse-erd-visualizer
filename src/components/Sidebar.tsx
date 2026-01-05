@@ -4,12 +4,14 @@
 
 import { useState, useRef, useEffect } from 'react';
 import type { Entity } from '@/types';
-import type { LayoutMode, ThemeColors, ColorSettings } from '@/types/erdTypes';
+import type { LayoutMode, ColorSettings } from '@/types/erdTypes';
+import { useTheme } from '@/context';
 import { VirtualEntityList } from './VirtualEntityList';
 import { SidebarHeader } from './SidebarHeader';
 import { SidebarSettings } from './SidebarSettings';
 import { SidebarFilters } from './SidebarFilters';
 import { SidebarLegend } from './SidebarLegend';
+import styles from '@/styles/Sidebar.module.css';
 
 export interface SidebarProps {
   entities: Entity[];
@@ -20,10 +22,8 @@ export interface SidebarProps {
   publishers: string[];
   solutions: string[];
   layoutMode: LayoutMode;
-  isDarkMode: boolean;
   showSettings: boolean;
   colorSettings: ColorSettings;
-  themeColors: ThemeColors;
   onToggleEntity: (entityName: string) => void;
   onSelectAll: () => void;
   onDeselectAll: () => void;
@@ -33,7 +33,6 @@ export interface SidebarProps {
   onPublisherFilterChange: (value: string) => void;
   onSolutionFilterChange: (value: string) => void;
   onLayoutModeChange: (mode: LayoutMode) => void;
-  onToggleDarkMode: () => void;
   onToggleSettings: () => void;
   onColorSettingsChange: (key: keyof ColorSettings, value: string) => void;
 }
@@ -47,10 +46,8 @@ export function Sidebar({
   publishers,
   solutions,
   layoutMode,
-  isDarkMode,
   showSettings,
   colorSettings,
-  themeColors,
   onToggleEntity,
   onSelectAll,
   onDeselectAll,
@@ -60,10 +57,10 @@ export function Sidebar({
   onPublisherFilterChange,
   onSolutionFilterChange,
   onLayoutModeChange,
-  onToggleDarkMode,
   onToggleSettings,
   onColorSettingsChange,
 }: SidebarProps) {
+  const { isDarkMode, toggleDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
 
   // Container height measurement for virtual scrolling
@@ -105,25 +102,24 @@ export function Sidebar({
   });
 
   return (
-    <div
+    <aside
+      className={styles.sidebar}
+      role="navigation"
+      aria-label="Entity selection and filters"
       style={{
-        width: '320px',
         borderRight: `1px solid ${borderColor}`,
         backgroundColor: panelBg,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
       }}
     >
       {/* Header Section */}
-      <div style={{ padding: '20px', borderBottom: `1px solid ${borderColor}` }}>
+      <div className={styles.headerSection} style={{ borderBottom: `1px solid ${borderColor}` }}>
         <SidebarHeader
           isDarkMode={isDarkMode}
           showSettings={showSettings}
           borderColor={borderColor}
           textColor={textColor}
           textSecondary={textSecondary}
-          onToggleDarkMode={onToggleDarkMode}
+          onToggleDarkMode={toggleDarkMode}
           onToggleSettings={onToggleSettings}
         />
 
@@ -160,57 +156,33 @@ export function Sidebar({
 
       {/* Entity List */}
       <div
+        id="entity-list"
         ref={entityListContainerRef}
-        style={{
-          flex: 1,
-          overflow: 'hidden',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+        className={styles.entityListContainer}
+        role="region"
+        aria-label="Entity selection list"
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '12px',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ fontSize: '14px', fontWeight: '600' }}>
+        <div className={styles.entityListHeader}>
+          <div className={styles.entityCount}>
             Tables ({selectedEntities.size}/{entities.length})
             {displayedEntities.length !== entities.length && (
-              <span style={{ fontSize: '12px', color: textSecondary, marginLeft: '8px' }}>
+              <span className={styles.filterCount} style={{ color: textSecondary }}>
                 (showing {displayedEntities.length})
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div className={styles.buttonGroup}>
             <button
               onClick={onSelectAll}
-              style={{
-                padding: '4px 10px',
-                background: 'transparent',
-                border: `1px solid ${borderColor}`,
-                borderRadius: '4px',
-                color: textColor,
-                fontSize: '11px',
-                cursor: 'pointer',
-              }}
+              className={styles.smallButton}
+              style={{ border: `1px solid ${borderColor}`, color: textColor }}
             >
               All
             </button>
             <button
               onClick={onDeselectAll}
-              style={{
-                padding: '4px 10px',
-                background: 'transparent',
-                border: `1px solid ${borderColor}`,
-                borderRadius: '4px',
-                color: textColor,
-                fontSize: '11px',
-                cursor: 'pointer',
-              }}
+              className={styles.smallButton}
+              style={{ border: `1px solid ${borderColor}`, color: textColor }}
             >
               None
             </button>
@@ -218,7 +190,7 @@ export function Sidebar({
         </div>
 
         {/* Virtual scrolling entity list */}
-        <div style={{ flex: 1, minHeight: 0 }}>
+        <div className={styles.entityListWrapper}>
           <VirtualEntityList
             entities={displayedEntities}
             selectedEntities={selectedEntities}
@@ -241,6 +213,6 @@ export function Sidebar({
           color: ${textColor} !important;
         }
       `}</style>
-    </div>
+    </aside>
   );
 }

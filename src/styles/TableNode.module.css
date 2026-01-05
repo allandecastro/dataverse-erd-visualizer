@@ -1,0 +1,273 @@
+/**
+ * TableNode component styles
+ */
+
+/* Main Node Container */
+.tableNode {
+  border-radius: 8px;
+  min-width: 220px;
+  max-width: 280px;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+.tableNodeDark {
+  background: #1f2937;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tableNodeLight {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tableNodeSelected {
+  box-shadow: 0 0 0 2px #3b82f6, 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Header */
+.header {
+  color: #ffffff;
+  padding: 8px 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.headerTitle {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addFieldButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+/* Logical Name Subheader */
+.subheader {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-family: monospace;
+  height: 24px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.subheaderDark {
+  background: #374151;
+  color: #9ca3af;
+  border-bottom: 1px solid #4b5563;
+}
+
+.subheaderLight {
+  background: #f8f9fa;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Fields Section */
+.fieldsContainer {
+  padding: 4px 0;
+}
+
+/* Field Row */
+.fieldRow {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.fieldRowDark {
+  border-bottom: 1px solid #374151;
+}
+
+.fieldRowLight {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* Field Badge */
+.fieldBadge {
+  color: #ffffff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Field Name */
+.fieldName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fieldNameDark {
+  color: #f3f4f6;
+}
+
+.fieldNameLight {
+  color: #374151;
+}
+
+/* Field Type */
+.fieldType {
+  font-size: 10px;
+  font-style: italic;
+}
+
+.fieldTypeDark {
+  color: #9ca3af;
+}
+
+.fieldTypeLight {
+  color: #6b7280;
+}
+
+/* Remove Field Button */
+.removeFieldButton {
+  background: transparent;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+}
+
+.removeFieldButtonDark {
+  color: #9ca3af;
+}
+
+.removeFieldButtonLight {
+  color: #6b7280;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 8px 12px;
+  font-size: 11px;
+  text-align: center;
+  font-style: italic;
+}
+
+.emptyStateDark {
+  color: #9ca3af;
+}
+
+.emptyStateLight {
+  color: #6b7280;
+}
+
+/* Alternate Keys Section */
+.akHeader {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  gap: 8px;
+}
+
+.akHeaderDark {
+  background: #1a2332;
+  border-top: 1px solid #4b5563;
+  border-bottom: 1px solid #4b5563;
+}
+
+.akHeaderLight {
+  background: #f0f4f8;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.akBadge {
+  background: #0ea5e9;
+  color: #ffffff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.akTitle {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.akTitleDark {
+  color: #9ca3af;
+}
+
+.akTitleLight {
+  color: #6b7280;
+}
+
+/* Alternate Key List */
+.akList {
+  padding: 4px 0;
+}
+
+/* Alternate Key Row */
+.akRow {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  gap: 8px;
+}
+
+.akIcon {
+  color: #0ea5e9;
+  font-size: 11px;
+}
+
+.akName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.akNameDark {
+  color: #f3f4f6;
+}
+
+.akNameLight {
+  color: #374151;
+}
+
+.akAttributes {
+  font-size: 10px;
+  font-style: italic;
+}
+
+.akAttributesDark {
+  color: #9ca3af;
+}
+
+.akAttributesLight {
+  color: #6b7280;
+}
+
+/* Handle styles need to stay inline for React Flow positioning */

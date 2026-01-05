@@ -7,6 +7,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Plus, X } from 'lucide-react';
 import type { Entity, EntityAttribute, AlternateKey } from '@/types';
 import { getAttributeBadge, isLookupType } from '../utils/badges';
+import styles from '@/styles/TableNode.module.css';
 
 export interface TableNodeData extends Record<string, unknown> {
   entity: Entity;
@@ -101,36 +102,19 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
   // Get alternate keys
   const alternateKeys = entity.alternateKeys || [];
 
-  // Theme-aware colors
-  const bgColor = isDarkMode ? '#1f2937' : '#ffffff';
-  const subHeaderBg = isDarkMode ? '#374151' : '#f8f9fa';
-  const textColor = isDarkMode ? '#f3f4f6' : '#374151';
-  const textSecondary = isDarkMode ? '#9ca3af' : '#6b7280';
-  const borderColor = isDarkMode ? '#4b5563' : '#e5e7eb';
-  const attrBorderColor = isDarkMode ? '#374151' : '#f3f4f6';
-  const akBadgeColor = '#0ea5e9'; // Cyan/sky color for AK
-
   // Find primary key for default handle position
   const pkAttr = displayAttributes.find((a) => a.isPrimaryKey);
   const pkIndex = pkAttr ? displayAttributes.findIndex((a) => a.isPrimaryKey) : 0;
   const defaultHandleTop = getFieldHandleTop(pkIndex);
 
+  const nodeClasses = [
+    styles.tableNode,
+    isDarkMode ? styles.tableNodeDark : styles.tableNodeLight,
+    selected ? styles.tableNodeSelected : '',
+  ].join(' ');
+
   return (
-    <div
-      style={{
-        background: bgColor,
-        borderRadius: '8px',
-        boxShadow: selected
-          ? '0 0 0 2px #3b82f6, 0 4px 12px rgba(0,0,0,0.15)'
-          : isDarkMode
-            ? '0 2px 8px rgba(0,0,0,0.3)'
-            : '0 2px 8px rgba(0,0,0,0.1)',
-        minWidth: '220px',
-        maxWidth: '280px',
-        fontSize: '12px',
-        overflow: 'hidden',
-      }}
-    >
+    <div className={nodeClasses}>
       {/* Per-field handles for precise edge connections */}
       {displayAttributes.map((attr, index) => {
         const handleTop = getFieldHandleTop(index);
@@ -197,41 +181,15 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
       />
 
       {/* Header */}
-      <div
-        style={{
-          background: color,
-          color: '#ffffff',
-          padding: '8px 12px',
-          fontWeight: 600,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          height: HEADER_HEIGHT,
-          boxSizing: 'border-box',
-        }}
-      >
-        <span
-          style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
-          {entity.displayName}
-        </span>
+      <div className={styles.header} style={{ background: color, height: HEADER_HEIGHT }}>
+        <span className={styles.headerTitle}>{entity.displayName}</span>
         {onOpenFieldDrawer && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onOpenFieldDrawer(entity.logicalName);
             }}
-            style={{
-              background: 'rgba(255, 255, 255, 0.2)',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '2px 4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff',
-            }}
+            className={styles.addFieldButton}
             title="Add fields"
           >
             <Plus size={14} />
@@ -241,24 +199,14 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
 
       {/* Logical name */}
       <div
-        style={{
-          background: subHeaderBg,
-          padding: '4px 12px',
-          color: textSecondary,
-          fontSize: '11px',
-          fontFamily: 'monospace',
-          borderBottom: `1px solid ${borderColor}`,
-          height: SUBHEADER_HEIGHT,
-          boxSizing: 'border-box',
-          display: 'flex',
-          alignItems: 'center',
-        }}
+        className={`${styles.subheader} ${isDarkMode ? styles.subheaderDark : styles.subheaderLight}`}
+        style={{ height: SUBHEADER_HEIGHT }}
       >
         {entity.logicalName}
       </div>
 
       {/* Fields */}
-      <div style={{ padding: `${FIELD_PADDING_TOP}px 0` }}>
+      <div className={styles.fieldsContainer}>
         {displayAttributes.map((attr) => {
           const badge = getAttributeBadge(attr);
           const typeLabel = getTypeLabel(attr);
@@ -267,53 +215,21 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
           return (
             <div
               key={attr.name}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0 12px',
-                gap: '8px',
-                height: FIELD_ROW_HEIGHT,
-                boxSizing: 'border-box',
-                borderBottom: `1px solid ${attrBorderColor}`,
-              }}
+              className={`${styles.fieldRow} ${isDarkMode ? styles.fieldRowDark : styles.fieldRowLight}`}
+              style={{ height: FIELD_ROW_HEIGHT }}
             >
               {/* Badge */}
-              <span
-                style={{
-                  background: badge.color,
-                  color: '#ffffff',
-                  padding: '1px 4px',
-                  borderRadius: '3px',
-                  fontSize: '9px',
-                  fontWeight: 600,
-                  minWidth: '24px',
-                  textAlign: 'center',
-                }}
-              >
+              <span className={styles.fieldBadge} style={{ background: badge.color }}>
                 {badge.label}
               </span>
 
               {/* Field name */}
-              <span
-                style={{
-                  flex: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  color: textColor,
-                }}
-              >
+              <span className={`${styles.fieldName} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}>
                 {attr.displayName || attr.name}
               </span>
 
               {/* Type */}
-              <span
-                style={{
-                  color: textSecondary,
-                  fontSize: '10px',
-                  fontStyle: 'italic',
-                }}
-              >
+              <span className={`${styles.fieldType} ${isDarkMode ? styles.fieldTypeDark : styles.fieldTypeLight}`}>
                 {typeLabel}
               </span>
 
@@ -324,17 +240,7 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
                     e.stopPropagation();
                     onRemoveField(entity.logicalName, attr.name);
                   }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: '2px',
-                    cursor: 'pointer',
-                    color: textSecondary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '3px',
-                  }}
+                  className={`${styles.removeFieldButton} ${isDarkMode ? styles.removeFieldButtonDark : styles.removeFieldButtonLight}`}
                   title="Remove field"
                 >
                   <X size={12} />
@@ -345,15 +251,7 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
         })}
 
         {displayAttributes.length === 0 && (
-          <div
-            style={{
-              padding: '8px 12px',
-              color: textSecondary,
-              fontSize: '11px',
-              textAlign: 'center',
-              fontStyle: 'italic',
-            }}
-          >
+          <div className={`${styles.emptyState} ${isDarkMode ? styles.emptyStateDark : styles.emptyStateLight}`}>
             No fields selected
           </div>
         )}
@@ -363,87 +261,32 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
       {alternateKeys.length > 0 && (
         <>
           {/* Separator */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '4px 12px',
-              gap: '8px',
-              background: isDarkMode ? '#1a2332' : '#f0f4f8',
-              borderTop: `1px solid ${borderColor}`,
-              borderBottom: `1px solid ${borderColor}`,
-            }}
-          >
-            <span
-              style={{
-                background: akBadgeColor,
-                color: '#ffffff',
-                padding: '1px 4px',
-                borderRadius: '3px',
-                fontSize: '9px',
-                fontWeight: 600,
-              }}
-            >
-              AK
-            </span>
-            <span
-              style={{
-                fontSize: '10px',
-                fontWeight: 600,
-                color: textSecondary,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}
-            >
+          <div className={`${styles.akHeader} ${isDarkMode ? styles.akHeaderDark : styles.akHeaderLight}`}>
+            <span className={styles.akBadge}>AK</span>
+            <span className={`${styles.akTitle} ${isDarkMode ? styles.akTitleDark : styles.akTitleLight}`}>
               Alternate Keys
             </span>
           </div>
 
           {/* Alternate Key List */}
-          <div style={{ padding: '4px 0' }}>
+          <div className={styles.akList}>
             {alternateKeys.map((ak: AlternateKey) => (
               <div
                 key={ak.logicalName}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '4px 12px',
-                  gap: '8px',
-                  borderBottom: `1px solid ${attrBorderColor}`,
-                }}
+                className={`${styles.akRow} ${isDarkMode ? styles.fieldRowDark : styles.fieldRowLight}`}
               >
                 {/* Key icon/badge */}
-                <span
-                  style={{
-                    color: akBadgeColor,
-                    fontSize: '11px',
-                  }}
-                >
-                  🔑
-                </span>
+                <span className={styles.akIcon}>🔑</span>
 
                 {/* Key name */}
-                <span
-                  style={{
-                    flex: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    color: textColor,
-                    fontSize: '11px',
-                  }}
-                >
+                <span className={`${styles.akName} ${isDarkMode ? styles.akNameDark : styles.akNameLight}`}>
                   {ak.displayName}
                 </span>
 
                 {/* Key attributes - with tooltip for composite keys */}
                 <span
-                  style={{
-                    color: textSecondary,
-                    fontSize: '10px',
-                    fontStyle: 'italic',
-                    cursor: ak.keyAttributes.length > 1 ? 'help' : 'default',
-                  }}
+                  className={`${styles.akAttributes} ${isDarkMode ? styles.akAttributesDark : styles.akAttributesLight}`}
+                  style={{ cursor: ak.keyAttributes.length > 1 ? 'help' : 'default' }}
                   title={ak.keyAttributes.length > 1 ? ak.keyAttributes.join(', ') : undefined}
                 >
                   {ak.keyAttributes.length === 1

@@ -5,6 +5,7 @@
 import { useState, useMemo } from 'react';
 import type { Entity, EntityAttribute } from '@/types';
 import { getAttributeBadge, isLookupType } from '../utils/badges';
+import { useTheme } from '@/context';
 import { FieldDrawerHeader } from './FieldDrawerHeader';
 import { FieldDrawerList } from './FieldDrawerList';
 import { FieldDrawerFooter } from './FieldDrawerFooter';
@@ -12,7 +13,6 @@ import { FieldDrawerFooter } from './FieldDrawerFooter';
 export interface FieldDrawerProps {
   entity: Entity;
   selectedFields: Set<string>;
-  isDarkMode: boolean;
   onAddField: (fieldName: string) => void;
   onRemoveField: (fieldName: string) => void;
   onClose: () => void;
@@ -22,7 +22,6 @@ export interface FieldDrawerProps {
 export function FieldDrawer({
   entity,
   selectedFields,
-  isDarkMode,
   onAddField,
   onRemoveField,
   onClose,
@@ -31,6 +30,8 @@ export function FieldDrawer({
   const [searchQuery, setSearchQuery] = useState('');
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
   const [showLookupsOnly, setShowLookupsOnly] = useState(false);
+
+  const { isDarkMode } = useTheme();
 
   // Theme colors
   const bgColor = isDarkMode ? '#1f2937' : '#ffffff';

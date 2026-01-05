@@ -1,0 +1,47 @@
+/**
+ * Toast notification component styles
+ */
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.success {
+  background: rgba(16, 185, 129, 0.95);
+}
+
+.successDark {
+  background: rgba(16, 185, 129, 0.9);
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.95);
+}
+
+.errorDark {
+  background: rgba(239, 68, 68, 0.9);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

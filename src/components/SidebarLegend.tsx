@@ -2,48 +2,36 @@
  * Sidebar legend showing color meanings
  */
 
+import { memo } from 'react';
 import { Link2 } from 'lucide-react';
 import type { ColorSettings } from '@/types/erdTypes';
+import styles from '@/styles/Sidebar.module.css';
 
 export interface SidebarLegendProps {
   colorSettings: ColorSettings;
   borderColor: string;
 }
 
-export function SidebarLegend({ colorSettings, borderColor }: SidebarLegendProps) {
+export const SidebarLegend = memo(function SidebarLegend({ colorSettings, borderColor }: SidebarLegendProps) {
   const { customTableColor, standardTableColor, lookupColor } = colorSettings;
 
   return (
-    <div style={{ padding: '16px', borderTop: `1px solid ${borderColor}` }}>
-      <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Legend</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div
-            style={{
-              width: '16px',
-              height: '12px',
-              background: customTableColor,
-              borderRadius: '2px',
-            }}
-          />
+    <div className={styles.legend} style={{ borderTop: `1px solid ${borderColor}` }}>
+      <div className={styles.legendTitle}>Legend</div>
+      <div className={styles.legendItems}>
+        <div className={styles.legendItem}>
+          <div className={styles.legendColor} style={{ background: customTableColor }} />
           <span>Custom Table</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div
-            style={{
-              width: '16px',
-              height: '12px',
-              background: standardTableColor,
-              borderRadius: '2px',
-            }}
-          />
+        <div className={styles.legendItem}>
+          <div className={styles.legendColor} style={{ background: standardTableColor }} />
           <span>Standard Table</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className={styles.legendItem}>
           <Link2 size={14} color={lookupColor} />
           <span>Has Lookup Fields</span>
         </div>
       </div>
     </div>
   );
-}
+});

@@ -26,6 +26,32 @@ interface EntitySolutionMap {
   [entityMetadataId: string]: string[]; // MetadataId -> solution unique names
 }
 
+/** Raw solution response from Dataverse API */
+interface DataverseSolutionResponse {
+  solutionid: string;
+  uniquename: string;
+  friendlyname: string;
+}
+
+/** Raw solution component response from Dataverse API */
+interface DataverseSolutionComponentResponse {
+  objectid: string;
+  _solutionid_value: string;
+}
+
+/** Raw attribute response from Dataverse API */
+interface DataverseAttributeResponse {
+  '@odata.type'?: string;
+  LogicalName: string;
+  AttributeType: string;
+  DisplayName?: {
+    UserLocalizedLabel?: {
+      Label: string;
+    };
+  };
+  Targets?: string[];
+}
+
 class DataverseApiService {
   private baseUrl: string = '';
   private apiVersion: string = '9.2';
@@ -212,7 +238,6 @@ class DataverseApiService {
       pageNumber++;
     }
 
-    console.log(`Fetched ${allEntities.length} entities across ${pageNumber - 1} page(s)`);
     return allEntities;
   }
 
@@ -312,7 +337,7 @@ class DataverseApiService {
    */
   private transformEntityWithAttributes(
     entityMeta: DataverseEntityMetadata,
-    attributes: any[],
+    attributes: DataverseAttributeResponse[],
     solutionNames: string[] = []
   ): Entity {
     // Get the primary key attribute name from entity metadata
@@ -343,7 +368,8 @@ class DataverseApiService {
         type: this.mapAttributeType(attrType),
         isPrimaryKey,
         isLookup,
-        lookupTarget: isLookupType && attr.Targets?.length > 0 ? attr.Targets[0] : undefined,
+        lookupTarget:
+          isLookupType && attr.Targets && attr.Targets.length > 0 ? attr.Targets[0] : undefined,
       };
     });
 
@@ -470,8 +496,8 @@ class DataverseApiService {
         return [];
       }
 
-      const data = await response.json();
-      return data.value.map((sol: any) => ({
+      const data: { value: DataverseSolutionResponse[] } = await response.json();
+      return data.value.map((sol) => ({
         solutionId: sol.solutionid,
         uniqueName: sol.uniquename,
         friendlyName: sol.friendlyname,
@@ -509,7 +535,7 @@ class DataverseApiService {
         return entitySolutionMap;
       }
 
-      const data = await response.json();
+      const data: { value: DataverseSolutionComponentResponse[] } = await response.json();
 
       // Create a lookup map for solution IDs to names
       const solutionIdToName: Record<string, string> = {};
@@ -518,7 +544,7 @@ class DataverseApiService {
       });
 
       // Map entity metadata IDs to solution names
-      data.value.forEach((component: any) => {
+      data.value.forEach((component) => {
         const entityMetadataId = component.objectid;
         const solutionId = component._solutionid_value;
         const solutionName = solutionIdToName[solutionId];

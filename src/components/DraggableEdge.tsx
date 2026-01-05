@@ -3,7 +3,7 @@
  * Allows users to shift the entire edge path to avoid overlaps
  */
 
-import { memo, useState, useCallback, useRef } from 'react';
+import { memo, useState, useCallback, useRef, useMemo } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -38,7 +38,10 @@ export const DraggableEdge = memo(function DraggableEdge({
   markerEnd,
 }: EdgeProps) {
   const edgeData = data as DraggableEdgeData | undefined;
-  const savedOffset = edgeData?.offset ?? { x: 0, y: 0 };
+  const savedOffset = useMemo(
+    () => edgeData?.offset ?? { x: 0, y: 0 },
+    [edgeData?.offset]
+  );
   const onOffsetChange = edgeData?.onOffsetChange;
   const edgeStyle = edgeData?.edgeStyle ?? 'smoothstep';
 
