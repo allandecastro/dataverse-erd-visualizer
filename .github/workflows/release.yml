@@ -85,7 +85,10 @@ jobs:
 
           Copy-Item "dist/webresource/adc_dataverseerdvisualizer.html" "$webResourcesPath/adc_dataverseerdvisualizer.html" -Force
           Copy-Item "dist/webresource/adc_dataverseerdvisualizer.js" "$webResourcesPath/adc_dataverseerdvisualizer.js" -Force
-          Copy-Item "dist/webresource/adc_dataverseerdvisualizer.css" "$webResourcesPath/adc_dataverseerdvisualizer.css" -Force
+          # CSS is inlined in JS bundle with IIFE format, only copy if it exists
+          if (Test-Path "dist/webresource/adc_dataverseerdvisualizer.css") {
+            Copy-Item "dist/webresource/adc_dataverseerdvisualizer.css" "$webResourcesPath/adc_dataverseerdvisualizer.css" -Force
+          }
           Copy-Item "dist/webresource/adc_dataverseerdvisualizerlogo.svg" "$webResourcesPath/adc_dataverseerdvisualizerlogo.svg" -Force
 
           Write-Host "Web resources copied successfully"
