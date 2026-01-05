@@ -163,13 +163,13 @@ jobs:
 
           Write-Host "README.md version badge updated to $version"
 
-      - name: Commit and push README update
+      - name: Commit and push version updates
         if: steps.version.outputs.IS_TAG == 'true'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout main
-          git add README.md
-          git diff --staged --quiet || git commit -m "docs: update version badge to ${{ steps.version.outputs.VERSION }} [skip ci]"
+          git add README.md package.json
+          git diff --staged --quiet || git commit -m "chore: update version to ${{ steps.version.outputs.VERSION }} [skip ci]"
           git push origin main
