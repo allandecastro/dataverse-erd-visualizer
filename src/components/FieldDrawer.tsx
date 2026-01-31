@@ -4,7 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import type { Entity, EntityAttribute } from '@/types';
-import { getAttributeBadge, isLookupType } from '../utils/badges';
+import { getAttributeBadge, isLookupType, isCustomAttribute } from '../utils/badges';
 import { useTheme } from '@/context';
 import { FieldDrawerHeader } from './FieldDrawerHeader';
 import { FieldDrawerList } from './FieldDrawerList';
@@ -30,6 +30,7 @@ export function FieldDrawer({
   const [searchQuery, setSearchQuery] = useState('');
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
   const [showLookupsOnly, setShowLookupsOnly] = useState(false);
+  const [showCustomOnly, setShowCustomOnly] = useState(false);
 
   const { isDarkMode } = useTheme();
 
@@ -66,6 +67,11 @@ export function FieldDrawer({
       attrs = attrs.filter((attr) => isLookupType(attr));
     }
 
+    // Custom only filter
+    if (showCustomOnly) {
+      attrs = attrs.filter((attr) => isCustomAttribute(attr));
+    }
+
     // Sort: PK first, then alphabetically
     attrs.sort((a, b) => {
       if (a.isPrimaryKey && !b.isPrimaryKey) return -1;
@@ -74,7 +80,7 @@ export function FieldDrawer({
     });
 
     return attrs;
-  }, [entity.attributes, searchQuery, showSelectedOnly, showLookupsOnly, selectedFields]);
+  }, [entity.attributes, searchQuery, showSelectedOnly, showLookupsOnly, showCustomOnly, selectedFields]);
 
   const handleFieldToggle = (attr: EntityAttribute) => {
     if (attr.isPrimaryKey) return;
@@ -140,6 +146,7 @@ export function FieldDrawer({
         searchQuery={searchQuery}
         showSelectedOnly={showSelectedOnly}
         showLookupsOnly={showLookupsOnly}
+        showCustomOnly={showCustomOnly}
         isDarkMode={isDarkMode}
         headerBg={headerBg}
         borderColor={borderColor}
@@ -150,6 +157,7 @@ export function FieldDrawer({
         onSearchChange={setSearchQuery}
         onToggleSelectedOnly={() => setShowSelectedOnly(!showSelectedOnly)}
         onToggleLookupsOnly={() => setShowLookupsOnly(!showLookupsOnly)}
+        onToggleCustomOnly={() => setShowCustomOnly(!showCustomOnly)}
         onClose={onClose}
       />
 

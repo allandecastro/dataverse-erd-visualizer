@@ -65,3 +65,10 @@ export function getAttributeBadge(attr: EntityAttribute): AttributeBadge {
 export function isLookupType(attr: EntityAttribute): boolean {
   return attr.type === 'Lookup' || attr.type === 'Owner' || attr.type === 'Customer';
 }
+
+/**
+ * Check if an attribute is a custom attribute (vs. standard OOB attribute)
+ */
+export function isCustomAttribute(attr: EntityAttribute): boolean {
+  return attr.isCustomAttribute === true;
+}
