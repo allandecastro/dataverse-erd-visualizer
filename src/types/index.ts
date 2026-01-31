@@ -30,6 +30,7 @@ export interface EntityAttribute {
   isPrimaryKey?: boolean;
   isLookup?: boolean;
   lookupTarget?: string; // Target entity logical name for lookup fields
+  isCustomAttribute?: boolean; // Whether this is a custom attribute (vs. standard OOB attribute)
 }
 
 export interface AlternateKey {
