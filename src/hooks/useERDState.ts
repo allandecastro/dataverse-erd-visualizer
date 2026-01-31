@@ -5,6 +5,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
 import type { ToastType, ToastState, LayoutMode, ColorSettings } from '@/types/erdTypes';
+import { getEntityPublisher } from '@/utils/entityUtils';
 
 export interface UseERDStateProps {
   entities: Entity[];
@@ -77,16 +78,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // Helper to get publisher from entity
-  const getEntityPublisher = (entity: Entity): string => {
-    if (entity.publisher) return entity.publisher;
-    if (!entity.isCustomEntity) return 'Microsoft';
-    const underscoreIndex = entity.logicalName.indexOf('_');
-    if (underscoreIndex > 0) {
-      return entity.logicalName.substring(0, underscoreIndex);
-    }
-    return 'Unknown';
-  };
+  // Note: getEntityPublisher is now imported from @/utils/entityUtils
 
   // Filtered entities and relationships for the canvas
   // Publisher/Solution filters only affect the sidebar list, NOT the canvas

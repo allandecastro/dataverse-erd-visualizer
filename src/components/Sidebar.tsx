@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { Entity } from '@/types';
 import type { LayoutMode, ColorSettings } from '@/types/erdTypes';
 import { useTheme } from '@/context';
+import { getEntityPublisher } from '@/utils/entityUtils';
 import { VirtualEntityList } from './VirtualEntityList';
 import { SidebarHeader } from './SidebarHeader';
 import { SidebarSettings } from './SidebarSettings';
@@ -95,7 +96,7 @@ export function Sidebar({
     const matchesSearch =
       entity.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entity.logicalName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPublisher = publisherFilter === 'all' || entity.publisher === publisherFilter;
+    const matchesPublisher = publisherFilter === 'all' || getEntityPublisher(entity) === publisherFilter;
     const matchesSolution =
       solutionFilter === 'all' || (entity.solutions?.includes(solutionFilter) ?? false);
     return matchesSearch && matchesPublisher && matchesSolution;
