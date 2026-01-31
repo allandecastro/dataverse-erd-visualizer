@@ -3,9 +3,10 @@
  */
 
 import { forwardRef, useState } from 'react';
-import { Search, CheckSquare, Square, X, Link2 } from 'lucide-react';
+import { Search, CheckSquare, Square, X, Link2, Wrench } from 'lucide-react';
 import type { Entity, EntityAttribute, AttributeType } from '@/types';
 import type { ThemeColors } from '@/types/erdTypes';
+import { isCustomAttribute } from '@/utils/badges';
 
 export interface FieldSelectorProps {
   entity: Entity;
@@ -42,6 +43,7 @@ export const FieldSelector = forwardRef<HTMLDivElement, FieldSelectorProps>(
   ) => {
     const { borderColor, cardBg, textColor, textSecondary } = themeColors;
     const [showOnlyLookups, setShowOnlyLookups] = useState(false);
+    const [showOnlyCustom, setShowOnlyCustom] = useState(false);
 
     // Filter out PK fields - they are always shown automatically
     const selectableAttributes = entity.attributes.filter(
@@ -60,6 +62,13 @@ export const FieldSelector = forwardRef<HTMLDivElement, FieldSelectorProps>(
       filteredAttributes = filteredAttributes.filter(
         (attr: EntityAttribute) =>
           attr.type === 'Lookup' || attr.type === 'Owner' || attr.type === 'Customer'
+      );
+    }
+
+    // Apply custom filter if enabled
+    if (showOnlyCustom) {
+      filteredAttributes = filteredAttributes.filter((attr: EntityAttribute) =>
+        isCustomAttribute(attr)
       );
     }
 
@@ -142,6 +151,22 @@ export const FieldSelector = forwardRef<HTMLDivElement, FieldSelectorProps>(
             >
               <Link2 size={10} />
               Lookup
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowOnlyCustom(!showOnlyCustom);
+              }}
+              style={{
+                ...(showOnlyCustom ? activeButtonStyle : buttonStyle),
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+              title="Filter to show only Custom fields"
+            >
+              <Wrench size={10} />
+              Custom
             </button>
             <button
               onClick={(e) => {

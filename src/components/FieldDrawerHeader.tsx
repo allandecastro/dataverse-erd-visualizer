@@ -3,7 +3,7 @@
  */
 
 import { memo } from 'react';
-import { X, Search, CheckCircle, Link } from 'lucide-react';
+import { X, Search, CheckCircle, Link, Wrench } from 'lucide-react';
 import styles from '@/styles/FieldDrawerHeader.module.css';
 
 export interface FieldDrawerHeaderProps {
@@ -13,6 +13,7 @@ export interface FieldDrawerHeaderProps {
   searchQuery: string;
   showSelectedOnly: boolean;
   showLookupsOnly: boolean;
+  showCustomOnly: boolean;
   isDarkMode: boolean;
   headerBg: string;
   borderColor: string;
@@ -23,6 +24,7 @@ export interface FieldDrawerHeaderProps {
   onSearchChange: (value: string) => void;
   onToggleSelectedOnly: () => void;
   onToggleLookupsOnly: () => void;
+  onToggleCustomOnly: () => void;
   onClose: () => void;
 }
 
@@ -32,6 +34,7 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
   searchQuery,
   showSelectedOnly,
   showLookupsOnly,
+  showCustomOnly,
   isDarkMode,
   headerBg,
   borderColor,
@@ -42,6 +45,7 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
   onSearchChange,
   onToggleSelectedOnly,
   onToggleLookupsOnly,
+  onToggleCustomOnly,
   onClose,
 }: FieldDrawerHeaderProps) {
   const getSelectedButtonStyle = () => ({
@@ -64,6 +68,17 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
         ? '#374151'
         : '#f3f4f6',
     color: showLookupsOnly ? (isDarkMode ? '#fdba74' : '#9a3412') : textSecondary,
+  });
+
+  const getCustomButtonStyle = () => ({
+    background: showCustomOnly
+      ? isDarkMode
+        ? '#1e40af'
+        : '#dbeafe'
+      : isDarkMode
+        ? '#374151'
+        : '#f3f4f6',
+    color: showCustomOnly ? (isDarkMode ? '#93c5fd' : '#1e40af') : textSecondary,
   });
 
   return (
@@ -135,6 +150,16 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
         >
           <Link size={14} aria-hidden="true" />
           Lookups
+        </button>
+        <button
+          onClick={onToggleCustomOnly}
+          aria-pressed={showCustomOnly}
+          aria-label="Show custom fields only"
+          className={styles.filterButton}
+          style={getCustomButtonStyle()}
+        >
+          <Wrench size={14} aria-hidden="true" />
+          Custom
         </button>
       </div>
     </div>
