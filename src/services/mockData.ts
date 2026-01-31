@@ -85,6 +85,44 @@ const statusField = () => ({
 const createdOnField = () => dateTimeField('createdon', 'Created On');
 const modifiedOnField = () => dateTimeField('modifiedon', 'Modified On');
 
+// Custom field helpers (with isCustomAttribute flag)
+const customStringField = (name: string, displayName: string) => ({
+  name,
+  displayName,
+  type: 'String' as const,
+  isCustomAttribute: true,
+});
+
+const customIntegerField = (name: string, displayName: string) => ({
+  name,
+  displayName,
+  type: 'Integer' as const,
+  isCustomAttribute: true,
+});
+
+const customDateTimeField = (name: string, displayName: string) => ({
+  name,
+  displayName,
+  type: 'DateTime' as const,
+  isCustomAttribute: true,
+});
+
+const customPicklistField = (name: string, displayName: string) => ({
+  name,
+  displayName,
+  type: 'Picklist' as const,
+  isCustomAttribute: true,
+});
+
+const customLookupField = (name: string, displayName: string, target: string) => ({
+  name,
+  displayName,
+  type: 'Lookup' as const,
+  isLookup: true,
+  lookupTarget: target,
+  isCustomAttribute: true,
+});
+
 /**
  * Generate mock entities simulating a CRM system
  */
@@ -118,6 +156,13 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Custom fields (would typically have a publisher prefix like "new_" or "cr123_")
+        customStringField('new_customernumber', 'Customer Number'),
+        customStringField('new_preferredcontactmethod', 'Preferred Contact Method'),
+        customIntegerField('new_creditlimit', 'Credit Limit'),
+        customDateTimeField('new_lastauditdate', 'Last Audit Date'),
+        customPicklistField('new_accountcategory', 'Account Category'),
+        customLookupField('new_accountmanagerid', 'Account Manager', 'systemuser'),
       ],
       alternateKeys: [
         {
@@ -159,6 +204,10 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Custom fields
+        customStringField('new_linkedin', 'LinkedIn Profile'),
+        customPicklistField('new_communicationpreference', 'Communication Preference'),
+        customDateTimeField('new_lastnewsletteropendate', 'Last Newsletter Open'),
       ],
       alternateKeys: [
         {
