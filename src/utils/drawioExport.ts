@@ -270,22 +270,23 @@ function calculateEntityHeight(
 
 /**
  * Format multi-line relationship label for connector
+ * Escapes each component to prevent XML injection
  */
 function formatRelationshipLabel(relationship: EntityRelationship): string {
   const lines: string[] = [];
 
-  // Line 1: Cardinality
-  lines.push(relationship.type);
+  // Line 1: Cardinality (escaped)
+  lines.push(escapeXml(relationship.type));
 
-  // Line 2: Schema name
-  lines.push(relationship.schemaName);
+  // Line 2: Schema name (escaped)
+  lines.push(escapeXml(relationship.schemaName));
 
-  // Line 3: Field mapping (if available)
+  // Line 3: Field mapping (if available, escape each part)
   if (relationship.referencingAttribute && relationship.referencedAttribute) {
-    lines.push(`${relationship.referencingAttribute} → ${relationship.referencedAttribute}`);
+    lines.push(`${escapeXml(relationship.referencingAttribute)} → ${escapeXml(relationship.referencedAttribute)}`);
   }
 
-  // Join with XML newline character
+  // Join with XML newline character (don't escape the newline entity itself)
   return lines.join('&#xa;');
 }
 
@@ -564,17 +565,12 @@ export async function exportToDrawio(options: DrawioExportOptions): Promise<Blob
 
   onProgress?.(0, 'Initializing Draw.io export...');
 
-  onProgress?.(30, 'Generating entity shapes...');
-
-  onProgress?.(60, 'Creating connectors...');
-
+  // generateDrawioXml handles progress reporting from 0-95%
   const xml = generateDrawioXml(options);
 
-  onProgress?.(90, 'Finalizing...');
+  onProgress?.(100, 'Export complete!');
 
   const blob = new Blob([xml], { type: 'application/xml' });
-
-  onProgress?.(100, 'Export complete!');
 
   return blob;
 }
