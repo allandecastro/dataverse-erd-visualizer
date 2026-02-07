@@ -36,7 +36,7 @@ export function FieldDrawer({
 
   // Use theme colors for consistency with Sidebar and Toolbar
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
-  const { headerBg, inputBg, inputBorder, hoverBg } = colors;
+  const { inputBg, inputBorder, hoverBg } = colors;
 
   // Filter attributes
   const filteredAttributes = useMemo(() => {
