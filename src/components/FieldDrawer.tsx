@@ -32,17 +32,11 @@ export function FieldDrawer({
   const [showLookupsOnly, setShowLookupsOnly] = useState(false);
   const [showCustomOnly, setShowCustomOnly] = useState(false);
 
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, themeColors, colors } = useTheme();
 
-  // Theme colors
-  const bgColor = isDarkMode ? '#1f2937' : '#ffffff';
-  const headerBg = isDarkMode ? '#111827' : '#f3f4f6';
-  const borderColor = isDarkMode ? '#374151' : '#e5e7eb';
-  const textColor = isDarkMode ? '#f3f4f6' : '#1f2937';
-  const textSecondary = isDarkMode ? '#9ca3af' : '#6b7280';
-  const hoverBg = isDarkMode ? '#374151' : '#f9fafb';
-  const inputBg = isDarkMode ? '#374151' : '#ffffff';
-  const inputBorder = isDarkMode ? '#4b5563' : '#d1d5db';
+  // Use theme colors for consistency with Sidebar and Toolbar
+  const { panelBg, borderColor, textColor, textSecondary } = themeColors;
+  const { headerBg, inputBg, inputBorder, hoverBg } = colors;
 
   // Filter attributes
   const filteredAttributes = useMemo(() => {
@@ -132,7 +126,7 @@ export function FieldDrawer({
         right: 0,
         width: '320px',
         height: '100vh',
-        background: bgColor,
+        background: panelBg,
         borderLeft: `1px solid ${borderColor}`,
         boxShadow: isDarkMode ? '-4px 0 20px rgba(0, 0, 0, 0.5)' : '-4px 0 20px rgba(0, 0, 0, 0.1)',
         display: 'flex',
@@ -148,7 +142,7 @@ export function FieldDrawer({
         showLookupsOnly={showLookupsOnly}
         showCustomOnly={showCustomOnly}
         isDarkMode={isDarkMode}
-        headerBg={headerBg}
+        headerBg={panelBg}
         borderColor={borderColor}
         textColor={textColor}
         textSecondary={textSecondary}
