@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.1.4.0] - 2025-02-07
+
 ### Added
 - **Enhanced Draw.io Export** - Major improvements to draw.io (.drawio) file export:
   - Entity boxes now display fields with badges, types, and primary key indicators
@@ -93,8 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **v0.1.4.0** - February 2025 - Draw.io enhancements, performance optimizations, bug fixes
 - **v0.1.3.3** - December 2024 - Initial BETA release
-- **Unreleased** - February 2025 - Draw.io enhancements, performance optimizations, bug fixes
 
 ---
 
