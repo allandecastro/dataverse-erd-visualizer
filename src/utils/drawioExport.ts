@@ -480,7 +480,6 @@ function generateDrawioXml(options: DrawioExportOptions): string {
   let cellIndex = 0;
 
   const entityIdMap: Record<string, string> = {};
-  const totalWork = entities.length + relationships.length;
 
   // Generate entity cells (now returns arrays of cells)
   entities.forEach((entity, index) => {
@@ -508,7 +507,8 @@ function generateDrawioXml(options: DrawioExportOptions): string {
 
     // Report progress per entity (0-80% range for entities)
     if (onProgress && index % 5 === 0) { // Report every 5 entities to avoid overhead
-      const progress = Math.floor((index / totalWork) * 80);
+      const entityCount = entities.length || 1;
+      const progress = Math.floor(((index + 1) / entityCount) * 80);
       onProgress(progress, `Processing entity ${index + 1} of ${entities.length}...`);
     }
   });
@@ -525,7 +525,8 @@ function generateDrawioXml(options: DrawioExportOptions): string {
 
     // Report progress for relationships (80-95% range)
     if (onProgress && index % 10 === 0) { // Report every 10 relationships
-      const progress = 80 + Math.floor((index / relationships.length) * 15);
+      const relationshipCount = relationships.length || 1;
+      const progress = 80 + Math.floor(((index + 1) / relationshipCount) * 15);
       onProgress(progress, `Processing relationship ${index + 1} of ${relationships.length}...`);
     }
   });
