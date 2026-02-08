@@ -5,6 +5,17 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6.1] - 2025-02-08
+
+### Fixed
+- **Snapshot Layout Preservation** ([#37](https://github.com/allandecastro/dataverse-erd-visualizer/issues/37)) - Fixed issue where entity positions were not preserved when loading snapshots:
+  - Removed hardcoded `fitView` prop from ReactFlow component that was automatically adjusting viewport on every render
+  - Entity positions from snapshots are now preserved exactly as saved
+  - Custom table layouts are maintained after save/load operations
+  - The `fitView()` method remains available via ref for manual viewport adjustment
+
+---
+
 ## [0.1.6.0] - 2025-02-08
 
 ### Added

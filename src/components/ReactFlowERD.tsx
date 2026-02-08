@@ -60,6 +60,9 @@ export interface ReactFlowERDProps {
   entityPositions: Record<string, EntityPosition>;
   onPositionsChange: (positions: Record<string, EntityPosition>) => void;
   onToggleMinimap: () => void;
+  // Viewport support for zoom/pan restoration
+  zoom?: number;
+  pan?: { x: number; y: number };
   // Field drawer support
   orderedFieldsMap?: Record<string, string[]>;
   onOpenFieldDrawer?: (entityName: string) => void;
@@ -93,6 +96,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     entityPositions,
     onPositionsChange,
     onToggleMinimap,
+    zoom,
+    pan,
     orderedFieldsMap,
     onOpenFieldDrawer,
     onRemoveField,
@@ -448,8 +453,11 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       onNodeDragStop={onNodeDragStop}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
-      fitView
-      fitViewOptions={{ padding: 0.2 }}
+      defaultViewport={
+        zoom !== undefined && pan !== undefined
+          ? { x: pan.x, y: pan.y, zoom }
+          : undefined
+      }
       minZoom={0.1}
       maxZoom={2}
       colorMode={isDarkMode ? 'dark' : 'light'}
