@@ -29,7 +29,7 @@ const FieldDrawer = lazy(() =>
 );
 
 // Types and utilities
-import type { ColorSettings } from './types/erdTypes';
+import type { ColorSettings, LayoutMode } from './types/erdTypes';
 import { exportToMermaid } from './utils/exportUtils';
 import { exportToDrawio, downloadDrawio } from './utils/drawioExport';
 import {
@@ -553,6 +553,8 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         entityPositions={entityPositions}
         orderedFieldsMap={orderedFieldsMap}
         edgeOffsets={edgeOffsets}
+        zoom={zoom}
+        pan={pan}
         toast={toast}
         isSearchOpen={isSearchOpen}
         showGuide={showGuide}
@@ -632,13 +634,15 @@ interface ERDVisualizerContentProps {
   solutionFilter: string;
   publishers: string[];
   solutions: string[];
-  layoutMode: 'force' | 'grid' | 'auto';
+  layoutMode: LayoutMode;
   showSettings: boolean;
   colorSettings: ColorSettings;
   showMinimap: boolean;
   entityPositions: Record<string, { x: number; y: number }>;
   orderedFieldsMap: Record<string, string[]>;
   edgeOffsets: Record<string, { x: number; y: number }>;
+  zoom: number;
+  pan: { x: number; y: number };
   toast: { message: string; type: 'success' | 'error' | 'info' | 'warning' } | null;
   isSearchOpen: boolean;
   showGuide: boolean;
@@ -731,6 +735,8 @@ function ERDVisualizerContent({
   entityPositions,
   orderedFieldsMap,
   edgeOffsets,
+  zoom,
+  pan,
   toast,
   isSearchOpen,
   showGuide,
