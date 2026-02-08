@@ -267,7 +267,7 @@ export function useLayoutAlgorithms({
     setEntityPositions(newPositions);
   }, [entities, selectedEntities, relationships, setEntityPositions]);
 
-  // Apply layout when mode changes
+  // Apply layout when mode changes (skip for 'manual' mode to preserve user-defined positions)
   useEffect(() => {
     if (layoutMode === 'force') {
       applyForceLayout();
@@ -276,6 +276,7 @@ export function useLayoutAlgorithms({
     } else if (layoutMode === 'auto') {
       applyAutoArrange();
     }
+    // 'manual' mode: Skip auto-layout, preserve existing positions
     // Note: Only trigger on layoutMode and selectedEntities changes to avoid infinite loops
     // The layout functions themselves are stable due to their useCallback wrappers
     // eslint-disable-next-line react-hooks/exhaustive-deps

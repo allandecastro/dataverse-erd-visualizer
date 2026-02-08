@@ -338,7 +338,9 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     );
     setFieldOrder(state.fieldOrder);
     setEntityPositions(state.entityPositions);
-    setLayoutMode(state.layoutMode);
+    // If positions exist, use manual mode to preserve them; otherwise use saved layout mode
+    const hasPositions = Object.keys(state.entityPositions).length > 0;
+    setLayoutMode(hasPositions ? 'manual' : state.layoutMode);
     setZoom(state.zoom);
     setPan(state.pan);
     setSearchQuery(state.searchQuery);

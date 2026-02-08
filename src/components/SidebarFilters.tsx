@@ -53,7 +53,7 @@ export const SidebarFilters = memo(function SidebarFilters({
   const selectArrowBg = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${arrowColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`;
 
   const cycleLayoutMode = () => {
-    const modes: LayoutMode[] = ['force', 'grid', 'auto'];
+    const modes: LayoutMode[] = ['force', 'grid', 'auto', 'manual'];
     const currentIndex = modes.indexOf(layoutMode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
     onLayoutModeChange(nextMode);
@@ -144,7 +144,7 @@ export const SidebarFilters = memo(function SidebarFilters({
           }}
         >
           <RefreshCw size={14} />
-          {layoutMode === 'force' ? 'Force' : layoutMode === 'grid' ? 'Grid' : 'Auto'}
+          {layoutMode === 'force' ? 'Force' : layoutMode === 'grid' ? 'Grid' : layoutMode === 'auto' ? 'Auto' : 'Manual'}
         </button>
       </div>
 
