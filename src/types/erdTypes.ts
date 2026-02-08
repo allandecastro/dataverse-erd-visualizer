@@ -8,7 +8,7 @@ import type { Entity, EntityPosition, AttributeType } from '@/types';
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 // Layout mode types
-export type LayoutMode = 'force' | 'grid' | 'auto';
+export type LayoutMode = 'force' | 'grid' | 'auto' | 'manual';
 
 // Edge/relationship line style types
 export type EdgeStyle = 'smoothstep' | 'straight' | 'bezier' | 'step';
