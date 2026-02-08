@@ -72,7 +72,8 @@
 |---------|-------------|
 | **Search & Filter** | Quick search by table name, filter by publisher/solution |
 | **Field Selector** | Choose which fields to display per table |
-| **Keyboard Shortcuts** | Ctrl+F (search), Escape (deselect), +/- (zoom) |
+| **Snapshots** | Save/restore complete diagram states with auto-save, export/import |
+| **Keyboard Shortcuts** | Ctrl+S (save snapshot), Ctrl+Shift+S (manage), / (search), Esc (deselect) |
 | **Feature Guide** | Interactive onboarding for new users |
 
 ### Export & Customization
@@ -204,7 +205,10 @@ You'll see a **"MOCK MODE"** banner indicating you're using simulated data.
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl/Cmd + F` | Focus search box |
+| `Ctrl/Cmd + S` | Save new snapshot |
+| `Ctrl/Cmd + Shift + S` | Open Snapshot Manager |
+| `Ctrl/Cmd + A` | Select all tables |
+| `/` | Focus search box |
 | `Escape` | Deselect entity / Close dialogs |
 | `+` / `=` | Zoom in |
 | `-` | Zoom out |
