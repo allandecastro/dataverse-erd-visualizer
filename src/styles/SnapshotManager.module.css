@@ -1,0 +1,225 @@
+/**
+ * Snapshot Manager modal styles
+ */
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.overlayDark {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.overlayLight {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Dialog */
+.dialog {
+  width: 600px;
+  max-width: 90vw;
+  max-height: 70vh;
+  border-radius: 12px;
+  border: 1px solid;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dialogDark {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.dialogLight {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+/* Header */
+.header {
+  padding: 20px;
+  border-bottom: 1px solid;
+  flex-shrink: 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.closeButton:hover {
+  opacity: 0.8;
+}
+
+/* Auto-save section */
+.autoSaveSection {
+  margin-top: 12px;
+}
+
+.autoSaveLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.autoSaveCheckbox {
+  display: none;
+}
+
+.autoSaveToggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  border: 1px solid;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.autoSaveSlider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.autoSaveText {
+  font-size: 13px;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Save section */
+.saveSection {
+  padding-bottom: 20px;
+  border-bottom: 1px solid;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.saveForm {
+  display: flex;
+  gap: 8px;
+}
+
+.nameInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+}
+
+.nameInput:focus {
+  border-color: #0ea5e9;
+}
+
+.saveButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.saveButton:hover {
+  opacity: 0.9;
+}
+
+/* List section */
+.listSection {
+  flex: 1;
+}
+
+.snapshotList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emptyState {
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* Footer */
+.footer {
+  padding: 16px 20px;
+  border-top: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.importButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.importButton:hover {
+  opacity: 0.8;
+}
+
+.storageUsage {
+  font-size: 12px;
+}

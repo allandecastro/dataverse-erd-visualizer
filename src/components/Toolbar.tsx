@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Search, HelpCircle } from 'lucide-react';
+import { Search, HelpCircle, Bookmark } from 'lucide-react';
 import { useTheme } from '@/context';
 import { getKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { ToolbarStats } from './ToolbarStats';
@@ -22,6 +22,7 @@ export interface ToolbarProps {
   onExportDrawio: () => void;
   onOpenSearch: () => void;
   onOpenGuide: () => void;
+  onOpenSnapshots: () => void;
 }
 
 export function Toolbar({
@@ -35,6 +36,7 @@ export function Toolbar({
   onExportDrawio,
   onOpenSearch,
   onOpenGuide,
+  onOpenSnapshots,
 }: ToolbarProps) {
   const { isDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
@@ -73,6 +75,23 @@ export function Toolbar({
           onExportSVG={onExportSVG}
           onExportDrawio={onExportDrawio}
         />
+
+        <div className={styles.divider} style={{ background: borderColor }} />
+
+        {/* Snapshots */}
+        <button
+          onClick={onOpenSnapshots}
+          title="Manage snapshots (Ctrl+Shift+S)"
+          className={styles.searchButton}
+          style={{
+            background: buttonBg,
+            border: `1px solid ${borderColor}`,
+            color: textColor,
+          }}
+        >
+          <Bookmark size={16} />
+          Snapshots
+        </button>
 
         <div className={styles.divider} style={{ background: borderColor }} />
 
