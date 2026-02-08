@@ -70,6 +70,8 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     setEntityPositions,
     layoutMode,
     setLayoutMode,
+    zoom,
+    pan,
     collapsedEntities,
     toggleCollapse,
     collapseAll,
@@ -449,8 +451,12 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
   const handlePositionsChange = useCallback(
     (positions: Record<string, { x: number; y: number }>) => {
       setEntityPositions(positions);
+      // Switch to manual mode to preserve user-defined positions
+      if (layoutMode !== 'manual') {
+        setLayoutMode('manual');
+      }
     },
-    [setEntityPositions]
+    [setEntityPositions, layoutMode, setLayoutMode]
   );
 
   // Field drawer handlers
@@ -654,7 +660,7 @@ interface ERDVisualizerContentProps {
   onSearchChange: (value: string) => void;
   onPublisherFilterChange: (value: string) => void;
   onSolutionFilterChange: (value: string) => void;
-  onLayoutModeChange: (mode: 'force' | 'grid' | 'auto') => void;
+  onLayoutModeChange: (mode: 'force' | 'grid' | 'auto' | 'manual') => void;
   onToggleSettings: () => void;
   onColorSettingsChange: (key: keyof ColorSettings, value: string) => void;
   onPositionsChange: (positions: Record<string, { x: number; y: number }>) => void;
@@ -878,6 +884,8 @@ function ERDVisualizerContent({
             entityPositions={entityPositions}
             onPositionsChange={onPositionsChange}
             onToggleMinimap={onToggleMinimap}
+            zoom={zoom}
+            pan={pan}
             orderedFieldsMap={orderedFieldsMap}
             onOpenFieldDrawer={onOpenFieldDrawer}
             onRemoveField={onRemoveField}
