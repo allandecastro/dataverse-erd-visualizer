@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.5.0_BETA-blue?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.1.6.0_BETA-blue?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
   <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml/badge.svg" alt="CD" /></a>
@@ -73,7 +73,8 @@
 | **Search & Filter** | Quick search by table name, filter by publisher/solution |
 | **Field Selector** | Choose which fields to display per table |
 | **Snapshots** | Save/restore complete diagram states with auto-save, export/import |
-| **Keyboard Shortcuts** | Ctrl+S (save snapshot), Ctrl+Shift+S (manage), / (search), Esc (deselect) |
+| **Share URL** | Generate shareable URLs with one-click clipboard copy, automatic state restoration |
+| **Keyboard Shortcuts** | Ctrl+S (save), Ctrl+Shift+S (snapshots), Ctrl+Shift+C (share), / (search), Esc (deselect) |
 | **Feature Guide** | Interactive onboarding for new users |
 
 ### Export & Customization
@@ -207,6 +208,7 @@ You'll see a **"MOCK MODE"** banner indicating you're using simulated data.
 |----------|--------|
 | `Ctrl/Cmd + S` | Save new snapshot |
 | `Ctrl/Cmd + Shift + S` | Open Snapshot Manager |
+| `Ctrl/Cmd + Shift + C` | Generate and copy shareable URL |
 | `Ctrl/Cmd + A` | Select all tables |
 | `/` | Focus search box |
 | `Escape` | Deselect entity / Close dialogs |

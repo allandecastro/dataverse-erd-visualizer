@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Play, Edit2, Download, Trash2, X, Check } from 'lucide-react';
+import { Play, Edit2, Download, Trash2, X, Check, Share2 } from 'lucide-react';
 import type { ERDSnapshot } from '@/types/snapshotTypes';
 import { formatRelativeTime } from '@/utils/snapshotSerializer';
 import styles from '@/styles/SnapshotListItem.module.css';
@@ -17,6 +17,7 @@ export interface SnapshotListItemProps {
   deleteConfirm: boolean;
   onLoad: () => void;
   onRename: (newName: string) => void;
+  onShare: () => void;
   onExport: () => void;
   onDelete: () => void;
   onCancelDelete: () => void;
@@ -31,6 +32,7 @@ export function SnapshotListItem({
   deleteConfirm,
   onLoad,
   onRename,
+  onShare,
   onExport,
   onDelete,
   onCancelDelete,
@@ -146,6 +148,19 @@ export function SnapshotListItem({
             }}
           >
             <Edit2 size={14} />
+          </button>
+
+          {/* Share button */}
+          <button
+            onClick={onShare}
+            className={styles.actionButton}
+            title="Share this snapshot as URL"
+            style={{
+              background: isDarkMode ? 'rgba(6, 182, 212, 0.2)' : 'rgba(6, 182, 212, 0.15)',
+              color: '#06b6d4',
+            }}
+          >
+            <Share2 size={14} />
           </button>
 
           {/* Export button */}
