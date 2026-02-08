@@ -10,12 +10,13 @@ import type { Entity, EntityRelationship } from '@/types';
 import { useERDState } from './hooks/useERDState';
 import { useLayoutAlgorithms } from './hooks/useLayoutAlgorithms';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useSnapshots } from './hooks/useSnapshots';
 
 // Context
 import { ThemeProvider, useTheme } from './context';
 
 // Components - eager loaded (critical path)
-import { EntitySearch, Sidebar, Toast, Toolbar, ErrorBoundary } from './components';
+import { EntitySearch, Sidebar, Toast, Toolbar, ErrorBoundary, SnapshotManager } from './components';
 import { ReactFlowERD, type ReactFlowERDRef } from './components/ReactFlowERD';
 import { AddRelatedTableDialog } from './components/AddRelatedTableDialog';
 
@@ -107,6 +108,17 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
   // Feature guide state
   const [showGuide, setShowGuide] = useState(false);
 
+  // Snapshot manager state
+  const [showSnapshotManager, setShowSnapshotManager] = useState(false);
+
+  // Snapshots hook
+  const snapshotState = useSnapshots({
+    getSerializableState: state.getSerializableState,
+    restoreState: state.restoreState,
+    showToast,
+    entities,
+  });
+
   // Draw.io export state
   const [isExportingDrawio, setIsExportingDrawio] = useState(false);
   const [drawioExportProgress, setDrawioExportProgress] = useState<
@@ -159,6 +171,8 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     onSelectAll: selectAll,
     onDeselectAll: deselectAll,
     onOpenSearch: () => setIsSearchOpen(true),
+    onSaveSnapshot: () => snapshotState.saveSnapshot(''),
+    onOpenSnapshots: () => setShowSnapshotManager(true),
   });
 
   // Build ordered fields map for all entities (memoized to prevent unnecessary re-renders)
@@ -444,6 +458,21 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         onLookupFieldAdd={handleLookupFieldAdd}
         onConfirmAddRelatedTable={handleConfirmAddRelatedTable}
         onCancelAddRelatedTable={handleCancelAddRelatedTable}
+        // Snapshots
+        showSnapshotManager={showSnapshotManager}
+        snapshots={snapshotState.snapshots}
+        lastAutoSave={snapshotState.lastAutoSave}
+        autoSaveEnabled={snapshotState.autoSaveEnabled}
+        onOpenSnapshots={() => setShowSnapshotManager(true)}
+        onCloseSnapshots={() => setShowSnapshotManager(false)}
+        onSaveSnapshot={snapshotState.saveSnapshot}
+        onLoadSnapshot={snapshotState.loadSnapshot}
+        onRenameSnapshot={snapshotState.renameSnapshot}
+        onDeleteSnapshot={snapshotState.deleteSnapshot}
+        onExportSnapshot={snapshotState.exportSnapshotToJSON}
+        onExportAllSnapshots={snapshotState.exportAllSnapshotsToJSON}
+        onImportSnapshot={snapshotState.importSnapshotFromJSON}
+        onToggleAutoSave={snapshotState.toggleAutoSave}
       />
     </ThemeProvider>
   );
@@ -513,6 +542,33 @@ interface ERDVisualizerContentProps {
   onLookupFieldAdd: (fieldName: string, targetEntity: string) => void;
   onConfirmAddRelatedTable: () => void;
   onCancelAddRelatedTable: () => void;
+  // Snapshots
+  showSnapshotManager: boolean;
+  snapshots: Array<{
+    id: string;
+    name: string;
+    timestamp: number;
+    version: string;
+    state: any;
+  }>;
+  lastAutoSave: {
+    id: string;
+    name: string;
+    timestamp: number;
+    version: string;
+    state: any;
+  } | null;
+  autoSaveEnabled: boolean;
+  onOpenSnapshots: () => void;
+  onCloseSnapshots: () => void;
+  onSaveSnapshot: (name: string) => void;
+  onLoadSnapshot: (id: string) => void;
+  onRenameSnapshot: (id: string, newName: string) => void;
+  onDeleteSnapshot: (id: string) => void;
+  onExportSnapshot: (id: string) => void;
+  onExportAllSnapshots: () => void;
+  onImportSnapshot: (file: File) => void;
+  onToggleAutoSave: (enabled: boolean) => void;
 }
 
 function ERDVisualizerContent({
@@ -576,6 +632,21 @@ function ERDVisualizerContent({
   onLookupFieldAdd,
   onConfirmAddRelatedTable,
   onCancelAddRelatedTable,
+  // Snapshots
+  showSnapshotManager,
+  snapshots,
+  lastAutoSave,
+  autoSaveEnabled,
+  onOpenSnapshots,
+  onCloseSnapshots,
+  onSaveSnapshot,
+  onLoadSnapshot,
+  onRenameSnapshot,
+  onDeleteSnapshot,
+  onExportSnapshot,
+  onExportAllSnapshots,
+  onImportSnapshot,
+  onToggleAutoSave,
 }: ERDVisualizerContentProps) {
   // Use theme from context
   const { isDarkMode, themeColors } = useTheme();
@@ -640,6 +711,7 @@ function ERDVisualizerContent({
           onExportDrawio={onExportDrawio}
           onOpenSearch={onOpenSearch}
           onOpenGuide={onOpenGuide}
+          onOpenSnapshots={onOpenSnapshots}
         />
 
         {/* React Flow Canvas */}
@@ -726,6 +798,26 @@ function ERDVisualizerContent({
           onConfirm={onConfirmAddRelatedTable}
           onCancel={onCancelAddRelatedTable}
         />
+      )}
+
+      {/* Snapshot Manager Modal */}
+      {showSnapshotManager && (
+        <ErrorBoundary sectionName="Snapshot Manager" isDarkMode={isDarkMode}>
+          <SnapshotManager
+            snapshots={snapshots}
+            lastAutoSave={lastAutoSave}
+            autoSaveEnabled={autoSaveEnabled}
+            onClose={onCloseSnapshots}
+            onSaveSnapshot={onSaveSnapshot}
+            onLoadSnapshot={onLoadSnapshot}
+            onRenameSnapshot={onRenameSnapshot}
+            onDeleteSnapshot={onDeleteSnapshot}
+            onExportSnapshot={onExportSnapshot}
+            onExportAllSnapshots={onExportAllSnapshots}
+            onImportSnapshot={onImportSnapshot}
+            onToggleAutoSave={onToggleAutoSave}
+          />
+        </ErrorBoundary>
       )}
     </div>
   );

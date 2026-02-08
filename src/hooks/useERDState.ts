@@ -271,6 +271,86 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     return ['all', ...new Set(allSolutions)].sort();
   }, [entities]);
 
+  // Snapshot helpers: Extract serializable state for snapshots
+  const getSerializableState = useCallback(() => {
+    return {
+      selectedEntities: Array.from(selectedEntities),
+      collapsedEntities: Array.from(collapsedEntities),
+      selectedFields: Object.fromEntries(
+        Object.entries(selectedFields).map(([key, set]) => [key, Array.from(set)])
+      ),
+      fieldOrder,
+      entityPositions,
+      layoutMode,
+      zoom,
+      pan,
+      searchQuery,
+      publisherFilter,
+      solutionFilter,
+      isDarkMode,
+      colorSettings,
+      showMinimap,
+      isSmartZoom,
+      edgeOffsets,
+    };
+  }, [
+    selectedEntities,
+    collapsedEntities,
+    selectedFields,
+    fieldOrder,
+    entityPositions,
+    layoutMode,
+    zoom,
+    pan,
+    searchQuery,
+    publisherFilter,
+    solutionFilter,
+    isDarkMode,
+    colorSettings,
+    showMinimap,
+    isSmartZoom,
+    edgeOffsets,
+  ]);
+
+  // Snapshot helpers: Restore state from snapshot
+  const restoreState = useCallback((state: {
+    selectedEntities: string[];
+    collapsedEntities: string[];
+    selectedFields: Record<string, string[]>;
+    fieldOrder: Record<string, string[]>;
+    entityPositions: Record<string, EntityPosition>;
+    layoutMode: LayoutMode;
+    zoom: number;
+    pan: { x: number; y: number };
+    searchQuery: string;
+    publisherFilter: string;
+    solutionFilter: string;
+    isDarkMode: boolean;
+    colorSettings: ColorSettings;
+    showMinimap: boolean;
+    isSmartZoom: boolean;
+    edgeOffsets: Record<string, { x: number; y: number }>;
+  }) => {
+    setSelectedEntities(new Set(state.selectedEntities));
+    setCollapsedEntities(new Set(state.collapsedEntities));
+    setSelectedFields(
+      Object.fromEntries(Object.entries(state.selectedFields).map(([key, arr]) => [key, new Set(arr)]))
+    );
+    setFieldOrder(state.fieldOrder);
+    setEntityPositions(state.entityPositions);
+    setLayoutMode(state.layoutMode);
+    setZoom(state.zoom);
+    setPan(state.pan);
+    setSearchQuery(state.searchQuery);
+    setPublisherFilter(state.publisherFilter);
+    setSolutionFilter(state.solutionFilter);
+    setIsDarkMode(state.isDarkMode);
+    setColorSettings(state.colorSettings);
+    setShowMinimap(state.showMinimap);
+    setIsSmartZoom(state.isSmartZoom);
+    setEdgeOffsets(state.edgeOffsets);
+  }, []);
+
   return {
     // Theme
     isDarkMode,
@@ -362,5 +442,9 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     // Filtered data
     filteredEntities,
     filteredRelationships,
+
+    // Snapshot helpers
+    getSerializableState,
+    restoreState,
   };
 }
