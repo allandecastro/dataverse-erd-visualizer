@@ -9,6 +9,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.5.0] - 2025-02-08
+
+### Added
+- **Snapshots Management System** ([#12](https://github.com/allandecastro/dataverse-erd-visualizer/issues/12)) - Complete diagram state save/restore functionality:
+  - Save and restore complete diagram states including:
+    - Entity selection and positions
+    - Field selection and ordering
+    - Zoom level and viewport pan position
+    - Filters (search, publisher, solution)
+    - Layout mode and visual settings (colors, dark mode)
+    - Collapsed entities state
+    - Edge offset adjustments
+  - Snapshot Manager modal with intuitive UI:
+    - Create snapshots with custom names
+    - Load, rename, and delete snapshots
+    - Export individual snapshots to JSON
+    - Export all snapshots to single JSON file
+    - Import snapshots from JSON files
+    - Visual list with timestamps and actions
+  - Auto-save functionality:
+    - Automatic state saving every 2 seconds (when enabled)
+    - Auto-save on browser close/refresh
+    - Separate auto-save slot (doesn't count toward 10-snapshot limit)
+    - Toggle auto-save on/off in Snapshot Manager
+  - Schema validation on load:
+    - Detects missing entities/fields when loading snapshots
+    - Shows warning with count of missing elements
+    - Automatically filters out invalid entries
+    - Prevents crashes from schema mismatches
+  - Storage management:
+    - Browser localStorage for automatic persistence
+    - Up to 10 manual snapshots (oldest auto-removed)
+    - LRU (Least Recently Used) eviction strategy
+    - Storage usage indicator (X/10 snapshots)
+  - Keyboard shortcuts:
+    - `Ctrl+S` - Save new snapshot
+    - `Ctrl+Shift+S` - Open Snapshot Manager
+  - Toolbar integration with Bookmark icon button
+  - Error handling for quota exceeded and corrupted data
+
+### Changed
+- **Guide Button Styling** - Fixed border-radius not applying correctly:
+  - Removed conflicting `border-image` property
+  - Added consistent border with rounded corners (6px radius)
+  - Added hover effects for better interactivity
+  - Improved visual consistency with other toolbar buttons
+
+### Technical Improvements
+- Created dedicated snapshot type definitions (`snapshotTypes.ts`)
+- Implemented localStorage abstraction layer (`snapshotStorage.ts`)
+- Built Set↔Array serialization helpers (`snapshotSerializer.ts`)
+- Added `useSnapshots` hook with complete CRUD operations and auto-save logic
+- Extended `useERDState` with `getSerializableState()` and `restoreState()` methods
+- Implemented debounced auto-save with 2-second delay
+- Added JSON export/import with validation and error handling
+- Created modular component architecture:
+  - `SnapshotManager` - Main modal container
+  - `SnapshotManagerHeader` - Title, close button, auto-save toggle
+  - `SnapshotListItem` - Individual snapshot card with inline editing
+  - `SnapshotManagerFooter` - Import/Export All buttons + storage indicator
+- CSS modules for clean, scoped styling
+
+---
+
 ## [0.1.4.0] - 2025-02-07
 
 ### Added

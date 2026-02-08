@@ -57,8 +57,7 @@
 .guideButton {
   padding: 8px 12px;
   background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(139, 92, 246, 0.2));
-  border: 1px solid;
-  border-image: linear-gradient(135deg, #60a5fa, #8b5cf6) 1;
+  border: 1px solid rgba(139, 92, 246, 0.4);
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -66,6 +65,13 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.guideButton:hover {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(139, 92, 246, 0.3));
+  border-color: rgba(139, 92, 246, 0.6);
+  transform: translateY(-1px);
 }
 
 .guideButton.dark {
