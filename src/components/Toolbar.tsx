@@ -9,6 +9,7 @@ import { getKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { ToolbarStats } from './ToolbarStats';
 import { ToolbarExportButtons } from './ToolbarExportButtons';
 import { KeyboardShortcutsPopup } from './KeyboardShortcutsPopup';
+import { ShareButton } from './ShareButton';
 import styles from '@/styles/Toolbar.module.css';
 
 export interface ToolbarProps {
@@ -23,6 +24,7 @@ export interface ToolbarProps {
   onOpenSearch: () => void;
   onOpenGuide: () => void;
   onOpenSnapshots: () => void;
+  onGenerateShareURL: () => { url: string; warning?: string } | { error: string };
 }
 
 export function Toolbar({
@@ -37,6 +39,7 @@ export function Toolbar({
   onOpenSearch,
   onOpenGuide,
   onOpenSnapshots,
+  onGenerateShareURL,
 }: ToolbarProps) {
   const { isDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
@@ -92,6 +95,11 @@ export function Toolbar({
           <Bookmark size={16} />
           Snapshots
         </button>
+
+        <div className={styles.divider} style={{ background: borderColor }} />
+
+        {/* Share URL */}
+        <ShareButton onGenerateShareURL={onGenerateShareURL} />
 
         <div className={styles.divider} style={{ background: borderColor }} />
 

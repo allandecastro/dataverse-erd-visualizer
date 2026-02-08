@@ -14,6 +14,7 @@ import {
   HelpCircle,
   ChevronRight,
   Bookmark,
+  Share2,
 } from 'lucide-react';
 import { LOGO_DATA_URL } from '@/constants';
 import { useTheme } from '@/context';
@@ -178,6 +179,44 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         title: 'Schema Validation',
         description: 'Snapshots automatically detect missing entities/fields and filter them out when loading.',
         tip: 'Perfect for loading snapshots from different environments',
+      },
+    ],
+  },
+  {
+    id: 'sharing',
+    title: 'Share URL',
+    icon: <Share2 size={20} />,
+    features: [
+      {
+        title: 'Generate Shareable URL',
+        description: 'Create a shareable URL that encodes your current diagram state (entities, positions, zoom, layout, filters).',
+        shortcut: 'Ctrl+Shift+C',
+        tip: 'Click the Share button in the toolbar to copy URL to clipboard',
+      },
+      {
+        title: 'Quick Collaboration',
+        description: 'Share URLs with colleagues to instantly show them the exact same diagram view.',
+        tip: 'URL works with both real Dataverse data and mock data mode',
+      },
+      {
+        title: 'Automatic State Restoration',
+        description: 'When someone opens your shared URL, the diagram automatically restores to your exact configuration.',
+        tip: 'Refresh the page and the shared state persists from the URL',
+      },
+      {
+        title: 'Schema Validation',
+        description: 'If shared entities don\'t exist in the recipient\'s environment, they\'ll see a warning and the diagram loads with available entities.',
+        tip: 'Perfect for sharing between dev, test, and prod environments',
+      },
+      {
+        title: 'Minimal & Compressed',
+        description: 'URLs use LZ-String compression (60-70% reduction) to keep links short and browser-friendly.',
+        tip: 'Most diagrams fit within 2KB URL size',
+      },
+      {
+        title: 'URL vs Snapshots',
+        description: 'Share URLs for quick collaboration (minimal state). Use Snapshots for complete archival (includes fields, colors, all settings).',
+        tip: 'Both features complement each other perfectly',
       },
     ],
   },

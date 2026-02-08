@@ -32,6 +32,12 @@ const FieldDrawer = lazy(() =>
 import type { ColorSettings } from './types/erdTypes';
 import { exportToMermaid } from './utils/exportUtils';
 import { exportToDrawio, downloadDrawio } from './utils/drawioExport';
+import {
+  encodeStateToURL,
+  decodeStateFromURL,
+  expandCompactState,
+} from './utils/urlStateCodec';
+import { validateURLState, filterInvalidURLEntries } from './utils/urlStateValidation';
 
 interface ERDVisualizerProps {
   entities: Entity[];
@@ -144,6 +150,67 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     setShowGuide(false);
   }, []);
 
+  // URL state restoration - HIGHEST PRIORITY (runs once on mount)
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // Remove # prefix
+
+    if (!hash) return; // No URL state, let localStorage auto-save handle it
+
+    console.log('[App] Detected URL hash, attempting to restore state');
+
+    try {
+      // Decode URL state
+      const decoded = decodeStateFromURL(hash);
+
+      if (!decoded.success || !decoded.state) {
+        console.error('[App] Failed to decode URL state:', decoded.error);
+        showToast(`Invalid share URL: ${decoded.error}`, 'error');
+        // Clear bad hash
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        return;
+      }
+
+      // Validate state against available entities
+      const validation = validateURLState(decoded.state, entities);
+
+      if (!validation.isValid && validation.missingEntities.length > 0) {
+        console.warn('[App] URL contains missing entities:', validation.missingEntities);
+        showToast(
+          `Shared URL references ${validation.missingEntities.length} ${
+            validation.missingEntities.length === 1 ? 'entity' : 'entities'
+          } not in your environment. Skipping missing items.`,
+          'warning'
+        );
+
+        // Filter out missing entities
+        const filteredState = filterInvalidURLEntries(decoded.state, validation);
+        const expandedState = expandCompactState(filteredState);
+        const mergedState = { ...state.getSerializableState(), ...expandedState };
+        state.restoreState(mergedState);
+        showToast(
+          `Shared state loaded (${validation.missingEntities.length} ${
+            validation.missingEntities.length === 1 ? 'entity' : 'entities'
+          } skipped)`,
+          'success'
+        );
+      } else {
+        // Valid state, restore directly
+        const expandedState = expandCompactState(decoded.state);
+        const mergedState = { ...state.getSerializableState(), ...expandedState };
+        state.restoreState(mergedState);
+        showToast('Shared state loaded successfully!', 'success');
+      }
+
+      // Keep hash in URL (allows refresh to restore same state)
+      // If you want to clear hash, uncomment below:
+      // window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    } catch (error) {
+      console.error('[App] Error restoring URL state:', error);
+      showToast('Failed to restore shared state', 'error');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - run ONCE on mount
+
   // Navigate to entity using React Flow's focusOnNode
   const navigateToEntity = useCallback((entityName: string) => {
     if (reactFlowRef.current) {
@@ -173,6 +240,14 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     onOpenSearch: () => setIsSearchOpen(true),
     onSaveSnapshot: () => snapshotState.saveSnapshot(''),
     onOpenSnapshots: () => setShowSnapshotManager(true),
+    onShareURL: () => {
+      const result = handleGenerateShareURL();
+      if ('url' in result) {
+        navigator.clipboard.writeText(result.url);
+        // Toast is already shown in handleGenerateShareURL
+      }
+      // Error toast is already shown in handleGenerateShareURL
+    },
   });
 
   // Build ordered fields map for all entities (memoized to prevent unnecessary re-renders)
@@ -303,6 +378,64 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     showToast,
     isExportingDrawio,
   ]);
+
+  // Generate shareable URL
+  const handleGenerateShareURL = useCallback(():
+    | { url: string; warning?: string }
+    | { error: string } => {
+    try {
+      const currentState = state.getSerializableState();
+
+      // Build minimal state for URL
+      const minimalState = {
+        selectedEntities: currentState.selectedEntities,
+        entityPositions: currentState.entityPositions,
+        zoom: currentState.zoom,
+        pan: currentState.pan,
+        layoutMode: currentState.layoutMode,
+        searchQuery: currentState.searchQuery,
+        publisherFilter: currentState.publisherFilter,
+        solutionFilter: currentState.solutionFilter,
+        isDarkMode: currentState.isDarkMode,
+      };
+
+      // Encode state
+      const encoded = encodeStateToURL(minimalState);
+
+      // Build full URL
+      const baseUrl =
+        window.location.origin + window.location.pathname + window.location.search;
+      const shareUrl = `${baseUrl}#${encoded}`;
+
+      // Check URL length
+      const urlLength = shareUrl.length;
+      if (urlLength > 32000) {
+        return {
+          error: 'Diagram too large to share via URL (32KB limit). Use Export Snapshot instead.',
+        };
+      }
+      if (urlLength > 2000) {
+        showToast(
+          `URL is ${urlLength} characters (may not work in older browsers)`,
+          'warning'
+        );
+        return {
+          url: shareUrl,
+          warning: `URL is ${urlLength} characters (may not work in older browsers)`,
+        };
+      }
+
+      showToast('Share URL copied to clipboard!', 'success');
+      return { url: shareUrl };
+    } catch (error) {
+      console.error('[App] Failed to generate share URL:', error);
+      const errorMessage = `Failed to generate URL: ${
+        error instanceof Error ? error.message : String(error)
+      }`;
+      showToast(errorMessage, 'error');
+      return { error: errorMessage };
+    }
+  }, [state, showToast]);
 
   // Color settings change handler
   const handleColorSettingsChange = useCallback(
@@ -447,6 +580,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         onExportMermaid={handleExportMermaid}
         onExportSVG={handleExportSVG}
         onExportDrawio={handleExportDrawio}
+        onGenerateShareURL={handleGenerateShareURL}
         onOpenSearch={() => setIsSearchOpen(true)}
         onCloseSearch={() => setIsSearchOpen(false)}
         onOpenGuide={() => setShowGuide(true)}
@@ -470,6 +604,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         onRenameSnapshot={snapshotState.renameSnapshot}
         onDeleteSnapshot={snapshotState.deleteSnapshot}
         onExportSnapshot={snapshotState.exportSnapshotToJSON}
+        onShareSnapshot={snapshotState.shareSnapshot}
         onExportAllSnapshots={snapshotState.exportAllSnapshotsToJSON}
         onImportSnapshot={snapshotState.importSnapshotFromJSON}
         onToggleAutoSave={snapshotState.toggleAutoSave}
@@ -531,6 +666,7 @@ interface ERDVisualizerContentProps {
   onExportMermaid: () => void;
   onExportSVG: () => void;
   onExportDrawio: () => void;
+  onGenerateShareURL: () => { url: string; warning?: string } | { error: string };
   onOpenSearch: () => void;
   onCloseSearch: () => void;
   onOpenGuide: () => void;
@@ -566,6 +702,7 @@ interface ERDVisualizerContentProps {
   onRenameSnapshot: (id: string, newName: string) => void;
   onDeleteSnapshot: (id: string) => void;
   onExportSnapshot: (id: string) => void;
+  onShareSnapshot: (id: string) => void;
   onExportAllSnapshots: () => void;
   onImportSnapshot: (file: File) => void;
   onToggleAutoSave: (enabled: boolean) => void;
@@ -621,6 +758,7 @@ function ERDVisualizerContent({
   onExportMermaid,
   onExportSVG,
   onExportDrawio,
+  onGenerateShareURL,
   onOpenSearch,
   onCloseSearch,
   onOpenGuide,
@@ -644,6 +782,7 @@ function ERDVisualizerContent({
   onRenameSnapshot,
   onDeleteSnapshot,
   onExportSnapshot,
+  onShareSnapshot,
   onExportAllSnapshots,
   onImportSnapshot,
   onToggleAutoSave,
@@ -712,6 +851,7 @@ function ERDVisualizerContent({
           onOpenSearch={onOpenSearch}
           onOpenGuide={onOpenGuide}
           onOpenSnapshots={onOpenSnapshots}
+          onGenerateShareURL={onGenerateShareURL}
         />
 
         {/* React Flow Canvas */}
@@ -813,6 +953,7 @@ function ERDVisualizerContent({
             onRenameSnapshot={onRenameSnapshot}
             onDeleteSnapshot={onDeleteSnapshot}
             onExportSnapshot={onExportSnapshot}
+            onShareSnapshot={onShareSnapshot}
             onExportAllSnapshots={onExportAllSnapshots}
             onImportSnapshot={onImportSnapshot}
             onToggleAutoSave={onToggleAutoSave}
