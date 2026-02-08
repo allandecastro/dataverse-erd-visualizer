@@ -443,8 +443,7 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
 
     const a = document.createElement('a');
     a.href = url;
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    a.download = `all-snapshots-${timestamp}.json`;
+    a.download = `snapshots-all-${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -460,40 +459,71 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
       reader.onload = (e) => {
         try {
           const json = e.target?.result as string;
-          const data = JSON.parse(json) as SnapshotExportData;
+          const data = JSON.parse(json);
 
-          // Validate structure
-          if (!data.erdVisualizerSnapshot) {
+          // Check if this is a single snapshot or "Export All" format
+          const isSingleSnapshot = data.erdVisualizerSnapshot === true;
+          const isAllSnapshots = data.erdVisualizerSnapshotsExport === true;
+
+          if (!isSingleSnapshot && !isAllSnapshots) {
             showToast('Invalid snapshot file (missing marker)', 'error');
             return;
           }
 
-          if (!data.snapshot) {
-            showToast('Invalid snapshot file (missing snapshot data)', 'error');
-            return;
+          let importedSnapshots: ERDSnapshot[] = [];
+
+          if (isSingleSnapshot) {
+            // Single snapshot import
+            if (!data.snapshot) {
+              showToast('Invalid snapshot file (missing snapshot data)', 'error');
+              return;
+            }
+            importedSnapshots = [data.snapshot];
+          } else if (isAllSnapshots) {
+            // Multiple snapshots import ("Export All" format)
+            if (!data.snapshots || !Array.isArray(data.snapshots)) {
+              showToast('Invalid snapshots file (missing snapshots array)', 'error');
+              return;
+            }
+            importedSnapshots = data.snapshots;
           }
 
-          // Generate new ID to avoid conflicts
-          const importedSnapshot: ERDSnapshot = {
-            ...data.snapshot,
-            id: generateSnapshotId(),
-          };
-
-          // Ensure unique name
+          // Process each imported snapshot
           const existingNames = snapshots.map((s) => s.name);
-          const uniqueName = ensureUniqueName(importedSnapshot.name, existingNames);
-          importedSnapshot.name = uniqueName;
+          const processedSnapshots: ERDSnapshot[] = [];
+
+          for (const snapshot of importedSnapshots) {
+            // Generate new ID to avoid conflicts
+            const importedSnapshot: ERDSnapshot = {
+              ...snapshot,
+              id: generateSnapshotId(),
+            };
+
+            // Ensure unique name
+            const uniqueName = ensureUniqueName(
+              importedSnapshot.name,
+              [...existingNames, ...processedSnapshots.map((s) => s.name)]
+            );
+            importedSnapshot.name = uniqueName;
+            processedSnapshots.push(importedSnapshot);
+          }
 
           // Add to snapshots (enforce max limit)
-          let updatedSnapshots = [...snapshots, importedSnapshot];
+          let updatedSnapshots = [...snapshots, ...processedSnapshots];
           if (updatedSnapshots.length > MAX_SNAPSHOTS) {
-            updatedSnapshots.sort((a, b) => a.timestamp - b.timestamp);
-            updatedSnapshots = updatedSnapshots.slice(1);
+            // Keep the most recent snapshots
+            updatedSnapshots.sort((a, b) => b.timestamp - a.timestamp);
+            updatedSnapshots = updatedSnapshots.slice(0, MAX_SNAPSHOTS);
           }
 
           setSnapshots(updatedSnapshots);
           persistToStorage(updatedSnapshots, lastAutoSave, autoSaveEnabled);
-          showToast(`Snapshot "${uniqueName}" imported!`, 'success');
+
+          if (processedSnapshots.length === 1) {
+            showToast(`Snapshot "${processedSnapshots[0].name}" imported!`, 'success');
+          } else {
+            showToast(`${processedSnapshots.length} snapshot(s) imported!`, 'success');
+          }
         } catch (error) {
           showToast(`Failed to import snapshot: ${error instanceof Error ? error.message : String(error)}`, 'error');
         }
