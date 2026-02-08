@@ -19,6 +19,7 @@ import {
   ensureUniqueName,
   isRecentTimestamp,
 } from '@/utils/snapshotSerializer';
+import { encodeStateToURL } from '@/utils/urlStateCodec';
 
 const CURRENT_VERSION = '1.0.0';
 const MAX_SNAPSHOTS = 10;
@@ -364,6 +365,61 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
     [snapshots, showToast]
   );
 
+  // Share snapshot as URL
+  const shareSnapshot = useCallback(
+    async (id: string): Promise<void> => {
+      const snapshot = snapshots.find((s) => s.id === id);
+      if (!snapshot) {
+        showToast('Snapshot not found', 'error');
+        return;
+      }
+
+      try {
+        // Build minimal state from snapshot (same structure as handleGenerateShareURL in App.tsx)
+        const minimalState = {
+          selectedEntities: snapshot.state.selectedEntities,
+          entityPositions: snapshot.state.entityPositions,
+          zoom: snapshot.state.zoom,
+          pan: snapshot.state.pan,
+          layoutMode: snapshot.state.layoutMode,
+          searchQuery: snapshot.state.searchQuery,
+          publisherFilter: snapshot.state.publisherFilter,
+          solutionFilter: snapshot.state.solutionFilter,
+          isDarkMode: snapshot.state.isDarkMode,
+        };
+
+        // Encode state to URL
+        const encoded = encodeStateToURL(minimalState);
+        const baseUrl = window.location.origin + window.location.pathname + window.location.search;
+        const shareUrl = `${baseUrl}#${encoded}`;
+
+        // Check URL length
+        const urlLength = shareUrl.length;
+        if (urlLength > 32000) {
+          showToast('Snapshot too large to share via URL (32KB limit). Use Export instead.', 'error');
+          return;
+        }
+
+        // Copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+
+        // Show success toast with optional warning
+        if (urlLength > 2000) {
+          showToast(`Share URL copied! (${urlLength} chars - may not work in older browsers)`, 'warning');
+        } else {
+          showToast(`Share URL for "${snapshot.name}" copied to clipboard!`, 'success');
+        }
+      } catch (error) {
+        console.error('[useSnapshots] Failed to share snapshot:', error);
+        showToast(
+          `Failed to share snapshot: ${error instanceof Error ? error.message : String(error)}`,
+          'error'
+        );
+      }
+    },
+    [snapshots, showToast]
+  );
+
   // Export all snapshots to a single JSON file
   const exportAllSnapshotsToJSON = useCallback((): void => {
     if (snapshots.length === 0 && !lastAutoSave) {
@@ -468,6 +524,7 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
     renameSnapshot,
     deleteSnapshot,
     exportSnapshotToJSON,
+    shareSnapshot,
     exportAllSnapshotsToJSON,
     importSnapshotFromJSON,
     toggleAutoSave,

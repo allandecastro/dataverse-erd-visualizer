@@ -20,6 +20,7 @@ export interface SnapshotManagerProps {
   onRenameSnapshot: (id: string, newName: string) => void;
   onDeleteSnapshot: (id: string) => void;
   onExportSnapshot: (id: string) => void;
+  onShareSnapshot: (id: string) => void;
   onExportAllSnapshots: () => void;
   onImportSnapshot: (file: File) => void;
   onToggleAutoSave: (enabled: boolean) => void;
@@ -35,6 +36,7 @@ export function SnapshotManager({
   onRenameSnapshot,
   onDeleteSnapshot,
   onExportSnapshot,
+  onShareSnapshot,
   onExportAllSnapshots,
   onImportSnapshot,
   onToggleAutoSave,
@@ -154,6 +156,7 @@ export function SnapshotManager({
                       onLoad={() => handleLoadClick(snapshot.id)}
                       onRename={(newName) => onRenameSnapshot(snapshot.id, newName)}
                       onExport={() => onExportSnapshot(snapshot.id)}
+                      onShare={() => onShareSnapshot(snapshot.id)}
                       onDelete={() => handleDeleteClick(snapshot.id)}
                       onCancelDelete={() => setDeleteConfirmId(null)}
                     />

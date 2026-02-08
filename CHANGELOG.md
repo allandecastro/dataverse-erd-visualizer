@@ -5,6 +5,53 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6.0] - 2025-02-08
+
+### Added
+- **Share URL Feature** ([#13](https://github.com/allandecastro/dataverse-erd-visualizer/issues/13)) - Generate shareable URLs that encode diagram state:
+  - Share button in toolbar with visual feedback (idle/copying/copied/error states)
+  - One-click URL generation and clipboard copy
+  - LZ-String compression for efficient URL encoding (60-70% size reduction)
+  - Minimal state format includes:
+    - Selected entities and positions
+    - Zoom level and viewport pan
+    - Layout mode (force/grid/auto)
+    - Search query and filters (publisher, solution)
+    - Dark/light mode preference
+  - Automatic state restoration when opening shared URLs:
+    - URL hash has highest priority (overrides localStorage)
+    - Schema validation warns if entities don't exist
+    - Automatically filters out missing entities
+    - Graceful fallback to localStorage or defaults
+  - Share individual snapshots from Snapshot Manager:
+    - Cyan share button on each snapshot card
+    - Share saved configurations vs. current state
+    - Same validation and compression as toolbar share
+  - URL length validation:
+    - Warning toast for URLs > 2000 characters (older browser compatibility)
+    - Error for URLs > 32KB (suggests using Export Snapshot instead)
+  - Keyboard shortcut:
+    - `Ctrl+Shift+C` - Generate and copy share URL
+  - Works seamlessly with both standalone and Dataverse web resource URLs
+  - Preserves query parameters (appid, pagetype, webresourceName)
+
+### Technical Improvements
+- Created URL state codec with LZ-String compression (`urlStateCodec.ts`)
+- Implemented schema validation for shared URLs (`urlStateValidation.ts`)
+- Added ShareButton component with multi-state UI (idle/copying/copied/error)
+- Extended useSnapshots hook with `shareSnapshot()` method
+- State restoration priority: URL hash > localStorage auto-save > defaults
+- Compact state format with single-letter keys to minimize URL size
+- URL-safe encoding via `compressToEncodedURIComponent()`
+- Graceful error handling for corrupted/malformed URLs
+- Updated Feature Guide with Share URL documentation (6 features)
+
+### Dependencies
+- Added `lz-string@1.5.0` - URL compression library
+- Added `@types/lz-string@1.3.34` - TypeScript definitions
+
+---
+
 ## [0.1.5.0] - 2025-02-08
 
 ### Added
