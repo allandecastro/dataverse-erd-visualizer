@@ -14,6 +14,8 @@ export interface KeyboardShortcutsOptions {
   // Snapshots
   onSaveSnapshot?: () => void;
   onOpenSnapshots?: () => void;
+  // Share URL
+  onShareURL?: () => void;
   // Enabled state
   enabled?: boolean;
 }
@@ -24,6 +26,7 @@ export function useKeyboardShortcuts({
   onOpenSearch,
   onSaveSnapshot,
   onOpenSnapshots,
+  onShareURL,
   enabled = true,
 }: KeyboardShortcutsOptions) {
   const handleKeyDown = useCallback(
@@ -77,9 +80,18 @@ export function useKeyboardShortcuts({
             }
           }
           break;
+
+        // Share URL with Ctrl+Shift+C
+        case 'c':
+        case 'C':
+          if (isCtrlOrCmd && e.shiftKey && onShareURL) {
+            e.preventDefault();
+            onShareURL();
+          }
+          break;
       }
     },
-    [onSelectAll, onDeselectAll, onOpenSearch, onSaveSnapshot, onOpenSnapshots]
+    [onSelectAll, onDeselectAll, onOpenSearch, onSaveSnapshot, onOpenSnapshots, onShareURL]
   );
 
   useEffect(() => {
@@ -100,5 +112,6 @@ export function getKeyboardShortcuts(): { key: string; description: string }[] {
     { key: '/', description: 'Search tables' },
     { key: 'Ctrl+S', description: 'Save snapshot' },
     { key: 'Ctrl+Shift+S', description: 'Open Snapshot Manager' },
+    { key: 'Ctrl+Shift+C', description: 'Generate shareable URL' },
   ];
 }

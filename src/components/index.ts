@@ -7,6 +7,7 @@ export { ErrorBoundary } from './ErrorBoundary';
 export { FeatureGuide } from './FeatureGuide';
 export { FieldSelector } from './FieldSelector';
 export { KeyboardShortcutsPopup } from './KeyboardShortcutsPopup';
+export { ShareButton } from './ShareButton';
 export { Sidebar } from './Sidebar';
 export { SnapshotManager } from './SnapshotManager';
 export { SnapshotManagerHeader } from './SnapshotManagerHeader';
