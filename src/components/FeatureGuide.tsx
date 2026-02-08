@@ -13,6 +13,7 @@ import {
   LayoutGrid,
   HelpCircle,
   ChevronRight,
+  Bookmark,
 } from 'lucide-react';
 import { LOGO_DATA_URL } from '@/constants';
 import { useTheme } from '@/context';
@@ -138,6 +139,45 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         title: 'Draw.io Export',
         description: 'Export to Draw.io (.drawio) format with proper connectors and editable elements.',
         tip: 'Open in draw.io (free) or import into Microsoft Visio',
+      },
+    ],
+  },
+  {
+    id: 'snapshots',
+    title: 'Snapshots',
+    icon: <Bookmark size={20} />,
+    features: [
+      {
+        title: 'Save Your Work',
+        description: 'Save complete diagram states with custom names. Includes entities, positions, zoom, filters, and all visual settings.',
+        shortcut: 'Ctrl+S',
+        tip: 'Create snapshots before major changes to easily revert',
+      },
+      {
+        title: 'Load Snapshots',
+        description: 'Restore any saved snapshot to instantly return to a previous diagram state.',
+        tip: 'Click the Load button in the Snapshot Manager to restore',
+      },
+      {
+        title: 'Auto-Save',
+        description: 'Automatically save your work every 2 seconds. Toggle on/off in the Snapshot Manager header.',
+        tip: 'Auto-save uses a separate slot and doesn\'t count toward the 10-snapshot limit',
+      },
+      {
+        title: 'Export & Import',
+        description: 'Export snapshots as JSON files for backup or sharing. Import them on any device or environment.',
+        tip: 'Use "Export All" to backup all snapshots at once',
+      },
+      {
+        title: 'Snapshot Manager',
+        description: 'Manage all snapshots in one place: create, rename, delete, export, and import.',
+        shortcut: 'Ctrl+Shift+S',
+        tip: 'Click the Snapshots button in the toolbar to open',
+      },
+      {
+        title: 'Schema Validation',
+        description: 'Snapshots automatically detect missing entities/fields and filter them out when loading.',
+        tip: 'Perfect for loading snapshots from different environments',
       },
     ],
   },

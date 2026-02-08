@@ -11,6 +11,9 @@ export interface KeyboardShortcutsOptions {
   onDeselectAll: () => void;
   // Search
   onOpenSearch: () => void;
+  // Snapshots
+  onSaveSnapshot?: () => void;
+  onOpenSnapshots?: () => void;
   // Enabled state
   enabled?: boolean;
 }
@@ -19,6 +22,8 @@ export function useKeyboardShortcuts({
   onSelectAll,
   onDeselectAll,
   onOpenSearch,
+  onSaveSnapshot,
+  onOpenSnapshots,
   enabled = true,
 }: KeyboardShortcutsOptions) {
   const handleKeyDown = useCallback(
@@ -57,9 +62,24 @@ export function useKeyboardShortcuts({
             onOpenSearch();
           }
           break;
+
+        // Save snapshot with Ctrl+S
+        case 's':
+        case 'S':
+          if (isCtrlOrCmd) {
+            e.preventDefault();
+            if (e.shiftKey && onOpenSnapshots) {
+              // Ctrl+Shift+S - Open Snapshot Manager
+              onOpenSnapshots();
+            } else if (onSaveSnapshot) {
+              // Ctrl+S - Save snapshot
+              onSaveSnapshot();
+            }
+          }
+          break;
       }
     },
-    [onSelectAll, onDeselectAll, onOpenSearch]
+    [onSelectAll, onDeselectAll, onOpenSearch, onSaveSnapshot, onOpenSnapshots]
   );
 
   useEffect(() => {
@@ -78,5 +98,7 @@ export function getKeyboardShortcuts(): { key: string; description: string }[] {
     { key: 'Ctrl+A', description: 'Select all tables' },
     { key: 'Esc', description: 'Deselect all' },
     { key: '/', description: 'Search tables' },
+    { key: 'Ctrl+S', description: 'Save snapshot' },
+    { key: 'Ctrl+Shift+S', description: 'Open Snapshot Manager' },
   ];
 }

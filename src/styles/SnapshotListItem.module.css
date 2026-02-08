@@ -1,0 +1,106 @@
+/**
+ * Snapshot List Item styles
+ */
+
+.item {
+  padding: 12px;
+  border: 1px solid;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.15s;
+}
+
+.item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Info section */
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timestamp {
+  font-size: 11px;
+}
+
+/* Rename form */
+.renameForm {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.renameInput {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+.renameInput:focus {
+  border-color: #0ea5e9;
+}
+
+.renameConfirm,
+.renameCancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.renameConfirm:hover,
+.renameCancel:hover {
+  opacity: 0.8;
+}
+
+/* Actions section */
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  opacity: 0.85;
+}
+
+.actionButton svg {
+  flex-shrink: 0;
+}
