@@ -33,7 +33,6 @@ export const SidebarSettings = memo(function SidebarSettings({
     lineThickness,
     useRelationshipTypeColors,
     oneToManyColor,
-    manyToOneColor,
     manyToManyColor,
   } = colorSettings;
   const panelBg = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
