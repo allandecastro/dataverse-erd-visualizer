@@ -5,9 +5,56 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Comprehensive Quality Gates** ([#33](https://github.com/allandecastro/dataverse-erd-visualizer/issues/33)) - Added complete testing infrastructure and quality checks:
+  - **Unit Tests** - 140 passing tests covering critical functionality:
+    - URL State Codec (22 tests) - URL sharing and compression
+    - Draw.io Export (19 tests) - XML generation with injection prevention
+    - Badge Classification (29 tests) - Attribute type badges
+    - Snapshot Serialization (47 tests) - State persistence
+    - useERDState Hook (18 tests) - Core state management
+    - Setup Verification (5 tests) - Infrastructure validation
+  - **Test Infrastructure** - Vitest + React Testing Library:
+    - jsdom environment for component testing
+    - Istanbul coverage provider with HTML/LCOV reports
+    - Global test setup with browser API mocks (localStorage, canvas, matchMedia)
+    - TypeScript integration with vitest/globals
+  - **Pre-commit Hooks** - Automated quality checks:
+    - Husky for Git hook management
+    - lint-staged for auto-formatting staged files
+    - Runs full test suite before allowing commits
+    - Can bypass with `--no-verify` in emergencies
+  - **Enhanced CI/CD Pipeline** - Split test and build jobs:
+    - Linting check with ESLint
+    - Formatting check with Prettier
+    - TypeScript type checking
+    - Full test suite execution
+    - Build step only runs if tests pass
+  - **Test Scripts**:
+    - `npm run test` - Run tests in watch mode
+    - `npm run test:ui` - Open visual test UI
+    - `npm run test:run` - Run once and exit (CI mode)
+    - `npm run test:coverage` - Run with coverage report
+
+### Fixed
+
+- **drawioExport.ts** - Fixed field visibility bug discovered during testing (changed `attr.name` to `attr.logicalName`)
+
+### Security
+
+- **XML Injection Prevention** - Comprehensive tests ensure Draw.io export properly escapes special characters
+- **URL Safety Validation** - Tests verify state encoding doesn't exceed browser limits
+- **Input Validation** - Tests confirm proper handling of special characters in entity names
+
+---
+
 ## [0.1.6.1] - 2025-02-08
 
 ### Fixed
+
 - **Snapshot Layout Preservation** ([#37](https://github.com/allandecastro/dataverse-erd-visualizer/issues/37)) - Fixed issue where entity positions were not preserved when loading snapshots:
   - Removed hardcoded `fitView` prop from ReactFlow component that was automatically adjusting viewport on every render
   - Entity positions from snapshots are now preserved exactly as saved
@@ -19,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.6.0] - 2025-02-08
 
 ### Added
+
 - **Share URL Feature** ([#13](https://github.com/allandecastro/dataverse-erd-visualizer/issues/13)) - Generate shareable URLs that encode diagram state:
   - Share button in toolbar with visual feedback (idle/copying/copied/error states)
   - One-click URL generation and clipboard copy
@@ -47,6 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Preserves query parameters (appid, pagetype, webresourceName)
 
 ### Technical Improvements
+
 - Created URL state codec with LZ-String compression (`urlStateCodec.ts`)
 - Implemented schema validation for shared URLs (`urlStateValidation.ts`)
 - Added ShareButton component with multi-state UI (idle/copying/copied/error)
@@ -58,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Feature Guide with Share URL documentation (6 features)
 
 ### Dependencies
+
 - Added `lz-string@1.5.0` - URL compression library
 - Added `@types/lz-string@1.3.34` - TypeScript definitions
 
@@ -66,6 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.5.0] - 2025-02-08
 
 ### Added
+
 - **Snapshots Management System** ([#12](https://github.com/allandecastro/dataverse-erd-visualizer/issues/12)) - Complete diagram state save/restore functionality:
   - Save and restore complete diagram states including:
     - Entity selection and positions
@@ -104,6 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Error handling for quota exceeded and corrupted data
 
 ### Changed
+
 - **Guide Button Styling** - Fixed border-radius not applying correctly:
   - Removed conflicting `border-image` property
   - Added consistent border with rounded corners (6px radius)
@@ -111,6 +163,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved visual consistency with other toolbar buttons
 
 ### Technical Improvements
+
 - Created dedicated snapshot type definitions (`snapshotTypes.ts`)
 - Implemented localStorage abstraction layer (`snapshotStorage.ts`)
 - Built Set↔Array serialization helpers (`snapshotSerializer.ts`)
@@ -130,6 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.4.0] - 2025-02-07
 
 ### Added
+
 - **Enhanced Draw.io Export** - Major improvements to draw.io (.drawio) file export:
   - Entity boxes now display fields with badges, types, and primary key indicators
   - Entities use swimlane structure with nested child cells for better editability
@@ -158,6 +212,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Shows only custom attributes when enabled
 
 ### Fixed
+
 - **FieldDrawer Color Consistency** - Fixed dark mode color inconsistency:
   - FieldDrawer now uses theme context colors instead of hardcoded values
   - Panel background matches Sidebar and Toolbar (`#242424` in dark mode)
@@ -169,11 +224,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Publisher filter now correctly applies on initial load
 
 ### Changed
+
 - Draw.io export format upgraded to use swimlane structure (better Visio compatibility)
 - Entity boxes now editable field-by-field in draw.io after export
 - FieldDrawer components now use centralized theme system for consistent styling
 
 ### Technical Improvements
+
 - Implemented closure-based memoization for XML escaping function
 - Created primary key lookup map for efficient O(n) → O(1) field access
 - Pre-allocated arrays with estimated sizes to minimize garbage collection
@@ -186,6 +243,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.3.3] - 2024-12 (BETA)
 
 ### Added
+
 - Initial public release
 - Interactive ERD visualization with React Flow
 - Support for force-directed, grid, and auto-arrange layouts
@@ -205,6 +263,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Precise relationship connections from Lookup fields to Primary Keys
 
 ### Infrastructure
+
 - TypeScript + React + Vite build system
 - ESLint + Prettier code quality tools
 - GitHub Actions CI/CD pipeline
