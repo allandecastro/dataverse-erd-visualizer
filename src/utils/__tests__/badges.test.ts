@@ -10,7 +10,7 @@ describe('badges', () => {
   describe('getAttributeBadge', () => {
     it('should return PK badge for primary key', () => {
       const attr: EntityAttribute = {
-        logicalName: 'accountid',
+        name: 'accountid',
         displayName: 'Account ID',
         type: 'UniqueIdentifier',
         isPrimaryKey: true,
@@ -24,7 +24,7 @@ describe('badges', () => {
 
     it('should return LKP badge for Lookup type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'parentaccountid',
+        name: 'parentaccountid',
         displayName: 'Parent Account',
         type: 'Lookup',
         isPrimaryKey: false,
@@ -38,7 +38,7 @@ describe('badges', () => {
 
     it('should return LKP badge for Owner type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'ownerid',
+        name: 'ownerid',
         displayName: 'Owner',
         type: 'Owner',
         isPrimaryKey: false,
@@ -52,7 +52,7 @@ describe('badges', () => {
 
     it('should return LKP badge for Customer type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'customerid',
+        name: 'customerid',
         displayName: 'Customer',
         type: 'Customer',
         isPrimaryKey: false,
@@ -66,7 +66,7 @@ describe('badges', () => {
 
     it('should return TXT badge for String type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'name',
+        name: 'name',
         displayName: 'Name',
         type: 'String',
         isPrimaryKey: false,
@@ -80,7 +80,7 @@ describe('badges', () => {
 
     it('should return MLT badge for Memo type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'description',
+        name: 'description',
         displayName: 'Description',
         type: 'Memo',
         isPrimaryKey: false,
@@ -94,7 +94,7 @@ describe('badges', () => {
 
     it('should return INT badge for Integer type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'numberofemployees',
+        name: 'numberofemployees',
         displayName: 'Number of Employees',
         type: 'Integer',
         isPrimaryKey: false,
@@ -108,7 +108,7 @@ describe('badges', () => {
 
     it('should return INT badge for BigInt type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'versionnumber',
+        name: 'versionnumber',
         displayName: 'Version Number',
         type: 'BigInt',
         isPrimaryKey: false,
@@ -122,7 +122,7 @@ describe('badges', () => {
 
     it('should return DEC badge for Decimal type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'exchangerate',
+        name: 'exchangerate',
         displayName: 'Exchange Rate',
         type: 'Decimal',
         isPrimaryKey: false,
@@ -136,7 +136,7 @@ describe('badges', () => {
 
     it('should return FLT badge for Double type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'percentage',
+        name: 'percentage',
         displayName: 'Percentage',
         type: 'Double',
         isPrimaryKey: false,
@@ -150,7 +150,7 @@ describe('badges', () => {
 
     it('should return CUR badge for Money type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'revenue',
+        name: 'revenue',
         displayName: 'Revenue',
         type: 'Money',
         isPrimaryKey: false,
@@ -164,7 +164,7 @@ describe('badges', () => {
 
     it('should return DT badge for DateTime type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'createdon',
+        name: 'createdon',
         displayName: 'Created On',
         type: 'DateTime',
         isPrimaryKey: false,
@@ -178,7 +178,7 @@ describe('badges', () => {
 
     it('should return Y/N badge for Boolean type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'donotemail',
+        name: 'donotemail',
         displayName: 'Do Not Email',
         type: 'Boolean',
         isPrimaryKey: false,
@@ -192,7 +192,7 @@ describe('badges', () => {
 
     it('should return CHC badge for Picklist type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'industrycode',
+        name: 'industrycode',
         displayName: 'Industry',
         type: 'Picklist',
         isPrimaryKey: false,
@@ -206,7 +206,7 @@ describe('badges', () => {
 
     it('should return STS badge for State type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'statecode',
+        name: 'statecode',
         displayName: 'Status',
         type: 'State',
         isPrimaryKey: false,
@@ -220,7 +220,7 @@ describe('badges', () => {
 
     it('should return RSN badge for Status type', () => {
       const attr: EntityAttribute = {
-        logicalName: 'statuscode',
+        name: 'statuscode',
         displayName: 'Status Reason',
         type: 'Status',
         isPrimaryKey: false,
@@ -234,7 +234,7 @@ describe('badges', () => {
 
     it('should return UID badge for UniqueIdentifier type (non-PK)', () => {
       const attr: EntityAttribute = {
-        logicalName: 'transactioncurrencyid',
+        name: 'transactioncurrencyid',
         displayName: 'Currency',
         type: 'UniqueIdentifier',
         isPrimaryKey: false,
@@ -248,7 +248,7 @@ describe('badges', () => {
 
     it('should return EXT badge for unknown types', () => {
       const attr: EntityAttribute = {
-        logicalName: 'customfield',
+        name: 'customfield',
         displayName: 'Custom Field',
         type: 'UnknownType' as any,
         isPrimaryKey: false,
@@ -262,7 +262,7 @@ describe('badges', () => {
 
     it('should prioritize PK badge over type-specific badge', () => {
       const attr: EntityAttribute = {
-        logicalName: 'accountid',
+        name: 'accountid',
         displayName: 'Account ID',
         type: 'UniqueIdentifier',
         isPrimaryKey: true,
@@ -278,7 +278,7 @@ describe('badges', () => {
   describe('isLookupType', () => {
     it('should identify Lookup type as lookup', () => {
       const attr: EntityAttribute = {
-        logicalName: 'parentaccountid',
+        name: 'parentaccountid',
         displayName: 'Parent Account',
         type: 'Lookup',
         isPrimaryKey: false,
@@ -289,7 +289,7 @@ describe('badges', () => {
 
     it('should identify Owner type as lookup', () => {
       const attr: EntityAttribute = {
-        logicalName: 'ownerid',
+        name: 'ownerid',
         displayName: 'Owner',
         type: 'Owner',
         isPrimaryKey: false,
@@ -300,7 +300,7 @@ describe('badges', () => {
 
     it('should identify Customer type as lookup', () => {
       const attr: EntityAttribute = {
-        logicalName: 'customerid',
+        name: 'customerid',
         displayName: 'Customer',
         type: 'Customer',
         isPrimaryKey: false,
@@ -311,7 +311,7 @@ describe('badges', () => {
 
     it('should reject String type as not lookup', () => {
       const attr: EntityAttribute = {
-        logicalName: 'name',
+        name: 'name',
         displayName: 'Name',
         type: 'String',
         isPrimaryKey: false,
@@ -322,7 +322,7 @@ describe('badges', () => {
 
     it('should reject Integer type as not lookup', () => {
       const attr: EntityAttribute = {
-        logicalName: 'age',
+        name: 'age',
         displayName: 'Age',
         type: 'Integer',
         isPrimaryKey: false,
@@ -333,7 +333,7 @@ describe('badges', () => {
 
     it('should reject UniqueIdentifier type as not lookup', () => {
       const attr: EntityAttribute = {
-        logicalName: 'accountid',
+        name: 'accountid',
         displayName: 'Account ID',
         type: 'UniqueIdentifier',
         isPrimaryKey: true,
@@ -346,7 +346,7 @@ describe('badges', () => {
   describe('isCustomAttribute', () => {
     it('should identify custom attribute when isCustomAttribute is true', () => {
       const attr: EntityAttribute = {
-        logicalName: 'new_customfield',
+        name: 'new_customfield',
         displayName: 'Custom Field',
         type: 'String',
         isPrimaryKey: false,
@@ -358,7 +358,7 @@ describe('badges', () => {
 
     it('should reject standard attribute when isCustomAttribute is false', () => {
       const attr: EntityAttribute = {
-        logicalName: 'name',
+        name: 'name',
         displayName: 'Name',
         type: 'String',
         isPrimaryKey: false,
@@ -370,7 +370,7 @@ describe('badges', () => {
 
     it('should reject attribute when isCustomAttribute is undefined', () => {
       const attr: EntityAttribute = {
-        logicalName: 'name',
+        name: 'name',
         displayName: 'Name',
         type: 'String',
         isPrimaryKey: false,
@@ -381,7 +381,7 @@ describe('badges', () => {
 
     it('should handle publisher-prefixed custom attributes', () => {
       const attr: EntityAttribute = {
-        logicalName: 'cr123_customfield',
+        name: 'cr123_customfield',
         displayName: 'Publisher Custom Field',
         type: 'String',
         isPrimaryKey: false,

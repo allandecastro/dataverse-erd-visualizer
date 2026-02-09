@@ -5,6 +5,7 @@
  */
 
 import { exportToDrawio, downloadDrawio, type DrawioExportOptions } from '../drawioExport';
+import type { Entity } from '@/types';
 
 // Helper to read blob content in test environment
 async function blobToText(blob: Blob): Promise<string> {
@@ -21,10 +22,14 @@ async function blobToText(blob: Blob): Promise<string> {
 }
 
 describe('drawioExport', () => {
-  const mockEntities = [
+  const mockEntities: Entity[] = [
     {
       logicalName: 'account',
       displayName: 'Account',
+      objectTypeCode: 1,
+      isCustomEntity: false,
+      primaryIdAttribute: 'accountid',
+      primaryNameAttribute: 'name',
       attributes: [
         {
           name: 'accountid',
@@ -40,6 +45,10 @@ describe('drawioExport', () => {
     {
       logicalName: 'contact',
       displayName: 'Contact',
+      objectTypeCode: 2,
+      isCustomEntity: false,
+      primaryIdAttribute: 'contactid',
+      primaryNameAttribute: 'fullname',
       attributes: [
         {
           name: 'contactid',
@@ -62,6 +71,7 @@ describe('drawioExport', () => {
       schemaName: 'contact_account',
       referencingAttribute: 'parentcustomerid',
       referencedAttribute: 'accountid',
+      relationshipType: 'OneToManyRelationship' as const,
     },
   ];
 
@@ -150,7 +160,7 @@ describe('drawioExport', () => {
     });
 
     it('should handle entities with alternate keys', async () => {
-      const entitiesWithAK = [
+      const entitiesWithAK: Entity[] = [
         {
           ...mockEntities[0],
           alternateKeys: [
@@ -175,10 +185,14 @@ describe('drawioExport', () => {
     });
 
     it('should escape XML special characters in entity names', async () => {
-      const entitiesWithSpecialChars = [
+      const entitiesWithSpecialChars: Entity[] = [
         {
           logicalName: 'test_entity',
           displayName: 'Test & <Entity>',
+          objectTypeCode: 10001,
+          isCustomEntity: true,
+          primaryIdAttribute: 'test_entityid',
+          primaryNameAttribute: 'test_name',
           attributes: [],
           publisher: 'Test',
           alternateKeys: [],
@@ -205,10 +219,14 @@ describe('drawioExport', () => {
     });
 
     it('should handle quotes in entity names', async () => {
-      const entitiesWithQuotes = [
+      const entitiesWithQuotes: Entity[] = [
         {
           logicalName: 'test',
           displayName: 'Test "Entity" Name',
+          objectTypeCode: 10002,
+          isCustomEntity: true,
+          primaryIdAttribute: 'testid',
+          primaryNameAttribute: 'test_name',
           attributes: [],
           publisher: 'Test',
           alternateKeys: [],
@@ -229,10 +247,14 @@ describe('drawioExport', () => {
     });
 
     it('should prevent XML injection attacks', async () => {
-      const maliciousEntity = [
+      const maliciousEntity: Entity[] = [
         {
           logicalName: 'malicious',
           displayName: '</mxCell><mxCell id="evil" value="INJECTED"/>',
+          objectTypeCode: 10003,
+          isCustomEntity: true,
+          primaryIdAttribute: 'maliciousid',
+          primaryNameAttribute: 'malicious_name',
           attributes: [],
           publisher: 'Test',
           alternateKeys: [],
@@ -408,14 +430,18 @@ describe('drawioExport', () => {
 
   describe('Performance', () => {
     it('should handle large diagrams (50+ entities)', async () => {
-      const largeEntities = Array.from({ length: 50 }, (_, i) => ({
+      const largeEntities: Entity[] = Array.from({ length: 50 }, (_, i) => ({
         logicalName: `entity_${i}`,
         displayName: `Entity ${i}`,
+        objectTypeCode: 10000 + i,
+        isCustomEntity: true,
+        primaryIdAttribute: `entity_${i}id`,
+        primaryNameAttribute: `entity_${i}_name`,
         attributes: [
           {
             name: `entity_${i}id`,
             displayName: `Entity ${i} ID`,
-            type: 'UniqueIdentifier',
+            type: 'UniqueIdentifier' as const,
             isPrimaryKey: true,
           },
         ],

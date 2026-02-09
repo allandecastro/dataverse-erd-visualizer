@@ -12,6 +12,10 @@ describe('useERDState', () => {
     {
       logicalName: 'account',
       displayName: 'Account',
+      objectTypeCode: 1,
+      isCustomEntity: false,
+      primaryIdAttribute: 'accountid',
+      primaryNameAttribute: 'name',
       attributes: [
         {
           name: 'accountid',
@@ -27,6 +31,10 @@ describe('useERDState', () => {
     {
       logicalName: 'contact',
       displayName: 'Contact',
+      objectTypeCode: 2,
+      isCustomEntity: false,
+      primaryIdAttribute: 'contactid',
+      primaryNameAttribute: 'fullname',
       attributes: [
         {
           name: 'contactid',
@@ -41,6 +49,10 @@ describe('useERDState', () => {
     {
       logicalName: 'new_custom',
       displayName: 'Custom Entity',
+      objectTypeCode: 10000,
+      isCustomEntity: true,
+      primaryIdAttribute: 'new_customid',
+      primaryNameAttribute: 'new_name',
       attributes: [
         {
           name: 'new_customid',
@@ -62,6 +74,7 @@ describe('useERDState', () => {
       schemaName: 'contact_account',
       referencingAttribute: 'parentcustomerid',
       referencedAttribute: 'accountid',
+      relationshipType: 'OneToManyRelationship',
     },
   ];
 

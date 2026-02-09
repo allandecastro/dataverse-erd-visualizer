@@ -288,11 +288,10 @@ describe('urlStateCodec', () => {
     it('should throw error for malformed state in encoding', () => {
       const malformedState = {
         ...mockState,
-        // @ts-expect-error Testing invalid state
         entityPositions: null,
       };
 
-      expect(() => encodeStateToURL(malformedState)).toThrow();
+      expect(() => encodeStateToURL(malformedState as any)).toThrow();
     });
 
     it('should return error for missing required fields in decode', () => {

@@ -3,7 +3,7 @@
  * Allows users to shift the entire edge path to avoid overlaps
  */
 
-import { memo, useState, useCallback, useRef, useMemo } from 'react';
+import { memo, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
