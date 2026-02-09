@@ -37,6 +37,7 @@ desktop.ini
 
 # Testing
 coverage/
+*.lcov
 
 # Power Platform / Dataverse
 *.zip
