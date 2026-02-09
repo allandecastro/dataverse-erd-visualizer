@@ -10,7 +10,7 @@ describe('DataverseApiService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset the global fetch mock
-    global.fetch = vi.fn();
+    (globalThis as any).fetch = vi.fn();
   });
 
   describe('Initialization', () => {
@@ -94,6 +94,7 @@ describe('DataverseApiService', () => {
             PrimaryIdAttribute: 'accountid',
             PrimaryNameAttribute: 'name',
             Keys: [],
+            Attributes: [],
             OneToManyRelationships: [
               {
                 SchemaName: 'account_contact',
@@ -138,7 +139,7 @@ describe('DataverseApiService', () => {
       };
 
       // Setup fetch mock to return different responses based on URL
-      (global.fetch as any).mockImplementation((url: string) => {
+      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           return Promise.resolve({
             ok: true,
@@ -192,6 +193,7 @@ describe('DataverseApiService', () => {
             PrimaryIdAttribute: 'accountid',
             PrimaryNameAttribute: 'name',
             Keys: [],
+            Attributes: [],
             OneToManyRelationships: [],
             ManyToOneRelationships: [],
             ManyToManyRelationships: [],
@@ -211,6 +213,7 @@ describe('DataverseApiService', () => {
             PrimaryIdAttribute: 'contactid',
             PrimaryNameAttribute: 'fullname',
             Keys: [],
+            Attributes: [],
             OneToManyRelationships: [],
             ManyToOneRelationships: [],
             ManyToManyRelationships: [],
@@ -229,7 +232,7 @@ describe('DataverseApiService', () => {
       };
 
       let callCount = 0;
-      (global.fetch as any).mockImplementation((url: string) => {
+      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           callCount++;
           if (callCount === 1) {
@@ -268,6 +271,7 @@ describe('DataverseApiService', () => {
             PrimaryIdAttribute: 'accountid',
             PrimaryNameAttribute: 'name',
             Keys: [],
+            Attributes: [],
             OneToManyRelationships: [],
             ManyToOneRelationships: [],
             ManyToManyRelationships: [],
@@ -275,7 +279,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      (global.fetch as any).mockImplementation((url: string) => {
+      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve(mockEntityResponse) });
         } else if (url.includes('Attributes?')) {
@@ -298,7 +302,7 @@ describe('DataverseApiService', () => {
     });
 
     it('should handle fetch errors gracefully', async () => {
-      (global.fetch as any).mockRejectedValue(new Error('Network error'));
+      ((globalThis as any).fetch as any).mockRejectedValue(new Error('Network error'));
 
       dataverseApi.initialize();
 
@@ -318,6 +322,7 @@ describe('DataverseApiService', () => {
           PrimaryIdAttribute: 'accountid',
           PrimaryNameAttribute: 'name',
           Keys: [],
+          Attributes: [],
           OneToManyRelationships: [
             {
               SchemaName: 'account_contact',
@@ -357,6 +362,7 @@ describe('DataverseApiService', () => {
           PrimaryIdAttribute: 'accountid',
           PrimaryNameAttribute: 'name',
           Keys: [],
+          Attributes: [],
           OneToManyRelationships: [],
           ManyToOneRelationships: [],
           ManyToManyRelationships: [
@@ -393,6 +399,7 @@ describe('DataverseApiService', () => {
           PrimaryIdAttribute: 'accountid',
           PrimaryNameAttribute: 'name',
           Keys: [],
+          Attributes: [],
           OneToManyRelationships: [
             {
               SchemaName: 'account_contact',
@@ -439,7 +446,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      (global.fetch as any).mockResolvedValue({
+      ((globalThis as any).fetch as any).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockSolutionsResponse),
       });
@@ -456,7 +463,7 @@ describe('DataverseApiService', () => {
     });
 
     it('should return empty array on fetch error', async () => {
-      (global.fetch as any).mockResolvedValue({
+      ((globalThis as any).fetch as any).mockResolvedValue({
         ok: false,
         statusText: 'Not Found',
       });
@@ -483,7 +490,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      (global.fetch as any).mockResolvedValue({
+      ((globalThis as any).fetch as any).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockSolutionComponentsResponse),
       });
@@ -507,7 +514,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      (global.fetch as any).mockResolvedValue({
+      ((globalThis as any).fetch as any).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockSolutionComponentsResponse),
       });
@@ -523,7 +530,7 @@ describe('DataverseApiService', () => {
         { solutionId: 'sol1', uniqueName: 'CustomSolution', friendlyName: 'Custom Solution' },
       ];
 
-      (global.fetch as any).mockResolvedValue({
+      ((globalThis as any).fetch as any).mockResolvedValue({
         ok: false,
         statusText: 'Not Found',
       });
@@ -548,6 +555,7 @@ describe('DataverseApiService', () => {
             PrimaryIdAttribute: 'testid',
             PrimaryNameAttribute: 'name',
             Keys: [],
+            Attributes: [],
             OneToManyRelationships: [],
             ManyToOneRelationships: [],
             ManyToManyRelationships: [],
@@ -590,7 +598,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      (global.fetch as any).mockImplementation((url: string) => {
+      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve(mockEntityResponse) });
         } else if (url.includes('Attributes?')) {
@@ -627,6 +635,7 @@ describe('DataverseApiService', () => {
             PrimaryIdAttribute: 'contactid',
             PrimaryNameAttribute: 'fullname',
             Keys: [],
+            Attributes: [],
             OneToManyRelationships: [],
             ManyToOneRelationships: [],
             ManyToManyRelationships: [],
@@ -651,7 +660,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      (global.fetch as any).mockImplementation((url: string) => {
+      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve(mockEntityResponse) });
         } else if (url.includes('Attributes?')) {

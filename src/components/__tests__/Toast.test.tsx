@@ -23,12 +23,26 @@ describe('Toast', () => {
     vi.clearAllMocks();
   });
 
+  const mockThemeValue: any = {
+    isDarkMode: false,
+    setIsDarkMode: vi.fn(),
+    toggleDarkMode: vi.fn(),
+    themeColors: {
+      panelBg: '#ffffff',
+      borderColor: '#e5e7eb',
+      textColor: '#1f2937',
+      textSecondary: '#6b7280',
+    },
+    colors: {
+      inputBg: '#f9fafb',
+      inputBorder: '#d1d5db',
+      hoverBg: '#f3f4f6',
+    },
+  };
+
   describe('Rendering', () => {
     it('should render toast with message', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       render(<Toast message="Test notification" type="success" />);
 
@@ -36,10 +50,7 @@ describe('Toast', () => {
     });
 
     it('should render success toast in light mode', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       const { container } = render(<Toast message="Success!" type="success" />);
 
@@ -53,8 +64,8 @@ describe('Toast', () => {
 
     it('should render success toast in dark mode', () => {
       mockUseTheme.mockReturnValue({
+        ...mockThemeValue,
         isDarkMode: true,
-        setIsDarkMode: vi.fn(),
       });
 
       const { container } = render(<Toast message="Success!" type="success" />);
@@ -68,10 +79,7 @@ describe('Toast', () => {
     });
 
     it('should render error toast in light mode', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       const { container } = render(<Toast message="Error occurred" type="error" />);
 
@@ -85,8 +93,8 @@ describe('Toast', () => {
 
     it('should render error toast in dark mode', () => {
       mockUseTheme.mockReturnValue({
+        ...mockThemeValue,
         isDarkMode: true,
-        setIsDarkMode: vi.fn(),
       });
 
       const { container } = render(<Toast message="Error occurred" type="error" />);
@@ -102,10 +110,7 @@ describe('Toast', () => {
 
   describe('Message Content', () => {
     it('should display short messages correctly', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       render(<Toast message="OK" type="success" />);
 
@@ -113,10 +118,7 @@ describe('Toast', () => {
     });
 
     it('should display long messages correctly', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       const longMessage =
         'This is a very long error message that describes in detail what went wrong during the operation.';
@@ -127,10 +129,7 @@ describe('Toast', () => {
     });
 
     it('should display messages with special characters', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       const specialMessage = 'Entity "Account" saved successfully! 🎉';
 
@@ -142,10 +141,7 @@ describe('Toast', () => {
 
   describe('Theme Integration', () => {
     it('should call useTheme hook to get isDarkMode', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       render(<Toast message="Test" type="success" />);
 
@@ -153,10 +149,7 @@ describe('Toast', () => {
     });
 
     it('should react to theme changes', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       const { rerender } = render(<Toast message="Test" type="success" />);
 
@@ -166,8 +159,8 @@ describe('Toast', () => {
 
       // Change to dark mode
       mockUseTheme.mockReturnValue({
+        ...mockThemeValue,
         isDarkMode: true,
-        setIsDarkMode: vi.fn(),
       });
 
       rerender(<Toast message="Test" type="success" />);
@@ -180,10 +173,7 @@ describe('Toast', () => {
 
   describe('Accessibility', () => {
     it('should be accessible with proper text content', () => {
-      mockUseTheme.mockReturnValue({
-        isDarkMode: false,
-        setIsDarkMode: vi.fn(),
-      });
+      mockUseTheme.mockReturnValue(mockThemeValue);
 
       render(<Toast message="Accessible notification" type="success" />);
 
