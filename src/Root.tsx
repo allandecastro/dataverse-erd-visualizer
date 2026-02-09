@@ -14,10 +14,11 @@ export function Root() {
     error,
     isMockMode,
     newRelationshipsDetected,
-    refetch,
   } = useDataverseData();
 
-  console.log('[Root] newRelationshipsDetected:', newRelationshipsDetected);
+  if (import.meta.env.DEV) {
+    console.warn('[Root] newRelationshipsDetected:', newRelationshipsDetected);
+  }
 
   if (isLoading) {
     return (
@@ -75,7 +76,6 @@ export function Root() {
       entities={entities}
       relationships={relationships}
       newRelationshipsDetected={newRelationshipsDetected}
-      onRefresh={refetch}
     />
   );
 }
