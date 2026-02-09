@@ -14,9 +14,17 @@ import { useSnapshots } from './hooks/useSnapshots';
 
 // Context
 import { ThemeProvider, useTheme } from './context';
+import { ERDProvider } from './contexts/ERDContext';
 
 // Components - eager loaded (critical path)
-import { EntitySearch, Sidebar, Toast, Toolbar, ErrorBoundary, SnapshotManager } from './components';
+import {
+  EntitySearch,
+  Sidebar,
+  Toast,
+  Toolbar,
+  ErrorBoundary,
+  SnapshotManager,
+} from './components';
 import { ReactFlowERD, type ReactFlowERDRef } from './components/ReactFlowERD';
 import { AddRelatedTableDialog } from './components/AddRelatedTableDialog';
 
@@ -30,13 +38,10 @@ const FieldDrawer = lazy(() =>
 
 // Types and utilities
 import type { ColorSettings, LayoutMode } from './types/erdTypes';
+import type { ERDSnapshot } from './types/snapshotTypes';
 import { exportToMermaid } from './utils/exportUtils';
 import { exportToDrawio, downloadDrawio } from './utils/drawioExport';
-import {
-  encodeStateToURL,
-  decodeStateFromURL,
-  expandCompactState,
-} from './utils/urlStateCodec';
+import { encodeStateToURL, decodeStateFromURL, expandCompactState } from './utils/urlStateCodec';
 import { validateURLState, filterInvalidURLEntries } from './utils/urlStateValidation';
 
 interface ERDVisualizerProps {
@@ -158,7 +163,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
 
     if (!hash) return; // No URL state, let localStorage auto-save handle it
 
-    console.log('[App] Detected URL hash, attempting to restore state');
+    // console.log('[App] Detected URL hash, attempting to restore state');
 
     try {
       // Decode URL state
@@ -272,9 +277,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         throw new Error('React Flow not initialized');
       }
       const blob = await reactFlowRef.current.exportToPng();
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob }),
-      ]);
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       showToast('Diagram copied to clipboard as PNG!', 'success');
     } catch (err) {
       console.error('Error copying PNG:', err);
@@ -405,8 +408,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
       const encoded = encodeStateToURL(minimalState);
 
       // Build full URL
-      const baseUrl =
-        window.location.origin + window.location.pathname + window.location.search;
+      const baseUrl = window.location.origin + window.location.pathname + window.location.search;
       const shareUrl = `${baseUrl}#${encoded}`;
 
       // Check URL length
@@ -417,10 +419,7 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
         };
       }
       if (urlLength > 2000) {
-        showToast(
-          `URL is ${urlLength} characters (may not work in older browsers)`,
-          'warning'
-        );
+        showToast(`URL is ${urlLength} characters (may not work in older browsers)`, 'warning');
         return {
           url: shareUrl,
           warning: `URL is ${urlLength} characters (may not work in older browsers)`,
@@ -536,87 +535,89 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
 
   return (
     <ThemeProvider isDarkMode={isDarkMode} onDarkModeChange={setIsDarkMode}>
-      <ERDVisualizerContent
-        entities={entities}
-        filteredEntities={filteredEntities}
-        filteredRelationships={filteredRelationships}
-        selectedEntities={selectedEntities}
-        searchQuery={searchQuery}
-        publisherFilter={publisherFilter}
-        solutionFilter={solutionFilter}
-        publishers={publishers}
-        solutions={solutions}
-        layoutMode={layoutMode}
-        showSettings={showSettings}
-        colorSettings={colorSettings}
-        showMinimap={showMinimap}
-        entityPositions={entityPositions}
-        orderedFieldsMap={orderedFieldsMap}
-        edgeOffsets={edgeOffsets}
-        zoom={zoom}
-        pan={pan}
-        toast={toast}
-        isSearchOpen={isSearchOpen}
-        showGuide={showGuide}
-        isExportingDrawio={isExportingDrawio}
-        drawioExportProgress={drawioExportProgress}
-        fieldDrawerEntity={fieldDrawerEntity}
-        fieldDrawerEntityData={fieldDrawerEntityData}
-        selectedFields={selectedFields}
-        pendingLookupField={pendingLookupField}
-        containerRef={containerRef}
-        reactFlowRef={reactFlowRef}
-        onToggleEntity={toggleEntity}
-        onSelectAll={selectAll}
-        onDeselectAll={deselectAll}
-        onExpandAll={expandAll}
-        onCollapseAll={collapseAll}
-        collapsedEntities={collapsedEntities}
-        onToggleCollapse={toggleCollapse}
-        onSearchChange={setSearchQuery}
-        onPublisherFilterChange={setPublisherFilter}
-        onSolutionFilterChange={setSolutionFilter}
-        onLayoutModeChange={handleLayoutModeChange}
-        onToggleSettings={() => setShowSettings(!showSettings)}
-        onColorSettingsChange={handleColorSettingsChange}
-        onPositionsChange={handlePositionsChange}
-        onToggleMinimap={() => setShowMinimap(!showMinimap)}
-        onOpenFieldDrawer={handleOpenFieldDrawer}
-        onRemoveField={handleRemoveField}
-        onEdgeOffsetChange={updateEdgeOffset}
-        onCopyPNG={handleCopyPNG}
-        onExportMermaid={handleExportMermaid}
-        onExportSVG={handleExportSVG}
-        onExportDrawio={handleExportDrawio}
-        onGenerateShareURL={handleGenerateShareURL}
-        onOpenSearch={() => setIsSearchOpen(true)}
-        onCloseSearch={() => setIsSearchOpen(false)}
-        onOpenGuide={() => setShowGuide(true)}
-        onCloseGuide={handleCloseGuide}
-        onDontShowAgain={handleDontShowAgain}
-        onNavigateToEntity={navigateToEntity}
-        onAddField={handleAddField}
-        onCloseFieldDrawer={handleCloseFieldDrawer}
-        onLookupFieldAdd={handleLookupFieldAdd}
-        onConfirmAddRelatedTable={handleConfirmAddRelatedTable}
-        onCancelAddRelatedTable={handleCancelAddRelatedTable}
-        // Snapshots
-        showSnapshotManager={showSnapshotManager}
-        snapshots={snapshotState.snapshots}
-        lastAutoSave={snapshotState.lastAutoSave}
-        autoSaveEnabled={snapshotState.autoSaveEnabled}
-        onOpenSnapshots={() => setShowSnapshotManager(true)}
-        onCloseSnapshots={() => setShowSnapshotManager(false)}
-        onSaveSnapshot={snapshotState.saveSnapshot}
-        onLoadSnapshot={snapshotState.loadSnapshot}
-        onRenameSnapshot={snapshotState.renameSnapshot}
-        onDeleteSnapshot={snapshotState.deleteSnapshot}
-        onExportSnapshot={snapshotState.exportSnapshotToJSON}
-        onShareSnapshot={snapshotState.shareSnapshot}
-        onExportAllSnapshots={snapshotState.exportAllSnapshotsToJSON}
-        onImportSnapshot={snapshotState.importSnapshotFromJSON}
-        onToggleAutoSave={snapshotState.toggleAutoSave}
-      />
+      <ERDProvider state={state}>
+        <ERDVisualizerContent
+          entities={entities}
+          filteredEntities={filteredEntities}
+          filteredRelationships={filteredRelationships}
+          selectedEntities={selectedEntities}
+          searchQuery={searchQuery}
+          publisherFilter={publisherFilter}
+          solutionFilter={solutionFilter}
+          publishers={publishers}
+          solutions={solutions}
+          layoutMode={layoutMode}
+          showSettings={showSettings}
+          colorSettings={colorSettings}
+          showMinimap={showMinimap}
+          entityPositions={entityPositions}
+          orderedFieldsMap={orderedFieldsMap}
+          edgeOffsets={edgeOffsets}
+          zoom={zoom}
+          pan={pan}
+          toast={toast}
+          isSearchOpen={isSearchOpen}
+          showGuide={showGuide}
+          isExportingDrawio={isExportingDrawio}
+          drawioExportProgress={drawioExportProgress}
+          fieldDrawerEntity={fieldDrawerEntity}
+          fieldDrawerEntityData={fieldDrawerEntityData}
+          selectedFields={selectedFields}
+          pendingLookupField={pendingLookupField}
+          containerRef={containerRef}
+          reactFlowRef={reactFlowRef}
+          onToggleEntity={toggleEntity}
+          onSelectAll={selectAll}
+          onDeselectAll={deselectAll}
+          onExpandAll={expandAll}
+          onCollapseAll={collapseAll}
+          collapsedEntities={collapsedEntities}
+          onToggleCollapse={toggleCollapse}
+          onSearchChange={setSearchQuery}
+          onPublisherFilterChange={setPublisherFilter}
+          onSolutionFilterChange={setSolutionFilter}
+          onLayoutModeChange={handleLayoutModeChange}
+          onToggleSettings={() => setShowSettings(!showSettings)}
+          onColorSettingsChange={handleColorSettingsChange}
+          onPositionsChange={handlePositionsChange}
+          onToggleMinimap={() => setShowMinimap(!showMinimap)}
+          onOpenFieldDrawer={handleOpenFieldDrawer}
+          onRemoveField={handleRemoveField}
+          onEdgeOffsetChange={updateEdgeOffset}
+          onCopyPNG={handleCopyPNG}
+          onExportMermaid={handleExportMermaid}
+          onExportSVG={handleExportSVG}
+          onExportDrawio={handleExportDrawio}
+          onGenerateShareURL={handleGenerateShareURL}
+          onOpenSearch={() => setIsSearchOpen(true)}
+          onCloseSearch={() => setIsSearchOpen(false)}
+          onOpenGuide={() => setShowGuide(true)}
+          onCloseGuide={handleCloseGuide}
+          onDontShowAgain={handleDontShowAgain}
+          onNavigateToEntity={navigateToEntity}
+          onAddField={handleAddField}
+          onCloseFieldDrawer={handleCloseFieldDrawer}
+          onLookupFieldAdd={handleLookupFieldAdd}
+          onConfirmAddRelatedTable={handleConfirmAddRelatedTable}
+          onCancelAddRelatedTable={handleCancelAddRelatedTable}
+          // Snapshots
+          showSnapshotManager={showSnapshotManager}
+          snapshots={snapshotState.snapshots}
+          lastAutoSave={snapshotState.lastAutoSave}
+          autoSaveEnabled={snapshotState.autoSaveEnabled}
+          onOpenSnapshots={() => setShowSnapshotManager(true)}
+          onCloseSnapshots={() => setShowSnapshotManager(false)}
+          onSaveSnapshot={snapshotState.saveSnapshot}
+          onLoadSnapshot={snapshotState.loadSnapshot}
+          onRenameSnapshot={snapshotState.renameSnapshot}
+          onDeleteSnapshot={snapshotState.deleteSnapshot}
+          onExportSnapshot={snapshotState.exportSnapshotToJSON}
+          onShareSnapshot={snapshotState.shareSnapshot}
+          onExportAllSnapshots={snapshotState.exportAllSnapshotsToJSON}
+          onImportSnapshot={snapshotState.importSnapshotFromJSON}
+          onToggleAutoSave={snapshotState.toggleAutoSave}
+        />
+      </ERDProvider>
     </ThemeProvider>
   );
 }
@@ -690,20 +691,8 @@ interface ERDVisualizerContentProps {
   onCancelAddRelatedTable: () => void;
   // Snapshots
   showSnapshotManager: boolean;
-  snapshots: Array<{
-    id: string;
-    name: string;
-    timestamp: number;
-    version: string;
-    state: any;
-  }>;
-  lastAutoSave: {
-    id: string;
-    name: string;
-    timestamp: number;
-    version: string;
-    state: any;
-  } | null;
+  snapshots: ERDSnapshot[];
+  lastAutoSave: ERDSnapshot | null;
   autoSaveEnabled: boolean;
   onOpenSnapshots: () => void;
   onCloseSnapshots: () => void;
