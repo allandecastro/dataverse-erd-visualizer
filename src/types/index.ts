@@ -57,8 +57,9 @@ export interface EntityRelationship {
   from: string; // Source entity logical name
   to: string; // Target entity logical name
   type: RelationshipType;
-  referencingAttribute?: string; // The lookup field name
-  referencedAttribute?: string; // The primary key field name (usually)
+  referencingAttribute?: string; // The lookup field name (1:N, N:1)
+  referencedAttribute?: string; // The primary key field name (1:N, N:1)
+  intersectEntityName?: string; // The intersection table name (N:N only)
   relationshipType: 'OneToManyRelationship' | 'ManyToManyRelationship';
 }
 

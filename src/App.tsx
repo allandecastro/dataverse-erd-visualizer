@@ -47,9 +47,14 @@ import { validateURLState, filterInvalidURLEntries } from './utils/urlStateValid
 interface ERDVisualizerProps {
   entities: Entity[];
   relationships: EntityRelationship[];
+  newRelationshipsDetected?: number;
 }
 
-export default function ERDVisualizer({ entities, relationships }: ERDVisualizerProps) {
+export default function ERDVisualizer({
+  entities,
+  relationships,
+  newRelationshipsDetected,
+}: ERDVisualizerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const reactFlowRef = useRef<ReactFlowERDRef>(null);
 
@@ -217,6 +222,19 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - run ONCE on mount
+
+  // Show notification when new relationships are detected
+  useEffect(() => {
+    console.log('[App] newRelationshipsDetected changed:', newRelationshipsDetected);
+    if (newRelationshipsDetected && newRelationshipsDetected > 0) {
+      const message =
+        newRelationshipsDetected === 1
+          ? 'New relationship detected! The diagram has been updated.'
+          : `${newRelationshipsDetected} new relationships detected! The diagram has been updated.`;
+      console.log('[App] Showing toast:', message);
+      showToast(message, 'success');
+    }
+  }, [newRelationshipsDetected, showToast]);
 
   // Navigate to entity using React Flow's focusOnNode
   const navigateToEntity = useCallback((entityName: string) => {
@@ -441,7 +459,18 @@ export default function ERDVisualizer({ entities, relationships }: ERDVisualizer
   // Color settings change handler
   const handleColorSettingsChange = useCallback(
     (key: keyof ColorSettings, value: string) => {
-      setColorSettings((prev) => ({ ...prev, [key]: value }));
+      setColorSettings((prev) => {
+        // Handle type conversions for non-string fields
+        let parsedValue: string | number | boolean = value;
+
+        if (key === 'lineThickness') {
+          parsedValue = parseFloat(value);
+        } else if (key === 'useRelationshipTypeColors') {
+          parsedValue = value === 'true';
+        }
+
+        return { ...prev, [key]: parsedValue };
+      });
     },
     [setColorSettings]
   );

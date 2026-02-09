@@ -384,6 +384,7 @@ describe('DataverseApiService', () => {
         from: 'account',
         to: 'contact',
         type: 'N:N',
+        intersectEntityName: 'account_contact',
         relationshipType: 'ManyToManyRelationship',
       });
     });

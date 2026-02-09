@@ -82,12 +82,15 @@
 
 ### Export & Customization
 
-| Feature              | Description                                                     |
-| -------------------- | --------------------------------------------------------------- |
-| **Multiple Exports** | PNG (clipboard), SVG (download), Mermaid (clipboard)            |
-| **Draw.io Export**   | Full diagram export compatible with Draw.io and Microsoft Visio |
-| **Dark/Light Mode**  | Professional themes with automatic persistence                  |
-| **Custom Colors**    | Table and relationship color customization                      |
+| Feature                           | Description                                                                                        |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Multiple Exports**              | PNG (clipboard), SVG (download), Mermaid (clipboard)                                               |
+| **Draw.io Export**                | Full diagram export compatible with Draw.io and Microsoft Visio                                    |
+| **Dark/Light Mode**               | Professional themes with automatic persistence                                                     |
+| **Custom Colors**                 | Table and relationship color customization                                                         |
+| **Relationship Line Styles**      | Choose between Crow's Foot notation, UML style, or simple arrows                                   |
+| **Line Appearance**               | Solid/dashed/dotted strokes, adjustable thickness (1-5px), color by relationship type (1:N vs N:N) |
+| **Advanced Relationship Visuals** | Professional database notation for technical documentation and presentations                       |
 
 ---
 
@@ -224,9 +227,10 @@ npm run test:ui
 
 **Test Coverage:**
 
-- **140 tests** across 5 test suites
-- Unit tests for utilities (URL codec, Draw.io export, badges, serialization)
-- Integration tests for hooks (useERDState state management)
+- **286 tests** across 15 test suites
+- Unit tests for utilities (URL codec, Draw.io export, badges, serialization, edge markers)
+- Integration tests for hooks (useERDState, useSnapshots, useLayoutAlgorithms, useKeyboardShortcuts)
+- Component tests (EdgeMarkerDefinitions, Toast)
 - Security tests (XML injection prevention, URL safety validation)
 
 **Pre-commit Hooks:**
@@ -263,6 +267,82 @@ npm run test:coverage
 | Click + Drag           | Pan canvas                         |
 | Click entity           | Select and highlight relationships |
 
+### Relationship Line Customization
+
+Visualize relationships with professional database notation styles:
+
+**Line Notation Styles:**
+
+- **Simple Arrows** (default) - Clean, minimalist arrows
+- **Crow's Foot Notation** - Standard database ERD notation showing cardinality (one/many)
+- **UML Style** - Unified Modeling Language with composition (filled diamond) and aggregation (hollow diamond)
+
+**Line Appearance:**
+
+- **Stroke Style** - Solid, dashed, or dotted lines
+- **Thickness** - Adjustable from 1px to 5px
+- **Color by Type** - Distinct colors for single relationships (1:N) vs many-to-many (N:N)
+
+**How to access:**
+
+1. Open **Settings** panel in the sidebar (⚙️ icon)
+2. Scroll to **Color Settings** section
+3. Adjust **Line Notation Style**, **Line Stroke Style**, and **Line Thickness**
+4. Enable **Color by Relationship Type** for type-specific colors
+
+All settings are automatically saved in snapshots and shareable URLs.
+
+### Many-to-Many (N:N) Relationships
+
+**Understanding N:N Relationships in Dataverse:**
+
+Many-to-many relationships work differently from single relationships (1:N, N:1):
+
+**Key Differences:**
+
+- ❌ **Not represented as fields** - No lookup field exists on either table
+- ✅ **Use intersection tables** - Dataverse creates a hidden table (e.g., `accountleads`)
+- ✅ **Bidirectional** - Associates entities in both directions
+- ✅ **Automatically detected** - Fetched from Dataverse metadata
+
+**How They Appear in the ERD:**
+
+- **Label Format:** `[N:N] intersection_table_name`
+- **Visual Distinction:**
+  - Purple color by default (when "Color by Relationship Type" is enabled)
+  - Shows intersection table name in the edge label
+  - UML notation uses hollow diamond (aggregation)
+  - Crow's Foot notation shows fork on both ends
+
+**Example:**
+
+```
+Account ←[N:N] accountleads→ Lead
+```
+
+**How to Create N:N Relationships:**
+
+1. Open **Dataverse** (make.powerapps.com)
+2. Navigate to **Tables** → Select your table
+3. Go to **Relationships** tab
+4. Click **+ Add relationship** → **Many-to-many**
+5. Select the related table and save
+6. Return to ERD and click **Refresh (↻)** to see the new relationship
+
+**Why N:N Can't Be Created in the ERD:**
+
+- Requires Dataverse API write permissions
+- Needs intersection table configuration
+- Complex validation rules
+- Best managed through Dataverse UI
+
+**Viewing N:N Relationships:**
+
+- All existing N:N relationships automatically appear in the ERD
+- Use the search to find specific entities
+- Filter by solution to see solution-specific N:N relationships
+- Hover over the edge label to see full intersection table name
+
 ### Project Structure
 
 ```
@@ -276,10 +356,11 @@ dataverse-erd-visualizer/
 │   │   ├── DraggableEdge.tsx             # Adjustable relationship edge
 │   │   ├── SelfReferenceEdge.tsx         # Self-referencing edge (loops)
 │   │   ├── RelationshipEdge.tsx          # Standard relationship edge
+│   │   ├── EdgeMarkerDefinitions.tsx     # SVG marker definitions for crow's foot/UML
 │   │   ├── Sidebar.tsx                   # Left panel with filters
 │   │   ├── SidebarHeader.tsx             # Logo, theme toggle, settings
 │   │   ├── SidebarFilters.tsx            # Search, publisher, solution filters
-│   │   ├── SidebarSettings.tsx           # Color customization panel
+│   │   ├── SidebarSettings.tsx           # Color & line customization panel
 │   │   ├── SidebarLegend.tsx             # Color legend
 │   │   ├── Toolbar.tsx                   # Top bar with stats & exports
 │   │   ├── ToolbarStats.tsx              # Entity/relationship counts
@@ -300,11 +381,15 @@ dataverse-erd-visualizer/
 │   │   └── index.ts                      # Context exports
 │   ├── hooks/                         # Custom React hooks
 │   │   ├── __tests__/                    # Hook integration tests
-│   │   │   └── useERDState.test.tsx         # useERDState hook tests
+│   │   │   ├── useERDState.test.tsx         # useERDState hook tests
+│   │   │   ├── useSnapshots.test.tsx        # Snapshot CRUD tests
+│   │   │   ├── useLayoutAlgorithms.test.tsx # Layout algorithm tests
+│   │   │   └── useKeyboardShortcuts.test.ts # Keyboard event tests
 │   │   ├── useDataverseData.ts           # Dataverse API data fetching
 │   │   ├── useERDState.ts                # Main ERD state management
 │   │   ├── useKeyboardShortcuts.ts       # Keyboard event handling
 │   │   ├── useLayoutAlgorithms.ts        # Force/Grid/Auto layouts
+│   │   ├── useSnapshots.ts               # Snapshot management
 │   │   ├── useVirtualScroll.ts           # Virtual scroll logic
 │   │   └── index.ts                      # Hook exports
 │   ├── services/                      # API services
@@ -330,10 +415,15 @@ dataverse-erd-visualizer/
 │   │   │   ├── urlStateCodec.test.ts        # URL state codec tests
 │   │   │   ├── drawioExport.test.ts         # Draw.io export tests
 │   │   │   ├── badges.test.ts               # Badge classification tests
-│   │   │   └── snapshotSerializer.test.ts   # Snapshot serialization tests
+│   │   │   ├── snapshotSerializer.test.ts   # Snapshot serialization tests
+│   │   │   ├── edgeMarkers.test.ts          # Edge marker utility tests
+│   │   │   ├── exportUtils.test.ts          # Export utility tests
+│   │   │   └── entityUtils.test.ts          # Entity utility tests
 │   │   ├── badges.ts                     # Field type badges
 │   │   ├── drawioExport.ts               # Draw.io/Visio export
-│   │   └── exportUtils.ts                # PNG/SVG/Mermaid export
+│   │   ├── exportUtils.ts                # PNG/SVG/Mermaid export
+│   │   ├── edgeMarkers.ts                # Edge marker selection & styling
+│   │   └── entityUtils.ts                # Entity metadata utilities
 │   ├── App.tsx                        # Main application component
 │   ├── Root.tsx                       # Root with providers
 │   ├── main.tsx                       # Entry point
@@ -367,6 +457,8 @@ dataverse-erd-visualizer/
 - Custom `TableNode` for entity cards with field-level handles
 - Custom edge types: `DraggableEdge` (adjustable paths), `SelfReferenceEdge` (loops)
 - Precise field-to-field connections (Lookup → Primary Key)
+- Professional notation styles: Crow's Foot, UML, Simple Arrows
+- SVG marker system with reusable definitions for optimal performance
 
 **Dataverse Integration**
 
@@ -426,6 +518,39 @@ dataverse-erd-visualizer/
 
 - Ensure the web resource is loaded within Dataverse context
 - Check that it's not being loaded in a standalone browser
+</details>
+
+<details>
+<summary><strong>New lookup field doesn't show relationship</strong></summary>
+
+**Important:** Relationships are **not inferred from field names**. They are fetched from Dataverse metadata.
+
+When you add a lookup field (e.g., `new_accountmanagerid` on `account` table):
+
+1. The lookup field **automatically creates a relationship** in Dataverse
+2. **Option A (Automatic):** Switch back to the ERD tab - the app auto-refreshes when you return
+3. **Option B (Manual):** Click the **Refresh** button (↻) in the ERD toolbar to reload metadata
+4. The relationship will appear if both tables are visible in the diagram
+
+**Auto-Refresh Feature (v0.1.7+):**
+
+- The ERD automatically reloads metadata when you return to the tab after 5+ seconds
+- Perfect for development workflow: Create field in Dataverse → Return to ERD → Relationship appears
+- Only works in real Dataverse mode (not mock mode)
+- Console logs: `[Auto-refresh] Window focused after being away. Reloading metadata...`
+
+**Why this design:**
+
+- The ERD uses Dataverse's authoritative relationship metadata
+- Prevents incorrect assumptions based on naming conventions
+- Ensures accurate representation of your actual data model
+
+**API Query:**
+
+```
+EntityDefinitions?$expand=OneToManyRelationships,ManyToOneRelationships,ManyToManyRelationships
+```
+
 </details>
 
 <details>

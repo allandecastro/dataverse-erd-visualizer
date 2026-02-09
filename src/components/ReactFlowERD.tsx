@@ -38,6 +38,8 @@ import type { ColorSettings, LayoutMode } from '@/types/erdTypes';
 import { TableNode, type TableNodeData } from './TableNode';
 import { SelfReferenceEdge } from './SelfReferenceEdge';
 import { DraggableEdge } from './DraggableEdge';
+import { EdgeMarkerDefinitions } from './EdgeMarkerDefinitions';
+import { getMarkerIdForNotation, getStrokeDashArray, getEdgeColor } from '@/utils/edgeMarkers';
 import {
   EXPORT_PADDING,
   EXPORT_MIN_ZOOM,
@@ -339,6 +341,55 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       // Use draggable edge type for non-self-reference edges
       const edgeType = isSelfReference ? 'selfLoop' : 'draggable';
 
+      // Determine edge color based on settings
+      const edgeColor = getEdgeColor(
+        rel,
+        colorSettings.useRelationshipTypeColors || false,
+        colorSettings.lookupColor || '#f97316',
+        {
+          oneToMany: colorSettings.oneToManyColor,
+          manyToOne: colorSettings.manyToOneColor,
+          manyToMany: colorSettings.manyToManyColor,
+        }
+      );
+
+      // Determine stroke style
+      const strokeDashArray = getStrokeDashArray(colorSettings.lineStroke || 'solid');
+
+      // Determine marker type based on notation
+      // Keep marker size consistent regardless of line thickness
+      let markerEnd;
+      let edgeStyle: React.CSSProperties;
+
+      if (colorSettings.lineNotation === 'simple') {
+        markerEnd = {
+          type: MarkerType.ArrowClosed,
+          color: edgeColor,
+          width: 15,
+          height: 15,
+        };
+        edgeStyle = {
+          stroke: edgeColor,
+          strokeWidth: colorSettings.lineThickness || 1.5,
+          strokeDasharray: strokeDashArray,
+        };
+      } else {
+        const markerId = getMarkerIdForNotation(
+          colorSettings.lineNotation || 'simple',
+          rel,
+          false,
+          colorSettings.useRelationshipTypeColors || false
+        );
+        // For custom SVG markers, use CSS markerEnd property in style
+        markerEnd = undefined;
+        edgeStyle = {
+          stroke: edgeColor,
+          strokeWidth: colorSettings.lineThickness || 1.5,
+          strokeDasharray: strokeDashArray,
+          markerEnd: `url(#${markerId})`,
+        } as React.CSSProperties;
+      }
+
       return {
         id: rel.schemaName,
         source: rel.from,
@@ -347,17 +398,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         targetHandle,
         type: edgeType,
         animated: false,
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: colorSettings.lookupColor || '#f59e0b',
-          width: 20,
-          height: 20,
-        },
-        style: {
-          stroke: colorSettings.lookupColor || '#f59e0b',
-          strokeWidth: 1.5,
-          strokeDasharray: '5,5', // Dotted line style
-        },
+        markerEnd,
+        style: edgeStyle,
         labelStyle: {
           fontSize: 10,
           fill: isDarkMode ? '#9ca3af' : '#6b7280',
@@ -365,12 +407,19 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         labelBgStyle: {
           fill: 'transparent',
         },
-        label: rel.referencingAttribute || '',
+        // Show different labels based on relationship type
+        // N:N: Show intersection table name and cardinality badge
+        // 1:N/N:1: Show referencing attribute name
+        label:
+          rel.type === 'N:N'
+            ? `[N:N] ${rel.intersectEntityName || rel.schemaName}`
+            : rel.referencingAttribute || '',
         // Pass offset data for draggable edges
         data: {
           offset: edgeOffsets?.[rel.schemaName] ?? { x: 0, y: 0 },
           onOffsetChange: onEdgeOffsetChange,
           edgeStyle: colorSettings.edgeStyle, // Pass edge style for path calculation
+          relationship: rel, // Pass relationship for marker determination
         },
       };
     });
@@ -424,25 +473,64 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
   useEffect(() => {
     setEdges((currentEdges) =>
       currentEdges.map((edge) => {
-        // Preserve existing markerEnd structure, only update color
-        const existingMarker = edge.markerEnd;
-        const updatedMarkerEnd =
-          typeof existingMarker === 'object'
-            ? { ...existingMarker, color: colorSettings.lookupColor || '#f59e0b' }
-            : {
-                type: MarkerType.ArrowClosed,
-                color: colorSettings.lookupColor || '#f59e0b',
-                width: 20,
-                height: 20,
-              };
+        const rel = relationships.find((r) => r.schemaName === edge.id);
+        if (!rel) return edge;
+
+        // Determine edge color
+        const edgeColor = getEdgeColor(
+          rel,
+          colorSettings.useRelationshipTypeColors || false,
+          colorSettings.lookupColor || '#f97316',
+          {
+            oneToMany: colorSettings.oneToManyColor,
+            manyToOne: colorSettings.manyToOneColor,
+            manyToMany: colorSettings.manyToManyColor,
+          }
+        );
+
+        // Determine stroke style
+        const strokeDashArray = getStrokeDashArray(colorSettings.lineStroke || 'solid');
+
+        // Determine marker type
+        // Keep marker size consistent regardless of line thickness
+        let markerEnd;
+        let edgeStyle: React.CSSProperties;
+
+        if (colorSettings.lineNotation === 'simple') {
+          markerEnd = {
+            type: MarkerType.ArrowClosed,
+            color: edgeColor,
+            width: 15,
+            height: 15,
+          };
+          edgeStyle = {
+            ...edge.style,
+            stroke: edgeColor,
+            strokeWidth: colorSettings.lineThickness || 1.5,
+            strokeDasharray: strokeDashArray,
+          };
+        } else {
+          const markerId = getMarkerIdForNotation(
+            colorSettings.lineNotation || 'simple',
+            rel,
+            false,
+            colorSettings.useRelationshipTypeColors || false
+          );
+          // For custom SVG markers, use CSS markerEnd property in style
+          markerEnd = undefined;
+          edgeStyle = {
+            ...edge.style,
+            stroke: edgeColor,
+            strokeWidth: colorSettings.lineThickness || 1.5,
+            strokeDasharray: strokeDashArray,
+            markerEnd: `url(#${markerId})`,
+          } as React.CSSProperties;
+        }
 
         return {
           ...edge,
-          style: {
-            ...edge.style,
-            stroke: colorSettings.lookupColor || '#f59e0b',
-          },
-          markerEnd: updatedMarkerEnd,
+          style: edgeStyle,
+          markerEnd,
           data: {
             ...edge.data,
             edgeStyle: colorSettings.edgeStyle,
@@ -450,7 +538,19 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         };
       })
     );
-  }, [colorSettings.lookupColor, colorSettings.edgeStyle, setEdges]);
+  }, [
+    colorSettings.lookupColor,
+    colorSettings.edgeStyle,
+    colorSettings.lineNotation,
+    colorSettings.lineStroke,
+    colorSettings.lineThickness,
+    colorSettings.useRelationshipTypeColors,
+    colorSettings.oneToManyColor,
+    colorSettings.manyToOneColor,
+    colorSettings.manyToManyColor,
+    relationships,
+    setEdges,
+  ]);
 
   // Handle node drag end to update positions
   const onNodeDragStop = useCallback(
@@ -507,6 +607,17 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         />
       )}
       <Background />
+
+      {/* Custom SVG marker definitions for crow's foot and UML notations */}
+      <EdgeMarkerDefinitions
+        notation={colorSettings.lineNotation || 'simple'}
+        colors={{
+          lookup: colorSettings.lookupColor || '#f97316',
+          oneToMany: colorSettings.oneToManyColor,
+          manyToOne: colorSettings.manyToOneColor,
+          manyToMany: colorSettings.manyToManyColor,
+        }}
+      />
     </ReactFlow>
   );
 });
