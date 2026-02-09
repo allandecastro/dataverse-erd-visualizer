@@ -48,14 +48,12 @@ interface ERDVisualizerProps {
   entities: Entity[];
   relationships: EntityRelationship[];
   newRelationshipsDetected?: number;
-  onRefresh?: () => Promise<void>;
 }
 
 export default function ERDVisualizer({
   entities,
   relationships,
   newRelationshipsDetected,
-  onRefresh,
 }: ERDVisualizerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const reactFlowRef = useRef<ReactFlowERDRef>(null);
@@ -647,7 +645,6 @@ export default function ERDVisualizer({
           onExportAllSnapshots={snapshotState.exportAllSnapshotsToJSON}
           onImportSnapshot={snapshotState.importSnapshotFromJSON}
           onToggleAutoSave={snapshotState.toggleAutoSave}
-          onRefresh={onRefresh}
         />
       </ERDProvider>
     </ThemeProvider>
@@ -737,7 +734,6 @@ interface ERDVisualizerContentProps {
   onExportAllSnapshots: () => void;
   onImportSnapshot: (file: File) => void;
   onToggleAutoSave: (enabled: boolean) => void;
-  onRefresh?: () => Promise<void>;
 }
 
 function ERDVisualizerContent({
@@ -820,7 +816,6 @@ function ERDVisualizerContent({
   onExportAllSnapshots,
   onImportSnapshot,
   onToggleAutoSave,
-  onRefresh,
 }: ERDVisualizerContentProps) {
   // Use theme from context
   const { isDarkMode, themeColors } = useTheme();
@@ -887,7 +882,6 @@ function ERDVisualizerContent({
           onOpenGuide={onOpenGuide}
           onOpenSnapshots={onOpenSnapshots}
           onGenerateShareURL={onGenerateShareURL}
-          onRefresh={onRefresh}
         />
 
         {/* React Flow Canvas */}
