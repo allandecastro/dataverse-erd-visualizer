@@ -3,7 +3,7 @@
  * Allows users to shift the entire edge path to avoid overlaps
  */
 
-import { memo, useState, useCallback, useRef, useMemo } from 'react';
+import { memo, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -38,17 +38,13 @@ export const DraggableEdge = memo(function DraggableEdge({
   markerEnd,
 }: EdgeProps) {
   const edgeData = data as DraggableEdgeData | undefined;
-  const savedOffset = useMemo(
-    () => edgeData?.offset ?? { x: 0, y: 0 },
-    [edgeData?.offset]
-  );
+  const savedOffset = useMemo(() => edgeData?.offset ?? { x: 0, y: 0 }, [edgeData?.offset]);
   const onOffsetChange = edgeData?.onOffsetChange;
   const edgeStyle = edgeData?.edgeStyle ?? 'smoothstep';
 
   // Get current zoom level to scale mouse movements correctly
   const zoom = useStore(zoomSelector);
   const zoomRef = useRef(zoom);
-  zoomRef.current = zoom; // Keep ref in sync for event handlers
 
   // Local offset state for smooth dragging (prevents re-render flicker)
   const [localOffset, setLocalOffset] = useState(savedOffset);
@@ -59,7 +55,15 @@ export const DraggableEdge = memo(function DraggableEdge({
     initialOffset: { x: number; y: number };
   } | null>(null);
   const localOffsetRef = useRef(localOffset);
-  localOffsetRef.current = localOffset; // Keep ref in sync
+
+  // Keep refs in sync via useEffect
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
+    localOffsetRef.current = localOffset;
+  }, [localOffset]);
 
   // Use local offset during drag, saved offset otherwise
   const currentOffset = isDragging ? localOffset : savedOffset;

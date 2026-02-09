@@ -25,7 +25,9 @@ export function arrayToSet<T>(array: T[]): Set<T> {
  * @param record Record with Set values
  * @returns Record with Array values
  */
-export function recordOfSetsToArrays(record: Record<string, Set<string>>): Record<string, string[]> {
+export function recordOfSetsToArrays(
+  record: Record<string, Set<string>>
+): Record<string, string[]> {
   return Object.fromEntries(Object.entries(record).map(([key, set]) => [key, Array.from(set)]));
 }
 
@@ -34,7 +36,9 @@ export function recordOfSetsToArrays(record: Record<string, Set<string>>): Recor
  * @param record Record with Array values
  * @returns Record with Set values
  */
-export function recordOfArraysToSets(record: Record<string, string[]>): Record<string, Set<string>> {
+export function recordOfArraysToSets(
+  record: Record<string, string[]>
+): Record<string, Set<string>> {
   return Object.fromEntries(Object.entries(record).map(([key, arr]) => [key, new Set(arr)]));
 }
 

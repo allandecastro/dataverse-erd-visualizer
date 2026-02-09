@@ -58,11 +58,13 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         title: 'Fit to Screen',
-        description: 'Click the fit view button to automatically fit all entities in the visible area.',
+        description:
+          'Click the fit view button to automatically fit all entities in the visible area.',
       },
       {
         title: 'Search & Navigate',
-        description: 'Use the search icon in the header to find entities by name and jump directly to them.',
+        description:
+          'Use the search icon in the header to find entities by name and jump directly to them.',
         shortcut: '/',
       },
     ],
@@ -74,21 +76,25 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Drag Entities',
-        description: 'Click and drag any entity card to reposition it on the canvas. Positions are saved automatically.',
+        description:
+          'Click and drag any entity card to reposition it on the canvas. Positions are saved automatically.',
       },
       {
         title: 'Expand/Collapse Fields',
-        description: 'Click the chevron button (↑/↓) in the table header to expand or collapse fields.',
+        description:
+          'Click the chevron button (↑/↓) in the table header to expand or collapse fields.',
         tip: 'Collapsed tables show only the Primary Key. Use Expand All / Collapse All in sidebar for bulk actions',
       },
       {
         title: 'Add Fields',
-        description: 'Click the + button on an entity header to open the field drawer and choose which fields to display.',
+        description:
+          'Click the + button on an entity header to open the field drawer and choose which fields to display.',
         tip: 'Click + again or on another table to switch/close the drawer',
       },
       {
         title: 'Remove Fields',
-        description: 'Click the X button next to any field (except Primary Key) to remove it from display.',
+        description:
+          'Click the X button next to any field (except Primary Key) to remove it from display.',
       },
       {
         title: 'Select Entities',
@@ -104,7 +110,8 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Layout Modes',
-        description: 'Choose between Force-Directed (organic), Grid (structured), or Auto (hybrid) layouts.',
+        description:
+          'Choose between Force-Directed (organic), Grid (structured), or Auto (hybrid) layouts.',
         tip: 'Click the layout button in the sidebar to cycle through modes',
       },
       {
@@ -114,7 +121,8 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         title: 'Dark/Light Mode',
-        description: 'Switch between dark and light themes using the sun/moon icon in the sidebar header.',
+        description:
+          'Switch between dark and light themes using the sun/moon icon in the sidebar header.',
       },
     ],
   },
@@ -130,7 +138,8 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         title: 'Export SVG',
-        description: 'Download the diagram as a scalable SVG file. Ideal for further editing or high-quality prints.',
+        description:
+          'Download the diagram as a scalable SVG file. Ideal for further editing or high-quality prints.',
       },
       {
         title: 'Mermaid Code',
@@ -138,7 +147,8 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         title: 'Draw.io Export',
-        description: 'Export to Draw.io (.drawio) format with proper connectors and editable elements.',
+        description:
+          'Export to Draw.io (.drawio) format with proper connectors and editable elements.',
         tip: 'Open in draw.io (free) or import into Microsoft Visio',
       },
     ],
@@ -150,7 +160,8 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Save Your Work',
-        description: 'Save complete diagram states with custom names. Includes entities, positions, zoom, filters, and all visual settings.',
+        description:
+          'Save complete diagram states with custom names. Includes entities, positions, zoom, filters, and all visual settings.',
         shortcut: 'Ctrl+S',
         tip: 'Create snapshots before major changes to easily revert',
       },
@@ -161,23 +172,27 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         title: 'Auto-Save',
-        description: 'Automatically save your work every 2 seconds. Toggle on/off in the Snapshot Manager header.',
-        tip: 'Auto-save uses a separate slot and doesn\'t count toward the 10-snapshot limit',
+        description:
+          'Automatically save your work every 2 seconds. Toggle on/off in the Snapshot Manager header.',
+        tip: "Auto-save uses a separate slot and doesn't count toward the 10-snapshot limit",
       },
       {
         title: 'Export & Import',
-        description: 'Export snapshots as JSON files for backup or sharing. Import them on any device or environment.',
+        description:
+          'Export snapshots as JSON files for backup or sharing. Import them on any device or environment.',
         tip: 'Use "Export All" to backup all snapshots at once',
       },
       {
         title: 'Snapshot Manager',
-        description: 'Manage all snapshots in one place: create, rename, delete, export, and import.',
+        description:
+          'Manage all snapshots in one place: create, rename, delete, export, and import.',
         shortcut: 'Ctrl+Shift+S',
         tip: 'Click the Snapshots button in the toolbar to open',
       },
       {
         title: 'Schema Validation',
-        description: 'Snapshots automatically detect missing entities/fields and filter them out when loading.',
+        description:
+          'Snapshots automatically detect missing entities/fields and filter them out when loading.',
         tip: 'Perfect for loading snapshots from different environments',
       },
     ],
@@ -189,33 +204,39 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Generate Shareable URL',
-        description: 'Create a shareable URL that encodes your current diagram state (entities, positions, zoom, layout, filters).',
+        description:
+          'Create a shareable URL that encodes your current diagram state (entities, positions, zoom, layout, filters).',
         shortcut: 'Ctrl+Shift+C',
         tip: 'Click the Share button in the toolbar to copy URL to clipboard',
       },
       {
         title: 'Quick Collaboration',
-        description: 'Share URLs with colleagues to instantly show them the exact same diagram view.',
+        description:
+          'Share URLs with colleagues to instantly show them the exact same diagram view.',
         tip: 'URL works with both real Dataverse data and mock data mode',
       },
       {
         title: 'Automatic State Restoration',
-        description: 'When someone opens your shared URL, the diagram automatically restores to your exact configuration.',
+        description:
+          'When someone opens your shared URL, the diagram automatically restores to your exact configuration.',
         tip: 'Refresh the page and the shared state persists from the URL',
       },
       {
         title: 'Schema Validation',
-        description: 'If shared entities don\'t exist in the recipient\'s environment, they\'ll see a warning and the diagram loads with available entities.',
+        description:
+          "If shared entities don't exist in the recipient's environment, they'll see a warning and the diagram loads with available entities.",
         tip: 'Perfect for sharing between dev, test, and prod environments',
       },
       {
         title: 'Minimal & Compressed',
-        description: 'URLs use LZ-String compression (60-70% reduction) to keep links short and browser-friendly.',
+        description:
+          'URLs use LZ-String compression (60-70% reduction) to keep links short and browser-friendly.',
         tip: 'Most diagrams fit within 2KB URL size',
       },
       {
         title: 'URL vs Snapshots',
-        description: 'Share URLs for quick collaboration (minimal state). Use Snapshots for complete archival (includes fields, colors, all settings).',
+        description:
+          'Share URLs for quick collaboration (minimal state). Use Snapshots for complete archival (includes fields, colors, all settings).',
         tip: 'Both features complement each other perfectly',
       },
     ],
@@ -227,17 +248,20 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Table Colors',
-        description: 'Customize colors for custom tables (your entities) and standard tables (Microsoft entities).',
+        description:
+          'Customize colors for custom tables (your entities) and standard tables (Microsoft entities).',
         tip: 'Click the gear icon in the sidebar to access settings',
       },
       {
         title: 'Relationship Line Style',
-        description: 'Choose between Smooth Step (default), Bezier Curve, or Straight lines for relationships.',
+        description:
+          'Choose between Smooth Step (default), Bezier Curve, or Straight lines for relationships.',
         tip: 'Smooth Step is recommended for readability',
       },
       {
         title: 'Filter by Publisher',
-        description: 'Filter entities by their publisher prefix to focus on specific customizations.',
+        description:
+          'Filter entities by their publisher prefix to focus on specific customizations.',
       },
       {
         title: 'Filter by Solution',
@@ -252,30 +276,30 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     features: [
       {
         title: 'Relationship Lines',
-        description: 'Dotted lines connect related entities, showing lookup relationships between tables.',
+        description:
+          'Dotted lines connect related entities, showing lookup relationships between tables.',
       },
       {
         title: 'Cardinality Markers',
-        description: 'Small badges show "N" on the lookup side and "1" on the target side to indicate many-to-one relationships.',
+        description:
+          'Small badges show "N" on the lookup side and "1" on the target side to indicate many-to-one relationships.',
       },
       {
         title: 'Field-to-Field Connections',
-        description: 'When lookup and primary key fields are visible, lines connect directly between them.',
+        description:
+          'When lookup and primary key fields are visible, lines connect directly between them.',
         tip: 'Add the lookup field and primary key to see precise connections',
       },
       {
         title: 'Self-Reference Loops',
-        description: 'Entities that reference themselves (like parent-child hierarchies) show a loop on the right side.',
+        description:
+          'Entities that reference themselves (like parent-child hierarchies) show a loop on the right side.',
       },
     ],
   },
 ];
 
-export function FeatureGuide({
-  isOpen,
-  onClose,
-  onDontShowAgain,
-}: FeatureGuideProps) {
+export function FeatureGuide({ isOpen, onClose, onDontShowAgain }: FeatureGuideProps) {
   const [activeCategory, setActiveCategory] = useState('navigation');
   const { isDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
@@ -312,16 +336,16 @@ export function FeatureGuide({
           style={{ borderBottom: `1px solid ${borderColor}` }}
         >
           <div className={styles.headerContent}>
-            <img
-              src={LOGO_DATA_URL}
-              alt="Dataverse ERD Visualizer"
-              className={styles.logo}
-            />
+            <img src={LOGO_DATA_URL} alt="Dataverse ERD Visualizer" className={styles.logo} />
             <div>
               <h2 id={dialogTitleId} className={styles.headerTitle} style={{ color: textColor }}>
                 Welcome to Dataverse ERD Visualizer
               </h2>
-              <p id={dialogDescId} className={styles.headerSubtitle} style={{ color: textSecondary }}>
+              <p
+                id={dialogDescId}
+                className={styles.headerSubtitle}
+                style={{ color: textSecondary }}
+              >
                 Discover all the features to visualize your Dataverse schema
               </p>
             </div>
@@ -393,7 +417,9 @@ export function FeatureGuide({
                 <div className={styles.featureCategoryHeader}>
                   <span
                     aria-hidden="true"
-                    className={isDarkMode ? styles.featureCategoryIconDark : styles.featureCategoryIconLight}
+                    className={
+                      isDarkMode ? styles.featureCategoryIconDark : styles.featureCategoryIconLight
+                    }
                   >
                     {activeCategoryData.icon}
                   </span>
@@ -418,7 +444,9 @@ export function FeatureGuide({
                             {feature.description}
                           </p>
                           {feature.tip && (
-                            <p className={`${styles.featureTip} ${isDarkMode ? styles.featureTipDark : styles.featureTipLight}`}>
+                            <p
+                              className={`${styles.featureTip} ${isDarkMode ? styles.featureTipDark : styles.featureTipLight}`}
+                            >
                               <HelpCircle size={12} aria-hidden="true" />
                               Tip: {feature.tip}
                             </p>

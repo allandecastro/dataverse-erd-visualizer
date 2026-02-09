@@ -89,7 +89,8 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   );
 
   const filteredRelationships = useMemo(
-    () => relationships.filter((rel) => selectedEntities.has(rel.from) && selectedEntities.has(rel.to)),
+    () =>
+      relationships.filter((rel) => selectedEntities.has(rel.from) && selectedEntities.has(rel.to)),
     [relationships, selectedEntities]
   );
 
@@ -313,45 +314,50 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   ]);
 
   // Snapshot helpers: Restore state from snapshot
-  const restoreState = useCallback((state: {
-    selectedEntities: string[];
-    collapsedEntities: string[];
-    selectedFields: Record<string, string[]>;
-    fieldOrder: Record<string, string[]>;
-    entityPositions: Record<string, EntityPosition>;
-    layoutMode: LayoutMode;
-    zoom: number;
-    pan: { x: number; y: number };
-    searchQuery: string;
-    publisherFilter: string;
-    solutionFilter: string;
-    isDarkMode: boolean;
-    colorSettings: ColorSettings;
-    showMinimap: boolean;
-    isSmartZoom: boolean;
-    edgeOffsets: Record<string, { x: number; y: number }>;
-  }) => {
-    setSelectedEntities(new Set(state.selectedEntities));
-    setCollapsedEntities(new Set(state.collapsedEntities));
-    setSelectedFields(
-      Object.fromEntries(Object.entries(state.selectedFields).map(([key, arr]) => [key, new Set(arr)]))
-    );
-    setFieldOrder(state.fieldOrder);
-    setEntityPositions(state.entityPositions);
-    // If positions exist, use manual mode to preserve them; otherwise use saved layout mode
-    const hasPositions = Object.keys(state.entityPositions).length > 0;
-    setLayoutMode(hasPositions ? 'manual' : state.layoutMode);
-    setZoom(state.zoom);
-    setPan(state.pan);
-    setSearchQuery(state.searchQuery);
-    setPublisherFilter(state.publisherFilter);
-    setSolutionFilter(state.solutionFilter);
-    setIsDarkMode(state.isDarkMode);
-    setColorSettings(state.colorSettings);
-    setShowMinimap(state.showMinimap);
-    setIsSmartZoom(state.isSmartZoom);
-    setEdgeOffsets(state.edgeOffsets);
-  }, []);
+  const restoreState = useCallback(
+    (state: {
+      selectedEntities: string[];
+      collapsedEntities: string[];
+      selectedFields: Record<string, string[]>;
+      fieldOrder: Record<string, string[]>;
+      entityPositions: Record<string, EntityPosition>;
+      layoutMode: LayoutMode;
+      zoom: number;
+      pan: { x: number; y: number };
+      searchQuery: string;
+      publisherFilter: string;
+      solutionFilter: string;
+      isDarkMode: boolean;
+      colorSettings: ColorSettings;
+      showMinimap: boolean;
+      isSmartZoom: boolean;
+      edgeOffsets: Record<string, { x: number; y: number }>;
+    }) => {
+      setSelectedEntities(new Set(state.selectedEntities));
+      setCollapsedEntities(new Set(state.collapsedEntities));
+      setSelectedFields(
+        Object.fromEntries(
+          Object.entries(state.selectedFields).map(([key, arr]) => [key, new Set(arr)])
+        )
+      );
+      setFieldOrder(state.fieldOrder);
+      setEntityPositions(state.entityPositions);
+      // If positions exist, use manual mode to preserve them; otherwise use saved layout mode
+      const hasPositions = Object.keys(state.entityPositions).length > 0;
+      setLayoutMode(hasPositions ? 'manual' : state.layoutMode);
+      setZoom(state.zoom);
+      setPan(state.pan);
+      setSearchQuery(state.searchQuery);
+      setPublisherFilter(state.publisherFilter);
+      setSolutionFilter(state.solutionFilter);
+      setIsDarkMode(state.isDarkMode);
+      setColorSettings(state.colorSettings);
+      setShowMinimap(state.showMinimap);
+      setIsSmartZoom(state.isSmartZoom);
+      setEdgeOffsets(state.edgeOffsets);
+    },
+    []
+  );
 
   return {
     // Theme

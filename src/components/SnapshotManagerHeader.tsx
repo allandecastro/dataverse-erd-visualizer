@@ -52,18 +52,26 @@ export function SnapshotManagerHeader({
             onChange={(e) => onToggleAutoSave(e.target.checked)}
             className={styles.autoSaveCheckbox}
           />
-          <span className={styles.autoSaveToggle} style={{
-            background: autoSaveEnabled ? '#0ea5e9' : (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
-            borderColor,
-          }}>
-            <span className={styles.autoSaveSlider} style={{
-              transform: autoSaveEnabled ? 'translateX(16px)' : 'translateX(0)',
-              background: '#ffffff',
-            }} />
+          <span
+            className={styles.autoSaveToggle}
+            style={{
+              background: autoSaveEnabled
+                ? '#0ea5e9'
+                : isDarkMode
+                  ? 'rgba(255,255,255,0.1)'
+                  : 'rgba(0,0,0,0.1)',
+              borderColor,
+            }}
+          >
+            <span
+              className={styles.autoSaveSlider}
+              style={{
+                transform: autoSaveEnabled ? 'translateX(16px)' : 'translateX(0)',
+                background: '#ffffff',
+              }}
+            />
           </span>
-          <span className={styles.autoSaveText}>
-            Auto-save enabled (saves every 2 seconds)
-          </span>
+          <span className={styles.autoSaveText}>Auto-save enabled (saves every 2 seconds)</span>
         </label>
       </div>
     </div>

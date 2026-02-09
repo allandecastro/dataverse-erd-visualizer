@@ -12,7 +12,10 @@ export interface SidebarLegendProps {
   borderColor: string;
 }
 
-export const SidebarLegend = memo(function SidebarLegend({ colorSettings, borderColor }: SidebarLegendProps) {
+export const SidebarLegend = memo(function SidebarLegend({
+  colorSettings,
+  borderColor,
+}: SidebarLegendProps) {
   const { customTableColor, standardTableColor, lookupColor } = colorSettings;
 
   return (

@@ -20,10 +20,10 @@ import {
   isRecentTimestamp,
 } from '@/utils/snapshotSerializer';
 import { encodeStateToURL } from '@/utils/urlStateCodec';
+import { AUTO_SAVE_DEBOUNCE } from '@/constants';
 
 const CURRENT_VERSION = '1.0.0';
 const MAX_SNAPSHOTS = 10;
-const AUTO_SAVE_DELAY_MS = 2000; // 2 seconds
 
 export interface UseSnapshotsProps {
   getSerializableState: () => SerializableState;
@@ -32,24 +32,32 @@ export interface UseSnapshotsProps {
   entities: Entity[]; // For schema validation
 }
 
-export function useSnapshots({ getSerializableState, restoreState, showToast, entities }: UseSnapshotsProps) {
-  const [snapshots, setSnapshots] = useState<ERDSnapshot[]>([]);
-  const [lastAutoSave, setLastAutoSave] = useState<ERDSnapshot | null>(null);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+export function useSnapshots({
+  getSerializableState,
+  restoreState,
+  showToast,
+  entities,
+}: UseSnapshotsProps) {
+  // Load snapshots from localStorage once on mount
+  const initialData = loadSnapshots();
 
-  // Ref for auto-save debouncing
+  const [snapshots, setSnapshots] = useState<ERDSnapshot[]>(initialData?.snapshots || []);
+  const [lastAutoSave, setLastAutoSave] = useState<ERDSnapshot | null>(
+    initialData?.lastAutoSave || null
+  );
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(
+    initialData?.autoSaveEnabled !== undefined ? initialData.autoSaveEnabled : true
+  );
+
+  // Refs for auto-save debouncing and snapshot tracking
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedStateRef = useRef<string>('');
+  const snapshotsRef = useRef<ERDSnapshot[]>(snapshots);
 
-  // Load snapshots from localStorage on mount
+  // Keep snapshotsRef in sync with snapshots state
   useEffect(() => {
-    const stored = loadSnapshots();
-    if (stored) {
-      setSnapshots(stored.snapshots || []);
-      setLastAutoSave(stored.lastAutoSave || null);
-      setAutoSaveEnabled(stored.autoSaveEnabled !== undefined ? stored.autoSaveEnabled : true);
-    }
-  }, []);
+    snapshotsRef.current = snapshots;
+  }, [snapshots]);
 
   // Persist snapshots to localStorage whenever they change
   const persistToStorage = useCallback(
@@ -96,9 +104,9 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
       };
 
       setLastAutoSave(autoSaveSnapshot);
-      persistToStorage(snapshots, autoSaveSnapshot, autoSaveEnabled);
+      persistToStorage(snapshotsRef.current, autoSaveSnapshot, autoSaveEnabled);
       lastSavedStateRef.current = currentStateJson;
-    }, AUTO_SAVE_DELAY_MS);
+    }, AUTO_SAVE_DEBOUNCE);
 
     // Cleanup timer on unmount
     return () => {
@@ -106,7 +114,7 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [getSerializableState, autoSaveEnabled, snapshots, persistToStorage]);
+  }, [getSerializableState, autoSaveEnabled, persistToStorage]);
 
   // Auto-save on window beforeunload (browser close/refresh)
   useEffect(() => {
@@ -207,7 +215,10 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
       });
 
       // Filter entity positions
-      const validEntityPositions: Record<string, { x: number; y: number; vx?: number; vy?: number }> = {};
+      const validEntityPositions: Record<
+        string,
+        { x: number; y: number; vx?: number; vy?: number }
+      > = {};
       Object.entries(state.entityPositions).forEach(([entityName, position]) => {
         if (entityMap.has(entityName)) {
           validEntityPositions[entityName] = position;
@@ -230,8 +241,7 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
   const saveSnapshot = useCallback(
     (name: string): void => {
       const trimmedName = name.trim();
-      const snapshotName =
-        trimmedName || generateDefaultSnapshotName(Date.now());
+      const snapshotName = trimmedName || generateDefaultSnapshotName(Date.now());
 
       // Ensure unique name
       const existingNames = snapshots.map((s) => s.name);
@@ -263,7 +273,8 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
   // Load snapshot (with schema validation)
   const loadSnapshot = useCallback(
     (id: string, skipValidation = false): void => {
-      const snapshot = snapshots.find((s) => s.id === id) || (id === 'auto-save' ? lastAutoSave : null);
+      const snapshot =
+        snapshots.find((s) => s.id === id) || (id === 'auto-save' ? lastAutoSave : null);
       if (!snapshot) {
         showToast('Snapshot not found', 'error');
         return;
@@ -396,7 +407,10 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
         // Check URL length
         const urlLength = shareUrl.length;
         if (urlLength > 32000) {
-          showToast('Snapshot too large to share via URL (32KB limit). Use Export instead.', 'error');
+          showToast(
+            'Snapshot too large to share via URL (32KB limit). Use Export instead.',
+            'error'
+          );
           return;
         }
 
@@ -405,7 +419,10 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
 
         // Show success toast with optional warning
         if (urlLength > 2000) {
-          showToast(`Share URL copied! (${urlLength} chars - may not work in older browsers)`, 'warning');
+          showToast(
+            `Share URL copied! (${urlLength} chars - may not work in older browsers)`,
+            'warning'
+          );
         } else {
           showToast(`Share URL for "${snapshot.name}" copied to clipboard!`, 'success');
         }
@@ -500,10 +517,10 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
             };
 
             // Ensure unique name
-            const uniqueName = ensureUniqueName(
-              importedSnapshot.name,
-              [...existingNames, ...processedSnapshots.map((s) => s.name)]
-            );
+            const uniqueName = ensureUniqueName(importedSnapshot.name, [
+              ...existingNames,
+              ...processedSnapshots.map((s) => s.name),
+            ]);
             importedSnapshot.name = uniqueName;
             processedSnapshots.push(importedSnapshot);
           }
@@ -525,7 +542,10 @@ export function useSnapshots({ getSerializableState, restoreState, showToast, en
             showToast(`${processedSnapshots.length} snapshot(s) imported!`, 'success');
           }
         } catch (error) {
-          showToast(`Failed to import snapshot: ${error instanceof Error ? error.message : String(error)}`, 'error');
+          showToast(
+            `Failed to import snapshot: ${error instanceof Error ? error.message : String(error)}`,
+            'error'
+          );
         }
       };
 

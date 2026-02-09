@@ -171,17 +171,7 @@ export const MERMAID_TYPE_MAP: Record<AttributeType, string> = {
   BigInt: 'bigint',
 };
 
-// Helper to get theme colors based on dark mode
-export function getThemeColors(isDarkMode: boolean): ThemeColors {
-  return {
-    bgColor: isDarkMode ? '#1a1a1a' : '#f0f0f0',
-    panelBg: isDarkMode ? '#242424' : '#ffffff',
-    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-    cardBg: isDarkMode ? '#2d2d2d' : '#ffffff',
-    textColor: isDarkMode ? '#e2e8f0' : '#1e293b',
-    textSecondary: isDarkMode ? '#94a3b8' : '#64748b',
-  };
-}
+// Note: getThemeColors() is defined in src/context/themeUtils.ts (single source of truth)
 
 // Helper to get field type color
 export function getFieldTypeColor(type: AttributeType, lookupColor: string): string {

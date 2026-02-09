@@ -8,7 +8,13 @@
  * - Opened in VS Code with Draw.io extension
  */
 
-import type { Entity, EntityRelationship, EntityPosition, EntityAttribute, AlternateKey } from '@/types';
+import type {
+  Entity,
+  EntityRelationship,
+  EntityPosition,
+  EntityAttribute,
+  AlternateKey,
+} from '@/types';
 import type { ColorSettings } from '@/types/erdTypes';
 import { getAttributeBadge } from './badges';
 
@@ -283,7 +289,9 @@ function formatRelationshipLabel(relationship: EntityRelationship): string {
 
   // Line 3: Field mapping (if available, escape each part)
   if (relationship.referencingAttribute && relationship.referencedAttribute) {
-    lines.push(`${escapeXml(relationship.referencingAttribute)} → ${escapeXml(relationship.referencedAttribute)}`);
+    lines.push(
+      `${escapeXml(relationship.referencingAttribute)} → ${escapeXml(relationship.referencedAttribute)}`
+    );
   }
 
   // Join with XML newline character (don't escape the newline entity itself)
@@ -312,11 +320,7 @@ function generateSwimlaneContainer(
 /**
  * Generate logical name subheader cell
  */
-function generateLogicalNameCell(
-  id: string,
-  parentId: string,
-  logicalName: string
-): string {
+function generateLogicalNameCell(id: string, parentId: string, logicalName: string): string {
   return `      <mxCell id="${id}" value="${escapeXml(logicalName)}" style="${LOGICAL_NAME_STYLE}" vertex="1" parent="${parentId}">
         <mxGeometry y="${HEADER_HEIGHT}" width="${CARD_WIDTH}" height="${SUBHEADER_HEIGHT}" as="geometry" />
       </mxCell>`;
@@ -343,7 +347,12 @@ function generateFieldCell(
   let fillColor = '#ffffff'; // Standard fields
   if (field.isPrimaryKey) {
     fillColor = '#fef3c7'; // Gold tint for primary keys
-  } else if (field.isLookup || field.type === 'Lookup' || field.type === 'Owner' || field.type === 'Customer') {
+  } else if (
+    field.isLookup ||
+    field.type === 'Lookup' ||
+    field.type === 'Owner' ||
+    field.type === 'Customer'
+  ) {
     fillColor = '#fee2e2'; // Pink tint for lookups
   } else if (field.isCustomAttribute) {
     fillColor = '#f0f9ff'; // Blue tint for custom fields
@@ -412,9 +421,12 @@ function generateEntityCell(
   const height = calculateEntityHeight(entity, selectedFields, isCollapsed, primaryKey);
 
   // Pre-allocate array with estimated size
-  const visibleFieldCount = isCollapsed ? 0 : getVisibleFields(entity, selectedFields, primaryKey).length;
+  const visibleFieldCount = isCollapsed
+    ? 0
+    : getVisibleFields(entity, selectedFields, primaryKey).length;
   const alternateKeyCount = entity.alternateKeys?.length || 0;
-  const estimatedCells = 2 + visibleFieldCount + (alternateKeyCount > 0 ? alternateKeyCount + 1 : 0);
+  const estimatedCells =
+    2 + visibleFieldCount + (alternateKeyCount > 0 ? alternateKeyCount + 1 : 0);
   const cells: string[] = new Array(estimatedCells);
   let cellIndex = 0;
 
@@ -469,7 +481,15 @@ function generateConnectorCell(
  * Generate the complete Draw.io XML document
  */
 function generateDrawioXml(options: DrawioExportOptions): string {
-  const { entities, relationships, entityPositions, selectedFields, collapsedEntities, colorSettings, onProgress } = options;
+  const {
+    entities,
+    relationships,
+    entityPositions,
+    selectedFields,
+    collapsedEntities,
+    colorSettings,
+    onProgress,
+  } = options;
 
   // Create primary key lookup map once for O(1) access (performance optimization)
   const primaryKeyMap = createPrimaryKeyMap(entities);
@@ -499,7 +519,16 @@ function generateDrawioXml(options: DrawioExportOptions): string {
     const primaryKey = primaryKeyMap.get(entity.logicalName);
 
     // Generate entity cells with cached primary key
-    const entityCells = generateEntityCell(id, entity, pos.x, pos.y, color, entitySelectedFields, isCollapsed, primaryKey);
+    const entityCells = generateEntityCell(
+      id,
+      entity,
+      pos.x,
+      pos.y,
+      color,
+      entitySelectedFields,
+      isCollapsed,
+      primaryKey
+    );
 
     // Add to main cells array
     entityCells.forEach((cell) => {
@@ -507,7 +536,8 @@ function generateDrawioXml(options: DrawioExportOptions): string {
     });
 
     // Report progress per entity (0-80% range for entities)
-    if (onProgress && index % 5 === 0) { // Report every 5 entities to avoid overhead
+    if (onProgress && index % 5 === 0) {
+      // Report every 5 entities to avoid overhead
       const entityCount = entities.length || 1;
       const progress = Math.floor(((index + 1) / entityCount) * 80);
       onProgress(progress, `Processing entity ${index + 1} of ${entities.length}...`);
@@ -525,7 +555,8 @@ function generateDrawioXml(options: DrawioExportOptions): string {
     }
 
     // Report progress for relationships (80-95% range)
-    if (onProgress && index % 10 === 0) { // Report every 10 relationships
+    if (onProgress && index % 10 === 0) {
+      // Report every 10 relationships
       const relationshipCount = relationships.length || 1;
       const progress = 80 + Math.floor(((index + 1) / relationshipCount) * 15);
       onProgress(progress, `Processing relationship ${index + 1} of ${relationships.length}...`);
