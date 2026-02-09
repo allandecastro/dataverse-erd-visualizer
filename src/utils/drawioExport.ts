@@ -236,7 +236,7 @@ function getVisibleFields(
 
   // Add selected fields (excluding primary key to avoid duplicates)
   entity.attributes.forEach((attr) => {
-    if (!attr.isPrimaryKey && selectedFields.has(attr.logicalName)) {
+    if (!attr.isPrimaryKey && selectedFields.has(attr.name)) {
       visibleFields.push(attr);
     }
   });

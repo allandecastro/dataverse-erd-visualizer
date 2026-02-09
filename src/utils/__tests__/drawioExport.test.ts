@@ -27,12 +27,12 @@ describe('drawioExport', () => {
       displayName: 'Account',
       attributes: [
         {
-          logicalName: 'accountid',
+          name: 'accountid',
           displayName: 'Account ID',
           type: 'UniqueIdentifier',
           isPrimaryKey: true,
         },
-        { logicalName: 'name', displayName: 'Account Name', type: 'String', isPrimaryKey: false },
+        { name: 'name', displayName: 'Account Name', type: 'String', isPrimaryKey: false },
       ],
       publisher: 'Microsoft',
       alternateKeys: [],
@@ -42,12 +42,12 @@ describe('drawioExport', () => {
       displayName: 'Contact',
       attributes: [
         {
-          logicalName: 'contactid',
+          name: 'contactid',
           displayName: 'Contact ID',
           type: 'UniqueIdentifier',
           isPrimaryKey: true,
         },
-        { logicalName: 'fullname', displayName: 'Full Name', type: 'String', isPrimaryKey: false },
+        { name: 'fullname', displayName: 'Full Name', type: 'String', isPrimaryKey: false },
       ],
       publisher: 'Microsoft',
       alternateKeys: [],
@@ -413,7 +413,7 @@ describe('drawioExport', () => {
         displayName: `Entity ${i}`,
         attributes: [
           {
-            logicalName: `entity_${i}id`,
+            name: `entity_${i}id`,
             displayName: `Entity ${i} ID`,
             type: 'UniqueIdentifier',
             isPrimaryKey: true,
