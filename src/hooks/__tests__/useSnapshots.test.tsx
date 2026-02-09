@@ -66,6 +66,15 @@ describe('useSnapshots', () => {
     publisherFilter: '',
     solutionFilter: '',
     isDarkMode: false,
+    colorSettings: {
+      customTableColor: '#f0f9ff',
+      standardTableColor: '#ffffff',
+      lookupColor: '#fee2e2',
+      edgeStyle: 'smoothstep' as const,
+    },
+    showMinimap: false,
+    isSmartZoom: true,
+    edgeOffsets: {},
   };
 
   const mockGetSerializableState = vi.fn(() => mockState);
