@@ -45,17 +45,23 @@ export const AddRelatedTableDialog = memo(function AddRelatedTableDialog({
 
         {/* Content */}
         <div className={styles.content}>
-          <p className={`${styles.message} ${isDarkMode ? styles.messageDark : styles.messageLight}`}>
+          <p
+            className={`${styles.message} ${isDarkMode ? styles.messageDark : styles.messageLight}`}
+          >
             The field <strong className={styles.fieldName}>{fieldName}</strong> is a lookup to the
             table <strong className={styles.targetEntity}>{targetEntity}</strong>.
           </p>
-          <p className={`${styles.subMessage} ${isDarkMode ? styles.subMessageDark : styles.subMessageLight}`}>
+          <p
+            className={`${styles.subMessage} ${isDarkMode ? styles.subMessageDark : styles.subMessageLight}`}
+          >
             Would you like to add this table to the canvas as well?
           </p>
         </div>
 
         {/* Actions */}
-        <div className={`${styles.actions} ${isDarkMode ? styles.actionsDark : styles.actionsLight}`}>
+        <div
+          className={`${styles.actions} ${isDarkMode ? styles.actionsDark : styles.actionsLight}`}
+        >
           <button
             onClick={onCancel}
             className={`${styles.cancelButton} ${isDarkMode ? styles.cancelButtonDark : styles.cancelButtonLight}`}

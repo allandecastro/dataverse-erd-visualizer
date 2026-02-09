@@ -22,10 +22,7 @@ export interface URLValidationResult {
  * @param entities Available entities in current environment
  * @returns Validation result with missing entities list
  */
-export function validateURLState(
-  state: CompactState,
-  entities: Entity[]
-): URLValidationResult {
+export function validateURLState(state: CompactState, entities: Entity[]): URLValidationResult {
   const entityMap = new Map(entities.map((e) => [e.logicalName, e]));
   const missingEntities: string[] = [];
 

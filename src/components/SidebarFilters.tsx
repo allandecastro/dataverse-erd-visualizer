@@ -144,7 +144,13 @@ export const SidebarFilters = memo(function SidebarFilters({
           }}
         >
           <RefreshCw size={14} />
-          {layoutMode === 'force' ? 'Force' : layoutMode === 'grid' ? 'Grid' : layoutMode === 'auto' ? 'Auto' : 'Manual'}
+          {layoutMode === 'force'
+            ? 'Force'
+            : layoutMode === 'grid'
+              ? 'Grid'
+              : layoutMode === 'auto'
+                ? 'Auto'
+                : 'Manual'}
         </button>
       </div>
 

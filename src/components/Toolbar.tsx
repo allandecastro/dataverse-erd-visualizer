@@ -57,7 +57,6 @@ export function Toolbar({
         background: panelBg,
       }}
     >
-
       {/* Stats */}
       <ToolbarStats
         filteredEntitiesCount={filteredEntitiesCount}
