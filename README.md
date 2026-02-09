@@ -52,38 +52,42 @@
 ## Features
 
 ### Core Visualization
-| Feature | Description |
-|---------|-------------|
-| **Visual ERD** | Interactive force-directed, grid, and auto-arrange layouts |
-| **Precise Relationships** | Connections from Lookup fields to Primary Keys |
-| **Alternate Keys** | Display entity alternate keys with composite key support |
-| **Smart Navigation** | Smart Zoom, Minimap, Fit to Screen |
-| **Dataverse Integration** | Fetch live metadata from your environment |
+
+| Feature                   | Description                                                |
+| ------------------------- | ---------------------------------------------------------- |
+| **Visual ERD**            | Interactive force-directed, grid, and auto-arrange layouts |
+| **Precise Relationships** | Connections from Lookup fields to Primary Keys             |
+| **Alternate Keys**        | Display entity alternate keys with composite key support   |
+| **Smart Navigation**      | Smart Zoom, Minimap, Fit to Screen                         |
+| **Dataverse Integration** | Fetch live metadata from your environment                  |
 
 ### Performance
-| Feature | Description |
-|---------|-------------|
-| **Viewport Culling** | Only renders visible entities for smooth performance |
-| **Canvas Mode** | High-performance HTML5 Canvas rendering for large diagrams (100+ tables) |
-| **Optimized Rendering** | Efficient React.memo and lazy loading |
+
+| Feature                 | Description                                                              |
+| ----------------------- | ------------------------------------------------------------------------ |
+| **Viewport Culling**    | Only renders visible entities for smooth performance                     |
+| **Canvas Mode**         | High-performance HTML5 Canvas rendering for large diagrams (100+ tables) |
+| **Optimized Rendering** | Efficient React.memo and lazy loading                                    |
 
 ### User Experience
-| Feature | Description |
-|---------|-------------|
-| **Search & Filter** | Quick search by table name, filter by publisher/solution |
-| **Field Selector** | Choose which fields to display per table |
-| **Snapshots** | Save/restore complete diagram states with auto-save, export/import |
-| **Share URL** | Generate shareable URLs with one-click clipboard copy, automatic state restoration |
+
+| Feature                | Description                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| **Search & Filter**    | Quick search by table name, filter by publisher/solution                                  |
+| **Field Selector**     | Choose which fields to display per table                                                  |
+| **Snapshots**          | Save/restore complete diagram states with auto-save, export/import                        |
+| **Share URL**          | Generate shareable URLs with one-click clipboard copy, automatic state restoration        |
 | **Keyboard Shortcuts** | Ctrl+S (save), Ctrl+Shift+S (snapshots), Ctrl+Shift+C (share), / (search), Esc (deselect) |
-| **Feature Guide** | Interactive onboarding for new users |
+| **Feature Guide**      | Interactive onboarding for new users                                                      |
 
 ### Export & Customization
-| Feature | Description |
-|---------|-------------|
-| **Multiple Exports** | PNG (clipboard), SVG (download), Mermaid (clipboard) |
-| **Draw.io Export** | Full diagram export compatible with Draw.io and Microsoft Visio |
-| **Dark/Light Mode** | Professional themes with automatic persistence |
-| **Custom Colors** | Table and relationship color customization |
+
+| Feature              | Description                                                     |
+| -------------------- | --------------------------------------------------------------- |
+| **Multiple Exports** | PNG (clipboard), SVG (download), Mermaid (clipboard)            |
+| **Draw.io Export**   | Full diagram export compatible with Draw.io and Microsoft Visio |
+| **Dark/Light Mode**  | Professional themes with automatic persistence                  |
+| **Custom Colors**    | Table and relationship color customization                      |
 
 ---
 
@@ -108,6 +112,7 @@ Download and import the pre-built managed solution directly into your Dataverse 
 5. Click **Next** → **Import**
 
 **Using PAC CLI:**
+
 ```bash
 pac auth create --environment "https://yourorg.crm.dynamics.com"
 pac solution import --path DataverseERDVisualizer_x.x.x_managed.zip
@@ -118,6 +123,7 @@ pac solution import --path DataverseERDVisualizer_x.x.x_managed.zip
 Build the solution yourself from source code.
 
 #### Prerequisites
+
 - Node.js 18+
 - npm or yarn
 - (Optional) [Power Platform CLI](https://learn.microsoft.com/en-us/power-platform/developer/cli/introduction)
@@ -198,25 +204,64 @@ You'll see a **"MOCK MODE"** banner indicating you're using simulated data.
 
 > **Tip:** Force mock mode via URL parameter: `?mock=true`
 
+### Testing
+
+The project includes comprehensive test coverage for critical functionality.
+
+```bash
+# Run tests in watch mode
+npm run test
+
+# Run tests once (CI mode)
+npm run test:run
+
+# Run with coverage report
+npm run test:coverage
+
+# Open visual test UI
+npm run test:ui
+```
+
+**Test Coverage:**
+
+- **140 tests** across 5 test suites
+- Unit tests for utilities (URL codec, Draw.io export, badges, serialization)
+- Integration tests for hooks (useERDState state management)
+- Security tests (XML injection prevention, URL safety validation)
+
+**Pre-commit Hooks:**
+
+- Automatically format and lint staged files
+- Run full test suite before commit
+- Prevents committing broken code
+- Bypass with `git commit --no-verify` if needed
+
+**Viewing Coverage Reports:**
+
+```bash
+npm run test:coverage
+# Open coverage/index.html in your browser
+```
+
 ---
 
 ## Documentation
 
 ### Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl/Cmd + S` | Save new snapshot |
-| `Ctrl/Cmd + Shift + S` | Open Snapshot Manager |
-| `Ctrl/Cmd + Shift + C` | Generate and copy shareable URL |
-| `Ctrl/Cmd + A` | Select all tables |
-| `/` | Focus search box |
-| `Escape` | Deselect entity / Close dialogs |
-| `+` / `=` | Zoom in |
-| `-` | Zoom out |
-| Mouse wheel | Zoom in/out |
-| Click + Drag | Pan canvas |
-| Click entity | Select and highlight relationships |
+| Shortcut               | Action                             |
+| ---------------------- | ---------------------------------- |
+| `Ctrl/Cmd + S`         | Save new snapshot                  |
+| `Ctrl/Cmd + Shift + S` | Open Snapshot Manager              |
+| `Ctrl/Cmd + Shift + C` | Generate and copy shareable URL    |
+| `Ctrl/Cmd + A`         | Select all tables                  |
+| `/`                    | Focus search box                   |
+| `Escape`               | Deselect entity / Close dialogs    |
+| `+` / `=`              | Zoom in                            |
+| `-`                    | Zoom out                           |
+| Mouse wheel            | Zoom in/out                        |
+| Click + Drag           | Pan canvas                         |
+| Click entity           | Select and highlight relationships |
 
 ### Project Structure
 
@@ -254,6 +299,8 @@ dataverse-erd-visualizer/
 │   │   ├── useThemeHooks.ts              # useTheme() hook
 │   │   └── index.ts                      # Context exports
 │   ├── hooks/                         # Custom React hooks
+│   │   ├── __tests__/                    # Hook integration tests
+│   │   │   └── useERDState.test.tsx         # useERDState hook tests
 │   │   ├── useDataverseData.ts           # Dataverse API data fetching
 │   │   ├── useERDState.ts                # Main ERD state management
 │   │   ├── useKeyboardShortcuts.ts       # Keyboard event handling
@@ -263,6 +310,10 @@ dataverse-erd-visualizer/
 │   ├── services/                      # API services
 │   │   ├── dataverseApi.ts               # Dataverse Web API client
 │   │   └── mockData.ts                   # Mock data for development
+│   ├── test/                          # Test infrastructure
+│   │   ├── __tests__/                    # Setup tests
+│   │   │   └── setup.test.ts                # Test setup verification
+│   │   └── setup.ts                      # Global test setup & mocks
 │   ├── styles/                        # CSS Modules
 │   │   ├── Sidebar.module.css            # Sidebar styles
 │   │   ├── Toolbar.module.css            # Toolbar styles
@@ -275,6 +326,11 @@ dataverse-erd-visualizer/
 │   │   ├── index.ts                      # Core types (Entity, etc.)
 │   │   └── erdTypes.ts                   # ERD-specific types
 │   ├── utils/                         # Utility functions
+│   │   ├── __tests__/                    # Utility tests
+│   │   │   ├── urlStateCodec.test.ts        # URL state codec tests
+│   │   │   ├── drawioExport.test.ts         # Draw.io export tests
+│   │   │   ├── badges.test.ts               # Badge classification tests
+│   │   │   └── snapshotSerializer.test.ts   # Snapshot serialization tests
 │   │   ├── badges.ts                     # Field type badges
 │   │   ├── drawioExport.ts               # Draw.io/Visio export
 │   │   └── exportUtils.ts                # PNG/SVG/Mermaid export
@@ -287,10 +343,14 @@ dataverse-erd-visualizer/
 ├── docs/                              # Documentation assets
 ├── dist/                              # Build output
 │   └── webresource/                      # Dataverse web resource build
+├── .husky/                            # Git hooks
+│   └── pre-commit                        # Pre-commit hook script
 ├── index.html                         # HTML template
 ├── vite.config.ts                     # Vite configuration
+├── vitest.config.ts                   # Vitest test configuration
 ├── tsconfig.json                      # TypeScript configuration
 ├── eslint.config.js                   # ESLint configuration
+├── .lintstagedrc.json                 # lint-staged configuration
 ├── package.json                       # Dependencies & scripts
 ├── TODO.md                            # Development task tracking
 ├── DEPLOYMENT.md                      # Detailed deployment guide
@@ -302,38 +362,52 @@ dataverse-erd-visualizer/
 ### Architecture
 
 **Visualization Engine**
+
 - Built on [React Flow](https://reactflow.dev/) for node-based diagram rendering
 - Custom `TableNode` for entity cards with field-level handles
 - Custom edge types: `DraggableEdge` (adjustable paths), `SelfReferenceEdge` (loops)
 - Precise field-to-field connections (Lookup → Primary Key)
 
 **Dataverse Integration**
+
 - Uses Dataverse Web API for metadata fetching
 - Automatic authentication via Xrm.WebApi context
 - Fetches entities, attributes, relationships, and alternate keys
 
 **State Management**
+
 - React Context for theme state (`ThemeContext`)
 - Custom hooks for feature-specific state (`useERDState`, `useLayoutAlgorithms`)
 - Custom `useDataverseData` hook for API data
 - No external state library (keeps bundle small)
 
 **Performance**
+
 - `React.memo` on all frequently-rendered components
 - Virtual scrolling for entity list (`useVirtualScroll`)
 - Lazy loading for modals (FeatureGuide, FieldDrawer)
 - CSS Modules for scoped, optimized styles
 - Tree-shaking via Vite
 
+**Quality Gates**
+
+- Comprehensive test suite with 140 tests (Vitest + React Testing Library)
+- Unit tests for critical utilities (URL codec, Draw.io export, badges)
+- Integration tests for core hooks (useERDState)
+- Security tests (XML injection prevention, URL safety)
+- Pre-commit hooks with Husky and lint-staged
+- Automated CI/CD pipeline with test → build workflow
+- Code coverage reporting with Istanbul
+
 ---
 
 ## Browser Support
 
-| Browser | Version |
-|---------|---------|
-| Chrome/Edge | 90+ |
-| Firefox | 88+ |
-| Safari | 14+ |
+| Browser     | Version |
+| ----------- | ------- |
+| Chrome/Edge | 90+     |
+| Firefox     | 88+     |
+| Safari      | 14+     |
 
 ---
 
@@ -362,6 +436,7 @@ dataverse-erd-visualizer/
 rm -rf node_modules package-lock.json
 npm install
 ```
+
 </details>
 
 ---
@@ -384,12 +459,19 @@ git clone https://github.com/YOUR_USERNAME/dataverse-erd-visualizer.git
 # Create feature branch
 git checkout -b feature/amazing-feature
 
-# Make changes and commit
+# Make changes and test
+npm run test:run
+npm run lint
+npm run format:check
+
+# Commit (pre-commit hooks will run automatically)
 git commit -m 'Add amazing feature'
 
 # Push and create PR
 git push origin feature/amazing-feature
 ```
+
+> **Note:** Pre-commit hooks will automatically run tests, linting, and formatting before allowing commits. All tests must pass in CI before PRs can be merged.
 
 ---
 
@@ -402,15 +484,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <p align="center">
   Made with ❤️ for the Power Platform Community
 </p>
-
-
-
-
-
-
-
-
-
-
-
-

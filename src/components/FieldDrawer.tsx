@@ -74,7 +74,14 @@ export function FieldDrawer({
     });
 
     return attrs;
-  }, [entity.attributes, searchQuery, showSelectedOnly, showLookupsOnly, showCustomOnly, selectedFields]);
+  }, [
+    entity.attributes,
+    searchQuery,
+    showSelectedOnly,
+    showLookupsOnly,
+    showCustomOnly,
+    selectedFields,
+  ]);
 
   const handleFieldToggle = (attr: EntityAttribute) => {
     if (attr.isPrimaryKey) return;

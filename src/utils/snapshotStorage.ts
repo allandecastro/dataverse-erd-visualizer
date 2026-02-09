@@ -52,7 +52,9 @@ export function saveSnapshots(data: SnapshotsStorageData): void {
     if (error instanceof DOMException && error.name === 'QuotaExceededError') {
       throw new Error('Storage quota exceeded. Delete old snapshots or export to JSON.');
     }
-    throw new Error(`Failed to save snapshots: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to save snapshots: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 

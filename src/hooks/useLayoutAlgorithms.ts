@@ -19,6 +19,20 @@
 import { useCallback, useEffect } from 'react';
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
 import type { LayoutMode } from '@/types/erdTypes';
+import {
+  SPRING_LENGTH,
+  SPRING_STRENGTH,
+  REPULSION,
+  ITERATIONS,
+  CENTER_FORCE,
+  DAMPING,
+  GRID_START_X,
+  GRID_START_Y,
+  GRID_SPACING_X,
+  GRID_SPACING_Y,
+  LEVEL_HEIGHT,
+  HORIZONTAL_SPACING,
+} from '@/constants';
 
 export interface UseLayoutAlgorithmsProps {
   entities: Entity[];
@@ -59,10 +73,6 @@ export function useLayoutAlgorithms({
     if (filteredEntities.length === 0) return;
 
     const newPositions: Record<string, EntityPosition> = {};
-    const iterations = 100;
-    const springLength = 280;
-    const springStrength = 0.01;
-    const repulsion = 8000;
 
     filteredEntities.forEach((entity) => {
       if (!entityPositions[entity.logicalName]) {
@@ -81,8 +91,8 @@ export function useLayoutAlgorithms({
       }
     });
 
-    for (let iter = 0; iter < iterations; iter++) {
-      const alpha = 1 - iter / iterations;
+    for (let iter = 0; iter < ITERATIONS; iter++) {
+      const alpha = 1 - iter / ITERATIONS;
 
       filteredEntities.forEach((entity1) => {
         filteredEntities.forEach((entity2) => {
@@ -95,7 +105,7 @@ export function useLayoutAlgorithms({
           const dy = pos2.y - pos1.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-          const force = repulsion / (dist * dist);
+          const force = REPULSION / (dist * dist);
           const fx = (dx / dist) * force * alpha;
           const fy = (dy / dist) * force * alpha;
 
@@ -116,7 +126,7 @@ export function useLayoutAlgorithms({
         const dy = pos2.y - pos1.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        const force = (dist - springLength) * springStrength;
+        const force = (dist - SPRING_LENGTH) * SPRING_STRENGTH;
         const fx = (dx / dist) * force * alpha;
         const fy = (dy / dist) * force * alpha;
 
@@ -132,16 +142,16 @@ export function useLayoutAlgorithms({
         const pos = newPositions[entity.logicalName];
         const dx = centerX - pos.x;
         const dy = centerY - pos.y;
-        pos.vx = (pos.vx || 0) + dx * 0.001 * alpha;
-        pos.vy = (pos.vy || 0) + dy * 0.001 * alpha;
+        pos.vx = (pos.vx || 0) + dx * CENTER_FORCE * alpha;
+        pos.vy = (pos.vy || 0) + dy * CENTER_FORCE * alpha;
       });
 
       filteredEntities.forEach((entity) => {
         const pos = newPositions[entity.logicalName];
         pos.x += pos.vx || 0;
         pos.y += pos.vy || 0;
-        pos.vx = (pos.vx || 0) * 0.9;
-        pos.vy = (pos.vy || 0) * 0.9;
+        pos.vx = (pos.vx || 0) * DAMPING;
+        pos.vy = (pos.vy || 0) * DAMPING;
       });
     }
 
@@ -166,8 +176,8 @@ export function useLayoutAlgorithms({
       const col = index % cols;
       const row = Math.floor(index / cols);
       newPositions[entity.logicalName] = {
-        x: 100 + col * 380,
-        y: 80 + row * 320,
+        x: GRID_START_X + col * GRID_SPACING_X,
+        y: GRID_START_Y + row * GRID_SPACING_Y,
       };
     });
 
@@ -246,19 +256,17 @@ export function useLayoutAlgorithms({
     });
 
     // Position entities
-    const levelHeight = 320;
-    const horizontalSpacing = 380;
 
     Object.keys(levelGroups).forEach((levelStr) => {
       const level = parseInt(levelStr);
       const group = levelGroups[level];
-      const y = 80 + level * levelHeight;
-      const totalWidth = group.length * horizontalSpacing;
-      const startX = Math.max(100, (1200 - totalWidth) / 2);
+      const y = GRID_START_Y + level * LEVEL_HEIGHT;
+      const totalWidth = group.length * HORIZONTAL_SPACING;
+      const startX = Math.max(GRID_START_X, (1200 - totalWidth) / 2);
 
       group.forEach((entityName: string, index: number) => {
         newPositions[entityName] = {
-          x: startX + index * horizontalSpacing,
+          x: startX + index * HORIZONTAL_SPACING,
           y: y,
         };
       });

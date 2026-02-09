@@ -6,14 +6,15 @@
 import type { Entity, EntityRelationship, EntityPosition, EntityAttribute } from '@/types';
 import type { ColorSettings, EdgeStyle } from '@/types/erdTypes';
 import { MERMAID_TYPE_MAP } from '@/types/erdTypes';
-import { CARD_WIDTH, CARDINALITY_SYMBOLS } from '@/constants';
+import {
+  CARD_WIDTH,
+  CARDINALITY_SYMBOLS,
+  HEADER_HEIGHT,
+  SUBHEADER_HEIGHT,
+  FIELD_ROW_HEIGHT,
+  FIELD_PADDING_TOP,
+} from '@/constants';
 import { getAttributeBadge } from './badges';
-
-// Layout constants matching TableNode.tsx exactly
-const HEADER_HEIGHT = 36; // Header with display name only
-const SUBHEADER_HEIGHT = 24; // Logical name row
-const FIELD_ROW_HEIGHT = 28; // Each field row height
-const FIELD_PADDING_TOP = 4; // Padding at top of fields section
 
 // Get type label (matching TableNode.tsx getTypeLabel)
 function getTypeLabel(attr: EntityAttribute): string {
@@ -288,7 +289,13 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
     if (isCollapsed) return HEADER_HEIGHT + SUBHEADER_HEIGHT;
     const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
     if (visibleFields.length === 0) return HEADER_HEIGHT + SUBHEADER_HEIGHT;
-    return HEADER_HEIGHT + SUBHEADER_HEIGHT + FIELD_PADDING_TOP + visibleFields.length * FIELD_ROW_HEIGHT + 8;
+    return (
+      HEADER_HEIGHT +
+      SUBHEADER_HEIGHT +
+      FIELD_PADDING_TOP +
+      visibleFields.length * FIELD_ROW_HEIGHT +
+      8
+    );
   };
 
   // Calculate bounds with proper card heights
@@ -517,7 +524,11 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
         ctx.fillStyle = isDarkMode ? '#64748b' : '#94a3b8';
         ctx.font = '11px system-ui';
         ctx.textAlign = 'right';
-        ctx.fillText(typeLabel.substring(0, 15), x + CARD_WIDTH - 12, fieldY + FIELD_ROW_HEIGHT / 2);
+        ctx.fillText(
+          typeLabel.substring(0, 15),
+          x + CARD_WIDTH - 12,
+          fieldY + FIELD_ROW_HEIGHT / 2
+        );
 
         fieldY += FIELD_ROW_HEIGHT;
       });
@@ -689,7 +700,13 @@ export function exportToSVG(options: ExportOptions): string {
     if (isCollapsed) return HEADER_HEIGHT + SUBHEADER_HEIGHT;
     const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
     if (visibleFields.length === 0) return HEADER_HEIGHT + SUBHEADER_HEIGHT;
-    return HEADER_HEIGHT + SUBHEADER_HEIGHT + FIELD_PADDING_TOP + visibleFields.length * FIELD_ROW_HEIGHT + 8;
+    return (
+      HEADER_HEIGHT +
+      SUBHEADER_HEIGHT +
+      FIELD_PADDING_TOP +
+      visibleFields.length * FIELD_ROW_HEIGHT +
+      8
+    );
   };
 
   // Calculate bounds with proper card heights
