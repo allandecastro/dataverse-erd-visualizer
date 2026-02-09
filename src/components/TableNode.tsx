@@ -7,6 +7,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Entity, EntityAttribute, AlternateKey } from '@/types';
 import { getAttributeBadge, isLookupType } from '../utils/badges';
+import { HEADER_HEIGHT, SUBHEADER_HEIGHT, FIELD_ROW_HEIGHT, FIELD_PADDING_TOP } from '@/constants';
 import styles from '@/styles/TableNode.module.css';
 
 export interface TableNodeData extends Record<string, unknown> {
@@ -66,13 +67,8 @@ function getTypeLabel(attr: EntityAttribute): string {
   }
 }
 
-// Layout constants for handle positioning
-const HEADER_HEIGHT = 36; // Header with entity name
-const SUBHEADER_HEIGHT = 24; // Logical name row
-const FIELD_ROW_HEIGHT = 28; // Each field row height
-const FIELD_PADDING_TOP = 4; // Padding at top of fields section
-
 // Calculate the Y position for a field's handle
+// Layout constants imported from @/constants for consistency
 function getFieldHandleTop(fieldIndex: number): number {
   return (
     HEADER_HEIGHT +
@@ -244,12 +240,16 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
               </span>
 
               {/* Field name */}
-              <span className={`${styles.fieldName} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}>
+              <span
+                className={`${styles.fieldName} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}
+              >
                 {attr.displayName || attr.name}
               </span>
 
               {/* Type */}
-              <span className={`${styles.fieldType} ${isDarkMode ? styles.fieldTypeDark : styles.fieldTypeLight}`}>
+              <span
+                className={`${styles.fieldType} ${isDarkMode ? styles.fieldTypeDark : styles.fieldTypeLight}`}
+              >
                 {typeLabel}
               </span>
 
@@ -271,7 +271,9 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
         })}
 
         {displayAttributes.length === 0 && (
-          <div className={`${styles.emptyState} ${isDarkMode ? styles.emptyStateDark : styles.emptyStateLight}`}>
+          <div
+            className={`${styles.emptyState} ${isDarkMode ? styles.emptyStateDark : styles.emptyStateLight}`}
+          >
             No fields selected
           </div>
         )}
@@ -281,9 +283,13 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
       {alternateKeys.length > 0 && (
         <>
           {/* Separator */}
-          <div className={`${styles.akHeader} ${isDarkMode ? styles.akHeaderDark : styles.akHeaderLight}`}>
+          <div
+            className={`${styles.akHeader} ${isDarkMode ? styles.akHeaderDark : styles.akHeaderLight}`}
+          >
             <span className={styles.akBadge}>AK</span>
-            <span className={`${styles.akTitle} ${isDarkMode ? styles.akTitleDark : styles.akTitleLight}`}>
+            <span
+              className={`${styles.akTitle} ${isDarkMode ? styles.akTitleDark : styles.akTitleLight}`}
+            >
               Alternate Keys
             </span>
           </div>
@@ -299,7 +305,9 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
                 <span className={styles.akIcon}>🔑</span>
 
                 {/* Key name */}
-                <span className={`${styles.akName} ${isDarkMode ? styles.akNameDark : styles.akNameLight}`}>
+                <span
+                  className={`${styles.akName} ${isDarkMode ? styles.akNameDark : styles.akNameLight}`}
+                >
                   {ak.displayName}
                 </span>
 

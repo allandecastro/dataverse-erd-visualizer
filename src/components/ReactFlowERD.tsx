@@ -38,6 +38,17 @@ import type { ColorSettings, LayoutMode } from '@/types/erdTypes';
 import { TableNode, type TableNodeData } from './TableNode';
 import { SelfReferenceEdge } from './SelfReferenceEdge';
 import { DraggableEdge } from './DraggableEdge';
+import {
+  EXPORT_PADDING,
+  EXPORT_MIN_ZOOM,
+  EXPORT_MAX_ZOOM,
+  VIEWPORT_MIN_ZOOM,
+  VIEWPORT_MAX_ZOOM,
+  NODE_CENTER_OFFSET_X,
+  NODE_CENTER_OFFSET_Y,
+  GRID_SPACING_X,
+  GRID_SPACING_Y,
+} from '@/constants';
 
 // Register custom node types
 const nodeTypes = {
@@ -120,7 +131,11 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         const node = nodes.find((n) => n.id === nodeId);
         if (node) {
           const zoom = Math.max(getZoom(), 0.8);
-          setCenter(node.position.x + 140, node.position.y + 100, { zoom, duration: 500 });
+          setCenter(
+            node.position.x + NODE_CENTER_OFFSET_X,
+            node.position.y + NODE_CENTER_OFFSET_Y,
+            { zoom, duration: 500 }
+          );
         }
       },
       fitView: () => {
@@ -129,7 +144,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       exportToPng: async (): Promise<Blob> => {
         const nodesBounds = getNodesBounds(getNodes());
         // Add very generous padding to include edges and labels that extend beyond nodes
-        const padding = 300;
+        const padding = EXPORT_PADDING;
         const imageWidth = Math.ceil(nodesBounds.width + padding * 2);
         const imageHeight = Math.ceil(nodesBounds.height + padding * 2);
 
@@ -145,8 +160,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
           expandedBounds,
           imageWidth,
           imageHeight,
-          0.5,
-          2,
+          EXPORT_MIN_ZOOM,
+          EXPORT_MAX_ZOOM,
           0
         );
 
@@ -166,9 +181,11 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
             // Exclude minimap and controls from export
             const classList = node.classList;
             if (!classList) return true;
-            return !classList.contains('react-flow__minimap') &&
-                   !classList.contains('react-flow__controls') &&
-                   !classList.contains('react-flow__panel');
+            return (
+              !classList.contains('react-flow__minimap') &&
+              !classList.contains('react-flow__controls') &&
+              !classList.contains('react-flow__panel')
+            );
           },
         });
 
@@ -179,7 +196,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       exportToSvg: async (): Promise<string> => {
         const nodesBounds = getNodesBounds(getNodes());
         // Add very generous padding to include edges and labels that extend beyond nodes
-        const padding = 300;
+        const padding = EXPORT_PADDING;
         const imageWidth = Math.ceil(nodesBounds.width + padding * 2);
         const imageHeight = Math.ceil(nodesBounds.height + padding * 2);
 
@@ -195,8 +212,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
           expandedBounds,
           imageWidth,
           imageHeight,
-          0.5,
-          2,
+          EXPORT_MIN_ZOOM,
+          EXPORT_MAX_ZOOM,
           0
         );
 
@@ -216,9 +233,11 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
             // Exclude minimap and controls from export
             const classList = node.classList;
             if (!classList) return true;
-            return !classList.contains('react-flow__minimap') &&
-                   !classList.contains('react-flow__controls') &&
-                   !classList.contains('react-flow__panel');
+            return (
+              !classList.contains('react-flow__minimap') &&
+              !classList.contains('react-flow__controls') &&
+              !classList.contains('react-flow__panel')
+            );
           },
         });
 
@@ -255,7 +274,9 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       return {
         id: entity.logicalName,
         type: 'table',
-        position: pos ? { x: pos.x, y: pos.y } : { x: col * 320, y: row * 450 },
+        position: pos
+          ? { x: pos.x, y: pos.y }
+          : { x: col * GRID_SPACING_X, y: row * GRID_SPACING_Y },
         data: {
           entity,
           color,
@@ -386,9 +407,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
           !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
             entity.publisher
           );
-        const color = isCustom
-          ? colorSettings.customTableColor
-          : colorSettings.standardTableColor;
+        const color = isCustom ? colorSettings.customTableColor : colorSettings.standardTableColor;
 
         // Only update if color actually changed
         if ((node.data as TableNodeData).color === color) return node;
@@ -454,12 +473,10 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       defaultViewport={
-        zoom !== undefined && pan !== undefined
-          ? { x: pan.x, y: pan.y, zoom }
-          : undefined
+        zoom !== undefined && pan !== undefined ? { x: pan.x, y: pan.y, zoom } : undefined
       }
-      minZoom={0.1}
-      maxZoom={2}
+      minZoom={VIEWPORT_MIN_ZOOM}
+      maxZoom={VIEWPORT_MAX_ZOOM}
       colorMode={isDarkMode ? 'dark' : 'light'}
       proOptions={{ hideAttribution: true }}
       // Disable connection drawing - edges are defined by relationships only

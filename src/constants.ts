@@ -1,17 +1,205 @@
 /**
  * Shared constants for ERD Visualizer components
+ * Centralized to ensure consistency between on-screen rendering and exports
  */
 
-// Entity card dimensions
+// =============================================================================
+// TABLE/ENTITY LAYOUT CONSTANTS
+// =============================================================================
+// These values MUST match between TableNode.tsx and export utilities
+
+/**
+ * Entity table card width (px)
+ */
 export const CARD_WIDTH = 300;
-export const HEADER_HEIGHT = 60;
+
+/**
+ * Entity table header height - contains display name (px)
+ */
+export const HEADER_HEIGHT = 36;
+
+/**
+ * Subheader height - contains logical name (px)
+ */
 export const SUBHEADER_HEIGHT = 24;
-export const ATTRIBUTES_TITLE_HEIGHT = 30;
+
+/**
+ * Height of each field row in the entity table (px)
+ */
 export const FIELD_ROW_HEIGHT = 28;
+
+/**
+ * Top padding for the fields section (px)
+ */
+export const FIELD_PADDING_TOP = 4;
+
+// Legacy constants (kept for backward compatibility, consider removing)
+export const ATTRIBUTES_TITLE_HEIGHT = 30;
 export const FIELD_HEIGHT = 44;
 export const FIELD_HALF_HEIGHT = 22;
-export const FIELD_PADDING_TOP = 8;
 
+// =============================================================================
+// GRID LAYOUT CONSTANTS
+// =============================================================================
+// Grid layout positioning for entity tables
+
+/**
+ * Starting X position for grid layout (px)
+ */
+export const GRID_START_X = 100;
+
+/**
+ * Starting Y position for grid layout (px)
+ */
+export const GRID_START_Y = 80;
+
+/**
+ * Horizontal spacing between entities in grid layout (px)
+ */
+export const GRID_SPACING_X = 380;
+
+/**
+ * Vertical spacing between entity rows in grid layout (px)
+ */
+export const GRID_SPACING_Y = 320;
+
+// =============================================================================
+// FORCE-DIRECTED LAYOUT CONSTANTS (Physics Simulation)
+// =============================================================================
+// Parameters for the force-directed graph layout algorithm
+
+/**
+ * Optimal distance between connected nodes (px)
+ * Larger values spread entities further apart
+ */
+export const SPRING_LENGTH = 280;
+
+/**
+ * Strength of the spring force between connected entities (0-1)
+ * Higher values pull connected entities closer together
+ */
+export const SPRING_STRENGTH = 0.01;
+
+/**
+ * Repulsion force constant between all entity pairs
+ * Higher values push entities further apart
+ */
+export const REPULSION = 8000;
+
+/**
+ * Velocity damping factor per iteration (0-1)
+ * Controls how quickly the simulation stabilizes
+ */
+export const DAMPING = 0.9;
+
+/**
+ * Number of simulation iterations for force-directed layout
+ */
+export const ITERATIONS = 100;
+
+/**
+ * Weak force pulling entities toward canvas center (0-1)
+ * Prevents entities from drifting too far from origin
+ */
+export const CENTER_FORCE = 0.001;
+
+// =============================================================================
+// AUTO-ARRANGE LAYOUT CONSTANTS
+// =============================================================================
+// Hierarchical layout based on relationship dependencies
+
+/**
+ * Vertical spacing between hierarchy levels (px)
+ */
+export const LEVEL_HEIGHT = 320;
+
+/**
+ * Horizontal spacing between entities at the same level (px)
+ */
+export const HORIZONTAL_SPACING = 380;
+
+// =============================================================================
+// EXPORT CONSTANTS
+// =============================================================================
+// Parameters for image/diagram exports
+
+/**
+ * Padding around diagram for PNG/SVG exports (px)
+ * Generous padding to include edges and labels that extend beyond nodes
+ */
+export const EXPORT_PADDING = 300;
+
+/**
+ * Minimum zoom level for exports
+ */
+export const EXPORT_MIN_ZOOM = 0.5;
+
+/**
+ * Maximum zoom level for exports
+ */
+export const EXPORT_MAX_ZOOM = 2;
+
+// =============================================================================
+// VIEWPORT CONSTANTS
+// =============================================================================
+// Default viewport settings and limits
+
+/**
+ * Minimum zoom level for the diagram canvas
+ */
+export const VIEWPORT_MIN_ZOOM = 0.1;
+
+/**
+ * Maximum zoom level for the diagram canvas
+ */
+export const VIEWPORT_MAX_ZOOM = 2;
+
+/**
+ * Default zoom level when diagram loads
+ */
+export const VIEWPORT_DEFAULT_ZOOM = 0.8;
+
+/**
+ * Default pan position when diagram loads
+ */
+export const VIEWPORT_DEFAULT_PAN = { x: 400, y: 100 };
+
+/**
+ * X offset for centering camera on node when focusing (px)
+ * Accounts for node width to center the view properly
+ */
+export const NODE_CENTER_OFFSET_X = 140;
+
+/**
+ * Y offset for centering camera on node when focusing (px)
+ * Accounts for node height to center the view properly
+ */
+export const NODE_CENTER_OFFSET_Y = 100;
+
+// =============================================================================
+// TIMING CONSTANTS
+// =============================================================================
+// Delays and durations for various UI interactions
+
+/**
+ * Debounce delay for auto-save (milliseconds)
+ * Prevents excessive saves while user is actively editing
+ */
+export const AUTO_SAVE_DEBOUNCE = 2000;
+
+/**
+ * Duration for toast notifications (milliseconds)
+ */
+export const TOAST_DURATION = 3000;
+
+/**
+ * Default animation duration for transitions (milliseconds)
+ */
+export const ANIMATION_DURATION = 300;
+
+// =============================================================================
+// RELATIONSHIP DISPLAY
+// =============================================================================
 // Cardinality symbol mappings for relationship display
 export const CARDINALITY_SYMBOLS: Record<string, { from: string; to: string }> = {
   'N:1': { from: 'N', to: '1' },
