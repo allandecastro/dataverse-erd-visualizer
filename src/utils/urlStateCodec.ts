@@ -62,10 +62,7 @@ function expandPositions(
   compact: Record<string, { x: number; y: number }>
 ): Record<string, EntityPosition> {
   return Object.fromEntries(
-    Object.entries(compact).map(([key, pos]) => [
-      key,
-      { x: pos.x, y: pos.y, vx: 0, vy: 0 },
-    ])
+    Object.entries(compact).map(([key, pos]) => [key, { x: pos.x, y: pos.y, vx: 0, vy: 0 }])
   );
 }
 
@@ -200,9 +197,7 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
  * @param state State to encode
  * @returns Approximate URL length in characters
  */
-export function estimateURLSize(
-  state: Parameters<typeof encodeStateToURL>[0]
-): number {
+export function estimateURLSize(state: Parameters<typeof encodeStateToURL>[0]): number {
   const encoded = encodeStateToURL(state);
   // Full URL = base URL + hash + encoded state
   const baseUrl = window.location.origin + window.location.pathname;

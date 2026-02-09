@@ -23,9 +23,5 @@ export function Toast({ message, type }: ToastProps) {
         ? styles.errorDark
         : styles.error;
 
-  return (
-    <div className={`${styles.toast} ${typeClass}`}>
-      {message}
-    </div>
-  );
+  return <div className={`${styles.toast} ${typeClass}`}>{message}</div>;
 }

@@ -96,7 +96,8 @@ export function Sidebar({
     const matchesSearch =
       entity.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entity.logicalName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPublisher = publisherFilter === 'all' || getEntityPublisher(entity) === publisherFilter;
+    const matchesPublisher =
+      publisherFilter === 'all' || getEntityPublisher(entity) === publisherFilter;
     const matchesSolution =
       solutionFilter === 'all' || (entity.solutions?.includes(solutionFilter) ?? false);
     return matchesSearch && matchesPublisher && matchesSolution;
