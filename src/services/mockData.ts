@@ -899,6 +899,15 @@ export function generateMockRelationships(): EntityRelationship[] {
       referencedAttribute: 'accountid',
       relationshipType: 'OneToManyRelationship',
     },
+    {
+      schemaName: 'account_accountmanager',
+      from: 'account',
+      to: 'systemuser',
+      type: 'N:1',
+      referencingAttribute: 'new_accountmanagerid',
+      referencedAttribute: 'systemuserid',
+      relationshipType: 'OneToManyRelationship',
+    },
     // Opportunity relationships
     {
       schemaName: 'opportunity_parent_account',
@@ -1321,6 +1330,31 @@ export function generateMockRelationships(): EntityRelationship[] {
       referencingAttribute: 'objectid',
       referencedAttribute: 'accountid',
       relationshipType: 'OneToManyRelationship',
+    },
+    // Many-to-Many relationships (N:N)
+    {
+      schemaName: 'accountleads_association',
+      from: 'account',
+      to: 'lead',
+      type: 'N:N',
+      intersectEntityName: 'accountleads',
+      relationshipType: 'ManyToManyRelationship',
+    },
+    {
+      schemaName: 'contactleads_association',
+      from: 'contact',
+      to: 'lead',
+      type: 'N:N',
+      intersectEntityName: 'contactleads',
+      relationshipType: 'ManyToManyRelationship',
+    },
+    {
+      schemaName: 'accountcontacts_association',
+      from: 'account',
+      to: 'contact',
+      type: 'N:N',
+      intersectEntityName: 'accountcontacts',
+      relationshipType: 'ManyToManyRelationship',
     },
   ];
 }

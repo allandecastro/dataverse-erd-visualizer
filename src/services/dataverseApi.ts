@@ -459,6 +459,7 @@ class DataverseApiService {
             from: rel.Entity1LogicalName,
             to: rel.Entity2LogicalName,
             type: 'N:N' as RelationshipType,
+            intersectEntityName: rel.IntersectEntityName, // Intersection table name
             relationshipType: 'ManyToManyRelationship',
           });
           processedRelationships.add(relKey);

@@ -319,4 +319,133 @@ describe('useERDState', () => {
       expect(result.current.isDarkMode).toBe(false);
     });
   });
+
+  describe('Color Settings', () => {
+    it('should initialize with default colorSettings including new line customization properties', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      expect(result.current.colorSettings).toEqual({
+        customTableColor: '#0ea5e9',
+        standardTableColor: '#64748b',
+        lookupColor: '#f97316',
+        edgeStyle: 'smoothstep',
+        lineNotation: 'simple',
+        lineStroke: 'solid',
+        lineThickness: 1.5,
+        useRelationshipTypeColors: false,
+        oneToManyColor: '#f97316',
+        manyToOneColor: '#06b6d4',
+        manyToManyColor: '#8b5cf6',
+      });
+    });
+
+    it('should include new colorSettings properties in serializable state', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      const serializedState = result.current.getSerializableState();
+
+      expect(serializedState.colorSettings.lineNotation).toBe('simple');
+      expect(serializedState.colorSettings.lineStroke).toBe('solid');
+      expect(serializedState.colorSettings.lineThickness).toBe(1.5);
+      expect(serializedState.colorSettings.useRelationshipTypeColors).toBe(false);
+      expect(serializedState.colorSettings.oneToManyColor).toBe('#f97316');
+      expect(serializedState.colorSettings.manyToOneColor).toBe('#06b6d4');
+      expect(serializedState.colorSettings.manyToManyColor).toBe('#8b5cf6');
+    });
+
+    it('should restore state with new colorSettings properties', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      const customState = {
+        selectedEntities: ['account'],
+        collapsedEntities: [],
+        selectedFields: {},
+        fieldOrder: {},
+        entityPositions: {},
+        layoutMode: 'force' as const,
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        searchQuery: '',
+        publisherFilter: 'all',
+        solutionFilter: 'all',
+        isDarkMode: false,
+        colorSettings: {
+          customTableColor: '#ff0000',
+          standardTableColor: '#00ff00',
+          lookupColor: '#0000ff',
+          edgeStyle: 'bezier' as const,
+          lineNotation: 'crowsfoot' as const,
+          lineStroke: 'dashed' as const,
+          lineThickness: 3,
+          useRelationshipTypeColors: true,
+          oneToManyColor: '#aaaaaa',
+          manyToOneColor: '#bbbbbb',
+          manyToManyColor: '#cccccc',
+        },
+        showMinimap: true,
+        isSmartZoom: true,
+        edgeOffsets: {},
+      };
+
+      act(() => {
+        result.current.restoreState(customState);
+      });
+
+      expect(result.current.colorSettings.lineNotation).toBe('crowsfoot');
+      expect(result.current.colorSettings.lineStroke).toBe('dashed');
+      expect(result.current.colorSettings.lineThickness).toBe(3);
+      expect(result.current.colorSettings.useRelationshipTypeColors).toBe(true);
+      expect(result.current.colorSettings.oneToManyColor).toBe('#aaaaaa');
+      expect(result.current.colorSettings.manyToOneColor).toBe('#bbbbbb');
+      expect(result.current.colorSettings.manyToManyColor).toBe('#cccccc');
+    });
+
+    it('should apply default values for missing colorSettings properties (backward compatibility)', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      // Simulate old snapshot without new properties
+      const oldState = {
+        selectedEntities: ['account'],
+        collapsedEntities: [],
+        selectedFields: {},
+        fieldOrder: {},
+        entityPositions: {},
+        layoutMode: 'force' as const,
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        searchQuery: '',
+        publisherFilter: 'all',
+        solutionFilter: 'all',
+        isDarkMode: false,
+        colorSettings: {
+          customTableColor: '#ff0000',
+          standardTableColor: '#00ff00',
+          lookupColor: '#0000ff',
+          edgeStyle: 'straight' as const,
+          // Missing new properties
+        } as any,
+        showMinimap: false,
+        isSmartZoom: false,
+        edgeOffsets: {},
+      };
+
+      act(() => {
+        result.current.restoreState(oldState);
+      });
+
+      // Should have default values for new properties
+      expect(result.current.colorSettings.lineNotation).toBe('simple');
+      expect(result.current.colorSettings.lineStroke).toBe('solid');
+      expect(result.current.colorSettings.lineThickness).toBe(1.5);
+      expect(result.current.colorSettings.useRelationshipTypeColors).toBe(false);
+      expect(result.current.colorSettings.oneToManyColor).toBe('#f97316');
+      expect(result.current.colorSettings.manyToOneColor).toBe('#06b6d4');
+      expect(result.current.colorSettings.manyToManyColor).toBe('#8b5cf6');
+
+      // Should preserve old properties
+      expect(result.current.colorSettings.customTableColor).toBe('#ff0000');
+      expect(result.current.colorSettings.lookupColor).toBe('#0000ff');
+      expect(result.current.colorSettings.edgeStyle).toBe('straight');
+    });
+  });
 });

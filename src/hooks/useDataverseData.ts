@@ -4,7 +4,7 @@
  * Supports mock mode for local development/testing
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { dataverseApi } from '@/services/dataverseApi';
 import {
   generateMockEntities,
@@ -28,6 +28,7 @@ export interface UseDataverseDataResult {
   error: Error | null;
   refetch: () => Promise<void>;
   isMockMode: boolean;
+  newRelationshipsDetected: number; // Count of new relationships found since last load
 }
 
 export interface UseDataverseDataOptions {
@@ -105,6 +106,11 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [loadingProgress, setLoadingProgress] = useState<LoadingProgress | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [newRelationshipsDetected, setNewRelationshipsDetected] = useState<number>(0);
+
+  // Track previous relationships to detect new ones (use ref to avoid circular dependency)
+  const previousRelationshipSchemas = useRef<Set<string>>(new Set());
+  const isInitialLoad = useRef<boolean>(true);
 
   // Determine if we should use mock data
   // Priority: 1) explicit option, 2) URL param, 3) auto-detect environment
@@ -142,40 +148,118 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
       });
     });
 
+    // Detect new relationships
+    const currentSchemas = new Set(result.relationships.map((r) => r.schemaName));
+    const newSchemas = Array.from(currentSchemas).filter(
+      (schema) => !previousRelationshipSchemas.current.has(schema)
+    );
+
+    console.log('[Relationship Detection]', {
+      isInitialLoad: isInitialLoad.current,
+      previousCount: previousRelationshipSchemas.current.size,
+      currentCount: currentSchemas.size,
+      newCount: newSchemas.length,
+      newSchemas: newSchemas,
+    });
+
+    // Only show notification if this is not the initial load
+    if (!isInitialLoad.current && newSchemas.length > 0) {
+      console.log(
+        `[Auto-refresh] ✅ Detected ${newSchemas.length} new relationship(s):`,
+        newSchemas
+      );
+      setNewRelationshipsDetected(newSchemas.length);
+    } else {
+      console.log('[Auto-refresh] No new relationships to notify');
+      setNewRelationshipsDetected(0);
+    }
+
+    // Update the previous schemas set and mark initial load complete
+    previousRelationshipSchemas.current = currentSchemas;
+    isInitialLoad.current = false;
+
     setEntities(result.entities);
     setRelationships(result.relationships);
   }, []);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      setLoadingProgress({
-        phase: 'starting',
-        page: 0,
-        totalEntities: 0,
-        message: 'Initializing...',
-      });
+  const fetchData = useCallback(
+    async (silent = false) => {
+      try {
+        // Only show loading screen on initial load, not on refresh
+        if (!silent) {
+          setIsLoading(true);
+          setError(null);
+          setLoadingProgress({
+            phase: 'starting',
+            page: 0,
+            totalEntities: 0,
+            message: 'Initializing...',
+          });
+        }
 
-      if (isMockMode) {
-        await fetchMockData();
-      } else {
-        await fetchRealData();
+        if (isMockMode) {
+          await fetchMockData();
+        } else {
+          await fetchRealData();
+        }
+
+        if (!silent) {
+          setLoadingProgress(null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error occurred'));
+        console.error('Error fetching Dataverse data:', err);
+        if (!silent) {
+          setLoadingProgress(null);
+        }
+      } finally {
+        if (!silent) {
+          setIsLoading(false);
+        }
       }
-
-      setLoadingProgress(null);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error occurred'));
-      console.error('Error fetching Dataverse data:', err);
-      setLoadingProgress(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isMockMode, fetchMockData, fetchRealData]);
+    },
+    [isMockMode, fetchMockData, fetchRealData]
+  );
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auto-refresh on window focus (when user returns from Dataverse customization)
+  // This ensures new relationships from lookup fields are automatically detected
+  useEffect(() => {
+    // Only auto-refresh in real Dataverse mode, not in mock mode
+    if (isMockMode) return;
+
+    let lastFocusTime = Date.now();
+
+    const handleFocus = () => {
+      const timeSinceLastFocus = Date.now() - lastFocusTime;
+
+      // Only refresh if user was away for more than 5 seconds
+      // This prevents unnecessary refreshes on quick tab switches
+      if (timeSinceLastFocus > 5000 && !isLoading) {
+        console.log(
+          '[Auto-refresh] Window focused after being away. Reloading metadata silently...'
+        );
+        fetchData(true); // Silent refresh - keeps diagram state
+      }
+
+      lastFocusTime = Date.now();
+    };
+
+    const handleBlur = () => {
+      lastFocusTime = Date.now();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [isMockMode, isLoading, fetchData]);
 
   return {
     entities,
@@ -185,5 +269,6 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
     error,
     refetch: fetchData,
     isMockMode,
+    newRelationshipsDetected,
   };
 }

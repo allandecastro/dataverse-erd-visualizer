@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Search, HelpCircle, Bookmark } from 'lucide-react';
+import { Search, HelpCircle, Bookmark, RefreshCw } from 'lucide-react';
 import { useTheme } from '@/context';
 import { getKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { ToolbarStats } from './ToolbarStats';
@@ -25,6 +25,7 @@ export interface ToolbarProps {
   onOpenGuide: () => void;
   onOpenSnapshots: () => void;
   onGenerateShareURL: () => { url: string; warning?: string } | { error: string };
+  onRefresh?: () => Promise<void>;
 }
 
 export function Toolbar({
@@ -40,6 +41,7 @@ export function Toolbar({
   onOpenGuide,
   onOpenSnapshots,
   onGenerateShareURL,
+  onRefresh,
 }: ToolbarProps) {
   const { isDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;

@@ -84,6 +84,13 @@ describe('exportUtils', () => {
       standardTableColor: '#ffffff',
       lookupColor: '#fee2e2',
       edgeStyle: 'smoothstep' as const,
+      lineNotation: 'simple' as const,
+      lineStroke: 'solid' as const,
+      lineThickness: 1.5,
+      useRelationshipTypeColors: false,
+      oneToManyColor: '#f97316',
+      manyToOneColor: '#06b6d4',
+      manyToManyColor: '#8b5cf6',
     },
   };
 

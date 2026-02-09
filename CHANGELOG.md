@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Relationship Line Customization** - Comprehensive relationship line customization with professional database notation styles:
+  - **Line Notation Styles**:
+    - Crow's Foot notation (standard database ERD with cardinality markers: one, many, one-optional, many-optional)
+    - UML style (composition/aggregation with filled/hollow diamonds, association arrows)
+    - Simple arrows (default minimalist style)
+  - **Line Appearance**:
+    - Stroke style: solid, dashed, or dotted lines
+    - Adjustable thickness (1-5px with 0.5px increments)
+    - Color by relationship type (1:N vs N:N with distinct colors)
+    - Color-matched SVG markers that sync with edge colors
+  - **Auto-Refresh Feature**:
+    - Silently reloads metadata when returning to tab after 5+ seconds away
+    - Detects new relationships from lookup fields created in Dataverse
+    - Shows toast notification for newly detected relationships
+    - Only active in real Dataverse mode (disabled in mock mode)
+    - Preserves diagram state during refresh (no layout disruption)
+  - **Mock Data Enhancements**:
+    - Added account manager lookup field (new_accountmanagerid)
+    - Added account-systemuser relationship for testing
+    - Added account-contact N:N relationship example
+  - **Implementation**:
+    - EdgeMarkerDefinitions component with reusable SVG marker definitions
+    - Edge marker utilities (getMarkerIdForNotation, getMarkerColorSuffix, getEdgeColor)
+    - Extended ColorSettings with 8 new properties
+    - Silent refresh pattern to preserve diagram state
+    - useRef pattern to avoid circular dependencies in relationship detection
+  - **Tests**: 33 new tests added (23 for edge marker utilities, 10 for EdgeMarkerDefinitions component)
+  - All settings automatically saved in snapshots and shareable URLs
+
 - **Comprehensive Quality Gates** ([#33](https://github.com/allandecastro/dataverse-erd-visualizer/issues/33)) - Added complete testing infrastructure and quality checks:
   - **Unit Tests** - 140 passing tests covering critical functionality:
     - URL State Codec (22 tests) - URL sharing and compression
