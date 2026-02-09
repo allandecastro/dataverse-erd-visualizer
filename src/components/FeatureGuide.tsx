@@ -253,10 +253,22 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         tip: 'Click the gear icon in the sidebar to access settings',
       },
       {
-        title: 'Relationship Line Style',
+        title: 'Relationship Line Notation',
         description:
-          'Choose between Smooth Step (default), Bezier Curve, or Straight lines for relationships.',
-        tip: 'Smooth Step is recommended for readability',
+          "Choose between Crow's Foot notation (database ERD standard), UML style (composition/aggregation diamonds), or Simple arrows.",
+        tip: "Crow's Foot shows cardinality markers (one/many), UML shows relationship semantics",
+      },
+      {
+        title: 'Line Appearance',
+        description:
+          'Customize stroke style (solid/dashed/dotted), thickness (1-5px), and enable color coding by relationship type (1:N vs N:N).',
+        tip: 'Use dashed lines for optional relationships, color coding to distinguish relationship types',
+      },
+      {
+        title: 'Edge Routing Style',
+        description:
+          'Choose between Smooth Step (default), Bezier Curve, or Straight lines for relationship routing.',
+        tip: 'Smooth Step is recommended for readability with complex diagrams',
       },
       {
         title: 'Filter by Publisher',
@@ -277,18 +289,26 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       {
         title: 'Relationship Lines',
         description:
-          'Dotted lines connect related entities, showing lookup relationships between tables.',
+          'Lines connect related entities, showing lookup relationships between tables with customizable notation styles.',
+        tip: "Choose from Crow's Foot, UML, or Simple arrow notation in settings",
       },
       {
         title: 'Cardinality Markers',
         description:
-          'Small badges show "N" on the lookup side and "1" on the target side to indicate many-to-one relationships.',
+          "Visual markers show relationship cardinality: one (single line), many (crow's foot), or optional (circle).",
+        tip: "Crow's Foot notation provides the most detailed cardinality information",
       },
       {
         title: 'Field-to-Field Connections',
         description:
           'When lookup and primary key fields are visible, lines connect directly between them.',
         tip: 'Add the lookup field and primary key to see precise connections',
+      },
+      {
+        title: 'Auto-Refresh',
+        description:
+          'In Dataverse mode, relationships are automatically detected when you return to the tab after 5+ seconds. Perfect for detecting new lookup fields.',
+        tip: 'Silent refresh preserves your diagram layout and shows a toast notification for new relationships',
       },
       {
         title: 'Self-Reference Loops',

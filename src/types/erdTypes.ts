@@ -13,6 +13,15 @@ export type LayoutMode = 'force' | 'grid' | 'auto' | 'manual';
 // Edge/relationship line style types
 export type EdgeStyle = 'smoothstep' | 'straight' | 'bezier' | 'step';
 
+// Line notation style types
+export type LineNotationStyle = 'simple' | 'crowsfoot' | 'uml';
+
+// Line stroke style types
+export type LineStrokeStyle = 'solid' | 'dashed' | 'dotted';
+
+// Cardinality end types for crow's foot notation
+export type CardinalityEnd = 'one' | 'many' | 'one-optional' | 'many-optional';
+
 // Toast state
 export interface ToastState {
   message: string;
@@ -29,12 +38,21 @@ export interface ThemeColors {
   textSecondary: string;
 }
 
-// Color settings for entities
+// Color settings for entities and relationships
 export interface ColorSettings {
   customTableColor: string;
   standardTableColor: string;
   lookupColor: string;
   edgeStyle: EdgeStyle;
+
+  // Line customization settings
+  lineNotation: LineNotationStyle;
+  lineStroke: LineStrokeStyle;
+  lineThickness: number; // 1-5 range
+  useRelationshipTypeColors: boolean;
+  oneToManyColor?: string;
+  manyToOneColor?: string;
+  manyToManyColor?: string;
 }
 
 // ERD State shared across components

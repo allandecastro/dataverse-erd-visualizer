@@ -61,6 +61,14 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     standardTableColor: '#64748b',
     lookupColor: '#f97316',
     edgeStyle: 'smoothstep',
+    // Line customization defaults
+    lineNotation: 'simple',
+    lineStroke: 'solid',
+    lineThickness: 1.5,
+    useRelationshipTypeColors: false,
+    oneToManyColor: '#f97316',
+    manyToOneColor: '#06b6d4',
+    manyToManyColor: '#8b5cf6',
   });
 
   // Features
@@ -351,7 +359,26 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       setPublisherFilter(state.publisherFilter);
       setSolutionFilter(state.solutionFilter);
       setIsDarkMode(state.isDarkMode);
-      setColorSettings(state.colorSettings);
+
+      // Backward compatibility: merge with defaults for missing properties
+      const defaultColorSettings: ColorSettings = {
+        customTableColor: '#0ea5e9',
+        standardTableColor: '#64748b',
+        lookupColor: '#f97316',
+        edgeStyle: 'smoothstep',
+        lineNotation: 'simple',
+        lineStroke: 'solid',
+        lineThickness: 1.5,
+        useRelationshipTypeColors: false,
+        oneToManyColor: '#f97316',
+        manyToOneColor: '#06b6d4',
+        manyToManyColor: '#8b5cf6',
+      };
+      setColorSettings({
+        ...defaultColorSettings,
+        ...state.colorSettings,
+      });
+
       setShowMinimap(state.showMinimap);
       setIsSmartZoom(state.isSmartZoom);
       setEdgeOffsets(state.edgeOffsets);

@@ -6,8 +6,19 @@ import { useDataverseData } from '@/hooks/useDataverseData';
 import App from './App';
 
 export function Root() {
-  const { entities, relationships, isLoading, loadingProgress, error, isMockMode } =
-    useDataverseData();
+  const {
+    entities,
+    relationships,
+    isLoading,
+    loadingProgress,
+    error,
+    isMockMode,
+    newRelationshipsDetected,
+  } = useDataverseData();
+
+  if (import.meta.env.DEV) {
+    console.warn('[Root] newRelationshipsDetected:', newRelationshipsDetected);
+  }
 
   if (isLoading) {
     return (
@@ -60,5 +71,11 @@ export function Root() {
     );
   }
 
-  return <App entities={entities} relationships={relationships} />;
+  return (
+    <App
+      entities={entities}
+      relationships={relationships}
+      newRelationshipsDetected={newRelationshipsDetected}
+    />
+  );
 }
