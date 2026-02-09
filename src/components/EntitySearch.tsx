@@ -15,12 +15,7 @@ export interface EntitySearchProps {
   onNavigateToEntity: (entityName: string) => void;
 }
 
-export function EntitySearch({
-  entities,
-  isOpen,
-  onClose,
-  onNavigateToEntity,
-}: EntitySearchProps) {
+export function EntitySearch({ entities, isOpen, onClose, onNavigateToEntity }: EntitySearchProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -41,10 +36,17 @@ export function EntitySearch({
     })
     .slice(0, 10); // Limit to 10 results
 
-  // Focus input when opened
+  // Focus input when opened and reset state
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchQuery('');
       setSelectedIndex(0);
     }
@@ -89,8 +91,13 @@ export function EntitySearch({
   );
 
   // Reset selected index when search changes
+  const prevSearchQuery = useRef(searchQuery);
   useEffect(() => {
-    setSelectedIndex(0);
+    if (prevSearchQuery.current !== searchQuery) {
+      prevSearchQuery.current = searchQuery;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedIndex(0);
+    }
   }, [searchQuery]);
 
   if (!isOpen) return null;
