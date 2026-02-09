@@ -14,12 +14,12 @@ describe('useERDState', () => {
       displayName: 'Account',
       attributes: [
         {
-          logicalName: 'accountid',
+          name: 'accountid',
           displayName: 'Account ID',
           type: 'UniqueIdentifier',
           isPrimaryKey: true,
         },
-        { logicalName: 'name', displayName: 'Name', type: 'String', isPrimaryKey: false },
+        { name: 'name', displayName: 'Name', type: 'String', isPrimaryKey: false },
       ],
       publisher: 'Microsoft',
       alternateKeys: [],
@@ -29,7 +29,7 @@ describe('useERDState', () => {
       displayName: 'Contact',
       attributes: [
         {
-          logicalName: 'contactid',
+          name: 'contactid',
           displayName: 'Contact ID',
           type: 'UniqueIdentifier',
           isPrimaryKey: true,
@@ -43,7 +43,7 @@ describe('useERDState', () => {
       displayName: 'Custom Entity',
       attributes: [
         {
-          logicalName: 'new_customid',
+          name: 'new_customid',
           displayName: 'Custom ID',
           type: 'UniqueIdentifier',
           isPrimaryKey: true,

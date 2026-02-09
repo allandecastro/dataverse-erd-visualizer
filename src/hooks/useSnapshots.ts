@@ -38,21 +38,16 @@ export function useSnapshots({
   showToast,
   entities,
 }: UseSnapshotsProps) {
-  // Load snapshots from localStorage on mount using lazy initialization
-  const [snapshots, setSnapshots] = useState<ERDSnapshot[]>(() => {
-    const stored = loadSnapshots();
-    return stored?.snapshots || [];
-  });
+  // Load snapshots from localStorage once on mount
+  const initialData = loadSnapshots();
 
-  const [lastAutoSave, setLastAutoSave] = useState<ERDSnapshot | null>(() => {
-    const stored = loadSnapshots();
-    return stored?.lastAutoSave || null;
-  });
-
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(() => {
-    const stored = loadSnapshots();
-    return stored?.autoSaveEnabled !== undefined ? stored.autoSaveEnabled : true;
-  });
+  const [snapshots, setSnapshots] = useState<ERDSnapshot[]>(initialData?.snapshots || []);
+  const [lastAutoSave, setLastAutoSave] = useState<ERDSnapshot | null>(
+    initialData?.lastAutoSave || null
+  );
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(
+    initialData?.autoSaveEnabled !== undefined ? initialData.autoSaveEnabled : true
+  );
 
   // Refs for auto-save debouncing and snapshot tracking
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

@@ -296,11 +296,7 @@ describe('urlStateCodec', () => {
     });
 
     it('should return error for missing required fields in decode', () => {
-      // Manually create invalid compact JSON
-      const invalidCompact = JSON.stringify({ v: '1.0.0' }); // Missing 'e' field
-      const fakeCompressed = invalidCompact; // Skip compression to test validation
-
-      // This would need to be properly compressed, but for testing validation logic
+      // Test with a string that will fail decompression/validation
       const result = decodeStateFromURL(
         'N4IgLgngDgpiBcIDGBXKAuKBnAzhABAMYAWAFgDYYAOcMAdnIWJgJ4C2AlgPY0BM'
       );
