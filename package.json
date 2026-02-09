@@ -1,6 +1,6 @@
 {
   "name": "dataverse-erd-visualizer",
-  "version": "0.1.6.3",
+  "version": "0.1.7.0",
   "description": "Entity Relationship Diagram Visualizer for Microsoft Dataverse",
   "type": "module",
   "scripts": {
