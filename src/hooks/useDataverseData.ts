@@ -154,23 +154,29 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
       (schema) => !previousRelationshipSchemas.current.has(schema)
     );
 
-    console.log('[Relationship Detection]', {
-      isInitialLoad: isInitialLoad.current,
-      previousCount: previousRelationshipSchemas.current.size,
-      currentCount: currentSchemas.size,
-      newCount: newSchemas.length,
-      newSchemas: newSchemas,
-    });
+    if (import.meta.env.DEV) {
+      console.warn('[Relationship Detection]', {
+        isInitialLoad: isInitialLoad.current,
+        previousCount: previousRelationshipSchemas.current.size,
+        currentCount: currentSchemas.size,
+        newCount: newSchemas.length,
+        newSchemas: newSchemas,
+      });
+    }
 
     // Only show notification if this is not the initial load
     if (!isInitialLoad.current && newSchemas.length > 0) {
-      console.log(
-        `[Auto-refresh] ✅ Detected ${newSchemas.length} new relationship(s):`,
-        newSchemas
-      );
+      if (import.meta.env.DEV) {
+        console.warn(
+          `[Auto-refresh] ✅ Detected ${newSchemas.length} new relationship(s):`,
+          newSchemas
+        );
+      }
       setNewRelationshipsDetected(newSchemas.length);
     } else {
-      console.log('[Auto-refresh] No new relationships to notify');
+      if (import.meta.env.DEV) {
+        console.warn('[Auto-refresh] No new relationships to notify');
+      }
       setNewRelationshipsDetected(0);
     }
 
@@ -239,9 +245,11 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
       // Only refresh if user was away for more than 5 seconds
       // This prevents unnecessary refreshes on quick tab switches
       if (timeSinceLastFocus > 5000 && !isLoading) {
-        console.log(
-          '[Auto-refresh] Window focused after being away. Reloading metadata silently...'
-        );
+        if (import.meta.env.DEV) {
+          console.warn(
+            '[Auto-refresh] Window focused after being away. Reloading metadata silently...'
+          );
+        }
         fetchData(true); // Silent refresh - keeps diagram state
       }
 

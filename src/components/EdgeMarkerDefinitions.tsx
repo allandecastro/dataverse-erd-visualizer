@@ -33,7 +33,7 @@ function createCrowsFootMarkers(color: string, suffix: string) {
         markerHeight="20"
         orient="auto"
       >
-        <line x1="0" y1="10" x2="0" y2="10" stroke={color} strokeWidth="2" />
+        <line x1="0" y1="10" x2="8" y2="10" stroke={color} strokeWidth="2" />
       </marker>
 
       {/* Crow's Foot: Many (three-pronged fork) - mandatory many */}
@@ -60,7 +60,7 @@ function createCrowsFootMarkers(color: string, suffix: string) {
         orient="auto"
       >
         <circle cx="6" cy="10" r="4" stroke={color} strokeWidth="2" fill="none" />
-        <line x1="0" y1="10" x2="0" y2="10" stroke={color} strokeWidth="2" />
+        <line x1="0" y1="10" x2="8" y2="10" stroke={color} strokeWidth="2" />
       </marker>
 
       {/* Crow's Foot: Many Optional (circle + fork) */}
