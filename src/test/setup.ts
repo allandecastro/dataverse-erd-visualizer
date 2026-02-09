@@ -23,7 +23,7 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-global.localStorage = localStorageMock as any;
+globalThis.localStorage = localStorageMock as any;
 
 // Mock canvas (for exportUtils tests)
 HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
@@ -54,7 +54,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
 })) as any;
 
 // Mock Xrm object (for Dataverse context tests)
-(global as any).Xrm = {
+(globalThis as any).Xrm = {
   Utility: {
     getGlobalContext: vi.fn(() => ({
       getClientUrl: vi.fn(() => 'https://org.crm.dynamics.com'),
