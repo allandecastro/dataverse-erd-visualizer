@@ -54,6 +54,9 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   // Edge offsets for manual adjustment of relationship lines (x and y offsets)
   const [edgeOffsets, setEdgeOffsets] = useState<Record<string, { x: number; y: number }>>({});
 
+  // Per-entity color overrides (entity logicalName → hex color)
+  const [entityColorOverrides, setEntityColorOverrides] = useState<Record<string, string>>({});
+
   // Settings
   const [showSettings, setShowSettings] = useState(false);
   const [colorSettings, setColorSettings] = useState<ColorSettings>({
@@ -254,6 +257,23 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     }));
   }, []);
 
+  // Per-entity color override helpers
+  const setEntityColor = useCallback((entityName: string, color: string) => {
+    setEntityColorOverrides((prev) => ({ ...prev, [entityName]: color }));
+  }, []);
+
+  const clearEntityColor = useCallback((entityName: string) => {
+    setEntityColorOverrides((prev) => {
+      const next = { ...prev };
+      delete next[entityName];
+      return next;
+    });
+  }, []);
+
+  const clearAllEntityColors = useCallback(() => {
+    setEntityColorOverrides({});
+  }, []);
+
   // Zoom helpers
   const handleZoomIn = useCallback(() => {
     setZoom((z) => Math.min(z + 0.1, 2));
@@ -301,6 +321,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       showMinimap,
       isSmartZoom,
       edgeOffsets,
+      entityColorOverrides,
     };
   }, [
     selectedEntities,
@@ -319,6 +340,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     showMinimap,
     isSmartZoom,
     edgeOffsets,
+    entityColorOverrides,
   ]);
 
   // Snapshot helpers: Restore state from snapshot
@@ -340,6 +362,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       showMinimap: boolean;
       isSmartZoom: boolean;
       edgeOffsets: Record<string, { x: number; y: number }>;
+      entityColorOverrides?: Record<string, string>;
     }) => {
       setSelectedEntities(new Set(state.selectedEntities));
       setCollapsedEntities(new Set(state.collapsedEntities));
@@ -382,6 +405,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       setShowMinimap(state.showMinimap);
       setIsSmartZoom(state.isSmartZoom);
       setEdgeOffsets(state.edgeOffsets);
+      setEntityColorOverrides(state.entityColorOverrides || {});
     },
     []
   );
@@ -463,6 +487,12 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     setShowSettings,
     colorSettings,
     setColorSettings,
+
+    // Per-entity color overrides
+    entityColorOverrides,
+    setEntityColor,
+    clearEntityColor,
+    clearAllEntityColors,
 
     // Features
     showMinimap,

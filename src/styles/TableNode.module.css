@@ -69,6 +69,23 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+.colorPickerButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+.colorPickerButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 .collapseButton {
   background: rgba(255, 255, 255, 0.2);
   border: none;

@@ -4,7 +4,7 @@
 
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, X, ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import type { Entity, EntityAttribute, AlternateKey } from '@/types';
 import { getAttributeBadge, isLookupType } from '../utils/badges';
 import { HEADER_HEIGHT, SUBHEADER_HEIGHT, FIELD_ROW_HEIGHT, FIELD_PADDING_TOP } from '@/constants';
@@ -19,6 +19,8 @@ export interface TableNodeData extends Record<string, unknown> {
   onRemoveField?: (entityName: string, fieldName: string) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: (entityName: string) => void;
+  hasColorOverride?: boolean;
+  onOpenColorPicker?: (entityName: string, anchorRect: DOMRect) => void;
 }
 
 interface TableNodeProps {
@@ -89,6 +91,8 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
     onRemoveField,
     isCollapsed = false,
     onToggleCollapse,
+    hasColorOverride,
+    onOpenColorPicker,
   } = data;
 
   // Get attributes to display based on orderedFields or just PK
@@ -196,6 +200,20 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
               aria-label={isCollapsed ? 'Expand fields' : 'Collapse fields'}
             >
               {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+            </button>
+          )}
+          {onOpenColorPicker && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                onOpenColorPicker(entity.logicalName, rect);
+              }}
+              className={styles.colorPickerButton}
+              title={hasColorOverride ? 'Change table color (custom)' : 'Change table color'}
+              aria-label="Change table color"
+            >
+              <Palette size={14} />
             </button>
           )}
           {onOpenFieldDrawer && (
