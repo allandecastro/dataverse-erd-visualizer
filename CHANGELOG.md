@@ -350,7 +350,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
-- **v0.1.7.1** - February 2026 - NICOLAS layout algorithm, layout dropdown, expanded mock data (150 entities)
+- **v0.1.7.1** - February 2026 - NICOLAS layout, primary name indicator, badge filtering, expanded mock data
 - **v0.1.7.0** - February 2026 - Relationship line customization, quality gates
 - **v0.1.6.0** - February 2025 - Share URL, Snapshots
 - **v0.1.5.0** - February 2025 - Snapshot management system

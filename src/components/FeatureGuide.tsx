@@ -92,6 +92,18 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         tip: 'Click + again or on another table to switch/close the drawer',
       },
       {
+        title: 'Primary Name Badge',
+        description:
+          'Each entity\'s primary name column (e.g., "name" for Account, "fullname" for Contact) is identified by a cyan "PN" badge.',
+        tip: 'PN fields sort after PK and can be toggled on/off unlike the locked PK field',
+      },
+      {
+        title: 'Badge-Type Filtering',
+        description:
+          'In the field drawer, use the badge chips (PK, PN, LKP, TXT, INT, etc.) to filter fields by type. Each chip shows the count of matching fields.',
+        tip: 'Click a badge chip to filter, click again to clear. Combine with Selected or Custom filters',
+      },
+      {
         title: 'Remove Fields',
         description:
           'Click the X button next to any field (except Primary Key) to remove it from display.',
