@@ -2,13 +2,11 @@
  * Shared types for ERD Visualizer components
  */
 
-import type { Entity, EntityPosition, AttributeType } from '@/types';
+import type { Entity, EntityPosition, AttributeType, LayoutMode } from '@/types';
+export type { LayoutMode } from '@/types';
 
 // Toast notification types
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
-
-// Layout mode types
-export type LayoutMode = 'force' | 'grid' | 'auto' | 'manual';
 
 // Edge/relationship line style types
 export type EdgeStyle = 'smoothstep' | 'straight' | 'bezier' | 'step';

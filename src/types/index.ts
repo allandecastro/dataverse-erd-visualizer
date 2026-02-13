@@ -23,6 +23,9 @@ export type AttributeType =
 
 export type RelationshipType = 'N:1' | '1:N' | 'N:N';
 
+// Layout mode types (single source of truth - re-exported from erdTypes.ts)
+export type LayoutMode = 'force' | 'grid' | 'auto' | 'nicolas' | 'manual';
+
 export interface EntityAttribute {
   name: string;
   displayName: string;
@@ -86,7 +89,7 @@ export interface ERDSettings {
   customTableColor: string;
   standardTableColor: string;
   lookupColor: string;
-  layoutMode: 'force' | 'grid' | 'auto';
+  layoutMode: LayoutMode;
   isDarkMode: boolean;
   isSmartZoom: boolean;
   showMinimap: boolean;
