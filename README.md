@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.8.1_BETA-blue?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.1.9.0_BETA-blue?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
   <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml/badge.svg" alt="CD" /></a>
@@ -90,6 +90,7 @@
 | **Draw.io Export**                | Full diagram export compatible with Draw.io and Microsoft Visio                                    |
 | **Dark/Light Mode**               | Professional themes with automatic persistence                                                     |
 | **Custom Colors**                 | Global table colors + per-entity color overrides with palette picker                               |
+| **Entity Grouping**               | Auto-derived groups from shared colors, collapsible sidebar sections, group filter, inline rename  |
 | **Relationship Line Styles**      | Choose between Crow's Foot notation, UML style, or simple arrows                                   |
 | **Line Appearance**               | Solid/dashed/dotted strokes, adjustable thickness (1-5px), color by relationship type (1:N vs N:N) |
 | **Advanced Relationship Visuals** | Professional database notation for technical documentation and presentations                       |
@@ -615,4 +616,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <p align="center">
   Made with ❤️ for the Power Platform Community
 </p>
-

@@ -304,6 +304,83 @@
   color: inherit;
 }
 
+/* Grouped Entity List */
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.groupHeader:hover {
+  background: rgba(128, 128, 128, 0.08) !important;
+}
+
+.groupChevron {
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.groupChevronExpanded {
+  transform: rotate(90deg);
+}
+
+.groupColorSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.groupName {
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.groupCount {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.groupRenameInput {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border: 1px solid;
+  border-radius: 3px;
+  outline: none;
+}
+
+.groupRenameBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.groupHeader:hover .groupRenameBtn {
+  opacity: 1;
+}
+
+.groupRenameBtn:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+
 /* Legend Component */
 .legend {
   padding: 16px;

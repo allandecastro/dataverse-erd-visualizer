@@ -42,6 +42,9 @@ export interface SerializableState {
 
   // Per-entity color overrides (entity logicalName → hex color)
   entityColorOverrides?: Record<string, string>;
+
+  // Group names (hex color → user-assigned group name)
+  groupNames?: Record<string, string>;
 }
 
 /**
