@@ -5,6 +5,28 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9.0] - 2026-02-13
+
+### Added
+
+- **Entity Grouping via Color Association** - Entities sharing the same color automatically form a named group:
+  - **Auto-Derived Groups**: Assigning the same color to multiple entities creates a visual group — no manual group management needed
+  - **Group Names**: Click the pencil icon on any group header to give it a custom name (e.g., "Sales", "Service")
+  - **Collapsible Sections**: Sidebar entity list organizes into collapsible group sections when groups exist, with expand/collapse chevrons
+  - **Group Filter Dropdown**: New "All Groups" filter in sidebar filters — quickly narrow the entity list to a specific group or "Ungrouped"
+  - **Sidebar Legend**: Named groups appear in the legend with their color swatch and entity count
+  - **Snapshot Persistence**: Group names are saved and restored with snapshots (backward compatible — old snapshots load cleanly)
+  - **URL Sharing**: Group names included in shared URLs (only when non-empty, zero overhead otherwise)
+  - **Draw.io Export**: Named groups get color-coded text labels positioned above their entity clusters
+  - **Ungrouped Section**: Entities without color overrides appear in a separate "Ungrouped" section
+
+### Changed
+
+- Sidebar conditionally renders `GroupedEntityList` (with group headers) or flat `VirtualEntityList` based on whether any entities have color overrides
+- "Reset All Colors" now also clears group names and resets the group filter
+
+---
+
 ## [0.1.8.1] - 2026-02-13
 
 ### Fixed

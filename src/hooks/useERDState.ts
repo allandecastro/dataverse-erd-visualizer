@@ -6,6 +6,7 @@ import { useState, useCallback, useMemo } from 'react';
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
 import type { ToastType, ToastState, LayoutMode, ColorSettings } from '@/types/erdTypes';
 import { getEntityPublisher } from '@/utils/entityUtils';
+import { deriveGroups } from '@/utils/groupUtils';
 
 export interface UseERDStateProps {
   entities: Entity[];
@@ -56,6 +57,10 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
 
   // Per-entity color overrides (entity logicalName → hex color)
   const [entityColorOverrides, setEntityColorOverrides] = useState<Record<string, string>>({});
+
+  // Entity grouping: group names map hex color → user-defined label
+  const [groupNames, setGroupNamesState] = useState<Record<string, string>>({});
+  const [groupFilter, setGroupFilter] = useState('all');
 
   // Settings
   const [showSettings, setShowSettings] = useState(false);
@@ -297,7 +302,30 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
 
   const clearAllEntityColors = useCallback(() => {
     setEntityColorOverrides({});
+    setGroupNamesState({});
+    setGroupFilter('all');
   }, []);
+
+  // Group name helpers
+  const setGroupName = useCallback((color: string, name: string) => {
+    const normalized = color.toLowerCase();
+    setGroupNamesState((prev) => ({ ...prev, [normalized]: name }));
+  }, []);
+
+  const clearGroupName = useCallback((color: string) => {
+    const normalized = color.toLowerCase();
+    setGroupNamesState((prev) => {
+      const next = { ...prev };
+      delete next[normalized];
+      return next;
+    });
+  }, []);
+
+  // Derive groups from color overrides + group names (memoized)
+  const derivedGroups = useMemo(
+    () => deriveGroups(entityColorOverrides, groupNames),
+    [entityColorOverrides, groupNames]
+  );
 
   // Zoom helpers
   const handleZoomIn = useCallback(() => {
@@ -347,6 +375,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       isSmartZoom,
       edgeOffsets,
       entityColorOverrides,
+      groupNames,
     };
   }, [
     selectedEntities,
@@ -366,6 +395,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     isSmartZoom,
     edgeOffsets,
     entityColorOverrides,
+    groupNames,
   ]);
 
   // Snapshot helpers: Restore state from snapshot
@@ -388,6 +418,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       isSmartZoom: boolean;
       edgeOffsets: Record<string, { x: number; y: number }>;
       entityColorOverrides?: Record<string, string>;
+      groupNames?: Record<string, string>;
     }) => {
       setSelectedEntities(new Set(state.selectedEntities));
       setCollapsedEntities(new Set(state.collapsedEntities));
@@ -431,6 +462,8 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       setIsSmartZoom(state.isSmartZoom);
       setEdgeOffsets(state.edgeOffsets);
       setEntityColorOverrides(state.entityColorOverrides || {});
+      setGroupNamesState(state.groupNames || {});
+      setGroupFilter('all');
     },
     []
   );
@@ -518,6 +551,14 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     setEntityColor,
     clearEntityColor,
     clearAllEntityColors,
+
+    // Entity grouping (derived from color overrides)
+    groupNames,
+    setGroupName,
+    clearGroupName,
+    derivedGroups,
+    groupFilter,
+    setGroupFilter,
 
     // Features
     showMinimap,

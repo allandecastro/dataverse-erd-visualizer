@@ -4,17 +4,19 @@
 
 import { memo } from 'react';
 import { Link2 } from 'lucide-react';
-import type { ColorSettings } from '@/types/erdTypes';
+import type { ColorSettings, DerivedGroup } from '@/types/erdTypes';
 import styles from '@/styles/Sidebar.module.css';
 
 export interface SidebarLegendProps {
   colorSettings: ColorSettings;
   borderColor: string;
+  derivedGroups: DerivedGroup[];
 }
 
 export const SidebarLegend = memo(function SidebarLegend({
   colorSettings,
   borderColor,
+  derivedGroups,
 }: SidebarLegendProps) {
   const { customTableColor, standardTableColor, lookupColor } = colorSettings;
 
@@ -34,6 +36,14 @@ export const SidebarLegend = memo(function SidebarLegend({
           <Link2 size={14} color={lookupColor} />
           <span>Has Lookup Fields</span>
         </div>
+        {derivedGroups.map((group) => (
+          <div key={group.color} className={styles.legendItem}>
+            <div className={styles.legendColor} style={{ background: group.color }} />
+            <span>
+              {group.name} ({group.entityNames.length})
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
