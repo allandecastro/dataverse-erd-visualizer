@@ -5,6 +5,40 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7.1] - 2026-02-13
+
+### Added
+
+- **NICOLAS Layout Algorithm** - Community-aware hierarchical layout for large entity sets:
+  - **Leiden Community Detection**: Automatically groups entities by relationship density into logical communities (e.g., Sales, Service entities)
+  - **Sugiyama Hierarchical Layout**: Applies layered layout within each community with crossing minimization (24 barycenter iterations)
+  - **Strip-Packing Placement**: Arranges community bounding boxes in rows for compact, non-overlapping inter-community layout
+  - **Adaptive Behavior**:
+    - <5 entities: Each entity is its own community (skip Leiden)
+    - 6-14 entities: Flat communities (Leiden max_level=1)
+    - 15+ entities: Nested L2 grouping (Leiden max_level=2)
+  - **Deterministic**: Alphabetical node sorting ensures reproducible layouts
+  - **Tests**: 40 new tests covering graph construction, Leiden detection, Sugiyama layout, bounding rects, meta-graph placement, L2 grouping, and full pipeline
+
+- **Layout Mode Dropdown** - Replaced cycling layout button with a dropdown selector:
+  - All 5 layout modes accessible: Force-Directed, Grid, Auto-Arrange, NICOLAS, Manual
+  - Layout mode names displayed clearly in the dropdown
+  - Improved discoverability and user experience
+
+- **Expanded Mock Data** - Enhanced development mock data from 25 to 150 entities:
+  - 150 realistic Dataverse entities across multiple business domains
+  - 252 relationships (N:1, 1:N, N:N) for comprehensive testing
+  - Includes entities from Sales, Service, Marketing, HR, Finance, and more
+  - Better simulation of real-world Dataverse environments
+
+### Changed
+
+- **LayoutMode Type Consolidation** - Unified `LayoutMode` type as single source of truth in `types/index.ts`, re-exported from `erdTypes.ts` to eliminate duplication
+- **Layout Selector UI** - Replaced cycling button with dropdown selector for better discoverability of all 5 layout modes
+- **Feature Guide** - Updated layout documentation to include NICOLAS and Manual modes
+
+---
+
 ## [0.1.7.0] - 2026-02-10
 
 ### Added
@@ -303,6 +337,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **v0.1.7.1** - February 2026 - NICOLAS layout algorithm, layout dropdown, expanded mock data (150 entities)
+- **v0.1.7.0** - February 2026 - Relationship line customization, quality gates
+- **v0.1.6.0** - February 2025 - Share URL, Snapshots
+- **v0.1.5.0** - February 2025 - Snapshot management system
 - **v0.1.4.0** - February 2025 - Draw.io enhancements, performance optimizations, bug fixes
 - **v0.1.3.3** - December 2024 - Initial BETA release
 

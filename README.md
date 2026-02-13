@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.7.0_BETA-blue?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.1.7.1_BETA-blue?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
   <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml/badge.svg" alt="CD" /></a>
@@ -53,13 +53,14 @@
 
 ### Core Visualization
 
-| Feature                   | Description                                                |
-| ------------------------- | ---------------------------------------------------------- |
-| **Visual ERD**            | Interactive force-directed, grid, and auto-arrange layouts |
-| **Precise Relationships** | Connections from Lookup fields to Primary Keys             |
-| **Alternate Keys**        | Display entity alternate keys with composite key support   |
-| **Smart Navigation**      | Smart Zoom, Minimap, Fit to Screen                         |
-| **Dataverse Integration** | Fetch live metadata from your environment                  |
+| Feature                   | Description                                                              |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **Visual ERD**            | Interactive layouts: Force-Directed, Grid, Auto-Arrange, NICOLAS, Manual |
+| **Precise Relationships** | Connections from Lookup fields to Primary Keys                           |
+| **Alternate Keys**        | Display entity alternate keys with composite key support                 |
+| **Smart Navigation**      | Smart Zoom, Minimap, Fit to Screen                                       |
+| **NICOLAS Layout**        | Community-aware hierarchical layout using Leiden detection + Sugiyama    |
+| **Dataverse Integration** | Fetch live metadata from your environment                                |
 
 ### Performance
 
@@ -227,10 +228,11 @@ npm run test:ui
 
 **Test Coverage:**
 
-- **286 tests** across 15 test suites
-- Unit tests for utilities (URL codec, Draw.io export, badges, serialization, edge markers)
+- **330 tests** across 16 test suites
+- Unit tests for utilities (URL codec, Draw.io export, badges, serialization, edge markers, NICOLAS layout)
 - Integration tests for hooks (useERDState, useSnapshots, useLayoutAlgorithms, useKeyboardShortcuts)
 - Component tests (EdgeMarkerDefinitions, Toast)
+- Algorithm tests (Leiden community detection, Sugiyama layout, strip-packing)
 - Security tests (XML injection prevention, URL safety validation)
 
 **Pre-commit Hooks:**
@@ -388,7 +390,7 @@ dataverse-erd-visualizer/
 │   │   ├── useDataverseData.ts           # Dataverse API data fetching
 │   │   ├── useERDState.ts                # Main ERD state management
 │   │   ├── useKeyboardShortcuts.ts       # Keyboard event handling
-│   │   ├── useLayoutAlgorithms.ts        # Force/Grid/Auto layouts
+│   │   ├── useLayoutAlgorithms.ts        # Force/Grid/Auto/NICOLAS layouts
 │   │   ├── useSnapshots.ts               # Snapshot management
 │   │   ├── useVirtualScroll.ts           # Virtual scroll logic
 │   │   └── index.ts                      # Hook exports
@@ -418,12 +420,14 @@ dataverse-erd-visualizer/
 │   │   │   ├── snapshotSerializer.test.ts   # Snapshot serialization tests
 │   │   │   ├── edgeMarkers.test.ts          # Edge marker utility tests
 │   │   │   ├── exportUtils.test.ts          # Export utility tests
-│   │   │   └── entityUtils.test.ts          # Entity utility tests
+│   │   │   ├── entityUtils.test.ts          # Entity utility tests
+│   │   │   └── nicolasLayout.test.ts        # NICOLAS layout algorithm tests
 │   │   ├── badges.ts                     # Field type badges
 │   │   ├── drawioExport.ts               # Draw.io/Visio export
 │   │   ├── exportUtils.ts                # PNG/SVG/Mermaid export
 │   │   ├── edgeMarkers.ts                # Edge marker selection & styling
-│   │   └── entityUtils.ts                # Entity metadata utilities
+│   │   ├── entityUtils.ts                # Entity metadata utilities
+│   │   └── nicolasLayout.ts              # NICOLAS community-aware layout algorithm
 │   ├── App.tsx                        # Main application component
 │   ├── Root.tsx                       # Root with providers
 │   ├── main.tsx                       # Entry point
@@ -483,9 +487,10 @@ dataverse-erd-visualizer/
 
 **Quality Gates**
 
-- Comprehensive test suite with 140 tests (Vitest + React Testing Library)
-- Unit tests for critical utilities (URL codec, Draw.io export, badges)
-- Integration tests for core hooks (useERDState)
+- Comprehensive test suite with 330 tests (Vitest + React Testing Library)
+- Unit tests for critical utilities (URL codec, Draw.io export, badges, NICOLAS layout)
+- Integration tests for core hooks (useERDState, useSnapshots, useLayoutAlgorithms)
+- Algorithm tests (Leiden community detection, Sugiyama layout, strip-packing)
 - Security tests (XML injection prevention, URL safety)
 - Pre-commit hooks with Husky and lint-staged
 - Automated CI/CD pipeline with test → build workflow

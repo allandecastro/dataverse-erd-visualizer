@@ -694,7 +694,7 @@ interface ERDVisualizerContentProps {
   onSearchChange: (value: string) => void;
   onPublisherFilterChange: (value: string) => void;
   onSolutionFilterChange: (value: string) => void;
-  onLayoutModeChange: (mode: 'force' | 'grid' | 'auto' | 'manual') => void;
+  onLayoutModeChange: (mode: LayoutMode) => void;
   onToggleSettings: () => void;
   onColorSettingsChange: (key: keyof ColorSettings, value: string) => void;
   onPositionsChange: (positions: Record<string, { x: number; y: number }>) => void;
