@@ -121,6 +121,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   const selectAll = useCallback(
     (entityNames?: string[]) => {
       if (entityNames) {
+        if (entityNames.length === 0) return;
         // Add specific entities to selection (filter-aware)
         setSelectedEntities((prev) => {
           const newSet = new Set(prev);
@@ -137,6 +138,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
 
   const deselectAll = useCallback((entityNames?: string[]) => {
     if (entityNames) {
+      if (entityNames.length === 0) return;
       // Remove specific entities from selection (filter-aware)
       setSelectedEntities((prev) => {
         const newSet = new Set(prev);
