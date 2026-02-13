@@ -141,8 +141,8 @@ export interface SidebarProps {
   showSettings: boolean;
   colorSettings: ColorSettings;
   onToggleEntity: (entityName: string) => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
+  onSelectAll: (entityNames?: string[]) => void;
+  onDeselectAll: (entityNames?: string[]) => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
   onSearchChange: (value: string) => void;

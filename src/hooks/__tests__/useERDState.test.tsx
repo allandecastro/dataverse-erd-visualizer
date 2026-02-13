@@ -146,6 +146,106 @@ describe('useERDState', () => {
       expect(result.current.selectedEntities.has('account')).toBe(true);
       expect(result.current.selectedEntities.has('contact')).toBe(true);
     });
+
+    it('should select all entities when selectAll is called without arguments', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.selectAll();
+      });
+
+      expect(result.current.selectedEntities.size).toBe(3);
+      expect(result.current.selectedEntities.has('account')).toBe(true);
+      expect(result.current.selectedEntities.has('contact')).toBe(true);
+      expect(result.current.selectedEntities.has('new_custom')).toBe(true);
+    });
+
+    it('should select only specified entities when selectAll is called with entity names', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      // Pre-select one entity
+      act(() => {
+        result.current.toggleEntity('new_custom');
+      });
+      expect(result.current.selectedEntities.size).toBe(1);
+
+      // Select specific entities (should be additive)
+      act(() => {
+        result.current.selectAll(['account', 'contact']);
+      });
+
+      expect(result.current.selectedEntities.size).toBe(3);
+      expect(result.current.selectedEntities.has('account')).toBe(true);
+      expect(result.current.selectedEntities.has('contact')).toBe(true);
+      expect(result.current.selectedEntities.has('new_custom')).toBe(true);
+    });
+
+    it('should deselect all entities when deselectAll is called without arguments', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.selectAll();
+      });
+      expect(result.current.selectedEntities.size).toBe(3);
+
+      act(() => {
+        result.current.deselectAll();
+      });
+
+      expect(result.current.selectedEntities.size).toBe(0);
+    });
+
+    it('should deselect only specified entities when deselectAll is called with entity names', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      // Select all first
+      act(() => {
+        result.current.selectAll();
+      });
+      expect(result.current.selectedEntities.size).toBe(3);
+
+      // Deselect only specific entities
+      act(() => {
+        result.current.deselectAll(['account', 'contact']);
+      });
+
+      expect(result.current.selectedEntities.size).toBe(1);
+      expect(result.current.selectedEntities.has('new_custom')).toBe(true);
+      expect(result.current.selectedEntities.has('account')).toBe(false);
+      expect(result.current.selectedEntities.has('contact')).toBe(false);
+    });
+
+    it('should no-op when selectAll is called with an empty array', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.toggleEntity('account');
+      });
+      expect(result.current.selectedEntities.size).toBe(1);
+
+      // Empty array should not trigger state update
+      act(() => {
+        result.current.selectAll([]);
+      });
+
+      expect(result.current.selectedEntities.size).toBe(1);
+    });
+
+    it('should no-op when deselectAll is called with an empty array', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.selectAll();
+      });
+      expect(result.current.selectedEntities.size).toBe(3);
+
+      // Empty array should not trigger state update
+      act(() => {
+        result.current.deselectAll([]);
+      });
+
+      expect(result.current.selectedEntities.size).toBe(3);
+    });
   });
 
   describe('Filtered Entities and Relationships', () => {

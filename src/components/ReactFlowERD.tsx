@@ -320,11 +320,14 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
      * This enables visual connections from Lookup fields → Primary Keys when both
      * fields are displayed, providing an accurate representation of the relationship.
      */
+    // Pre-build entity lookup map for O(1) access (instead of O(n) find per edge)
+    const entityMap = new globalThis.Map<string, Entity>(entities.map((e) => [e.logicalName, e]));
+
     const newEdges: Edge[] = relationships.map((rel) => {
       const isSelfReference = rel.from === rel.to;
 
       // Get target entity data for PK lookup
-      const targetEntity = entities.find((e) => e.logicalName === rel.to);
+      const targetEntity = entityMap.get(rel.to);
 
       // Get visible fields for source and target
       const sourceVisibleFields = orderedFieldsMap?.[rel.from] || [];
