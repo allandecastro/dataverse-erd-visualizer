@@ -26,6 +26,7 @@ export interface DrawioExportOptions {
   collapsedEntities: Set<string>;
   colorSettings: ColorSettings;
   entityColorOverrides?: Record<string, string>;
+  groupNames?: Record<string, string>;
   onProgress?: (progress: number, message: string) => void;
 }
 
@@ -492,6 +493,7 @@ function generateDrawioXml(options: DrawioExportOptions): string {
     collapsedEntities,
     colorSettings,
     entityColorOverrides,
+    groupNames,
     onProgress,
   } = options;
 
@@ -548,6 +550,44 @@ function generateDrawioXml(options: DrawioExportOptions): string {
       onProgress(progress, `Processing entity ${index + 1} of ${entities.length}...`);
     }
   });
+
+  // Generate group label cells above entity clusters
+  if (groupNames && entityColorOverrides) {
+    const colorToPositions = new Map<string, { x: number; y: number }[]>();
+    for (const entity of entities) {
+      const color = entityColorOverrides[entity.logicalName];
+      if (!color) continue;
+      const normalized = color.toLowerCase();
+      const name = groupNames[normalized];
+      if (!name) continue; // Only add labels for named groups
+      const pos = entityPositions[entity.logicalName];
+      if (!pos) continue;
+      const positions = colorToPositions.get(normalized) || [];
+      positions.push({ x: pos.x, y: pos.y });
+      colorToPositions.set(normalized, positions);
+    }
+
+    let groupIdx = 0;
+    for (const [color, positions] of colorToPositions) {
+      const name = groupNames[color];
+      if (!name) continue;
+      // Calculate bounding box
+      const minX = Math.min(...positions.map((p) => p.x));
+      const minY = Math.min(...positions.map((p) => p.y));
+      const maxX = Math.max(...positions.map((p) => p.x)) + CARD_WIDTH;
+      const labelWidth = maxX - minX;
+      const labelY = minY - 40;
+      const id = generateId('group-label', groupIdx++);
+
+      cells[cellIndex++] =
+        `        <mxCell id="${id}" value="${escapeXml(name)}" ` +
+        `style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;` +
+        `fontStyle=1;fontSize=14;fontColor=${color};spacingLeft=4" ` +
+        `vertex="1" parent="1">` +
+        `<mxGeometry x="${minX}" y="${labelY}" width="${Math.max(labelWidth, 200)}" height="30" as="geometry" />` +
+        `</mxCell>`;
+    }
+  }
 
   // Generate connector cells with enhanced relationship details
   relationships.forEach((rel, index) => {
