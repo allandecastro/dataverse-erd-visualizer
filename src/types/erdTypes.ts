@@ -53,6 +53,13 @@ export interface ColorSettings {
   manyToManyColor?: string;
 }
 
+// Derived group — computed at runtime from entityColorOverrides + groupNames
+export interface DerivedGroup {
+  color: string; // hex color key (lowercase)
+  name: string; // user-assigned name or auto-label ("Red", "Blue", etc.)
+  entityNames: string[]; // sorted logical names of entities in this group
+}
+
 // ERD State shared across components
 export interface ERDState {
   // Theme
@@ -116,6 +123,14 @@ export interface ERDState {
   setEntityColor: (entityName: string, color: string) => void;
   clearEntityColor: (entityName: string) => void;
   clearAllEntityColors: () => void;
+
+  // Entity grouping (derived from color overrides)
+  groupNames: Record<string, string>;
+  setGroupName: (color: string, name: string) => void;
+  clearGroupName: (color: string) => void;
+  derivedGroups: DerivedGroup[];
+  groupFilter: string;
+  setGroupFilter: (value: string) => void;
 
   // Features
   showMinimap: boolean;
