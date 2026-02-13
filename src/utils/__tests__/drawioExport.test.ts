@@ -561,4 +561,60 @@ describe('drawioExport', () => {
       expect(endTime - startTime).toBeLessThan(2000); // Should complete in under 2 seconds
     });
   });
+
+  describe('group labels in draw.io export', () => {
+    it('should add group label cells for named groups', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entityColorOverrides: {
+          account: '#ef4444',
+          contact: '#ef4444',
+        },
+        groupNames: { '#ef4444': 'Sales Entities' },
+      });
+
+      const text = await blobToText(blob);
+      expect(text).toContain('Sales Entities');
+      expect(text).toContain('fontColor=#ef4444');
+    });
+
+    it('should not add group labels when groupNames is empty', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entityColorOverrides: { account: '#ef4444' },
+        groupNames: {},
+      });
+
+      const text = await blobToText(blob);
+      // Should not contain group-label IDs
+      expect(text).not.toContain('group-label');
+    });
+
+    it('should not add group labels when groupNames is undefined', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entityColorOverrides: { account: '#ef4444' },
+      });
+
+      const text = await blobToText(blob);
+      expect(text).not.toContain('group-label');
+    });
+
+    it('should only label groups that have user-assigned names', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entityColorOverrides: {
+          account: '#ef4444',
+          contact: '#3b82f6',
+        },
+        groupNames: { '#ef4444': 'Named Group' },
+        // #3b82f6 has no name — should NOT get a label
+      });
+
+      const text = await blobToText(blob);
+      expect(text).toContain('Named Group');
+      // Should not have a label for the unnamed blue group
+      expect(text).not.toContain('fontColor=#3b82f6');
+    });
+  });
 });

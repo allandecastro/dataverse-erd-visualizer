@@ -4,10 +4,11 @@
 
 import { useState, useRef, useEffect } from 'react';
 import type { Entity } from '@/types';
-import type { LayoutMode, ColorSettings } from '@/types/erdTypes';
+import type { LayoutMode, ColorSettings, DerivedGroup } from '@/types/erdTypes';
 import { useTheme } from '@/context';
 import { getEntityPublisher } from '@/utils/entityUtils';
 import { VirtualEntityList } from './VirtualEntityList';
+import { GroupedEntityList } from './GroupedEntityList';
 import { SidebarHeader } from './SidebarHeader';
 import { SidebarSettings } from './SidebarSettings';
 import { SidebarFilters } from './SidebarFilters';
@@ -38,6 +39,11 @@ export interface SidebarProps {
   onColorSettingsChange: (key: keyof ColorSettings, value: string) => void;
   entityColorOverrideCount: number;
   onResetAllEntityColors: () => void;
+  entityColorOverrides: Record<string, string>;
+  derivedGroups: DerivedGroup[];
+  groupFilter: string;
+  onGroupFilterChange: (value: string) => void;
+  onSetGroupName: (color: string, name: string) => void;
 }
 
 export function Sidebar({
@@ -64,6 +70,11 @@ export function Sidebar({
   onColorSettingsChange,
   entityColorOverrideCount,
   onResetAllEntityColors,
+  entityColorOverrides,
+  derivedGroups,
+  groupFilter,
+  onGroupFilterChange,
+  onSetGroupName,
 }: SidebarProps) {
   const { isDarkMode, toggleDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
@@ -95,6 +106,8 @@ export function Sidebar({
     };
   }, []);
 
+  const hasGroups = Object.keys(entityColorOverrides).length > 0;
+
   // Filter entities for display
   const displayedEntities = entities.filter((entity) => {
     const matchesSearch =
@@ -104,7 +117,12 @@ export function Sidebar({
       publisherFilter === 'all' || getEntityPublisher(entity) === publisherFilter;
     const matchesSolution =
       solutionFilter === 'all' || (entity.solutions?.includes(solutionFilter) ?? false);
-    return matchesSearch && matchesPublisher && matchesSolution;
+    const matchesGroup =
+      groupFilter === 'all' ||
+      (groupFilter === '__ungrouped__'
+        ? !entityColorOverrides[entity.logicalName]
+        : entityColorOverrides[entity.logicalName]?.toLowerCase() === groupFilter);
+    return matchesSearch && matchesPublisher && matchesSolution && matchesGroup;
   });
 
   // When filters are active, All/None should only affect the displayed (filtered) entities
@@ -176,6 +194,9 @@ export function Sidebar({
           onLayoutModeChange={onLayoutModeChange}
           onExpandAll={onExpandAll}
           onCollapseAll={onCollapseAll}
+          groupFilter={groupFilter}
+          groups={derivedGroups}
+          onGroupFilterChange={onGroupFilterChange}
         />
       </div>
 
@@ -216,20 +237,38 @@ export function Sidebar({
 
         {/* Virtual scrolling entity list */}
         <div className={styles.entityListWrapper}>
-          <VirtualEntityList
-            entities={displayedEntities}
-            selectedEntities={selectedEntities}
-            isDarkMode={isDarkMode}
-            themeColors={themeColors}
-            colorSettings={colorSettings}
-            onToggleEntity={onToggleEntity}
-            containerHeight={containerHeight}
-          />
+          {hasGroups ? (
+            <GroupedEntityList
+              entities={displayedEntities}
+              selectedEntities={selectedEntities}
+              isDarkMode={isDarkMode}
+              themeColors={themeColors}
+              colorSettings={colorSettings}
+              onToggleEntity={onToggleEntity}
+              containerHeight={containerHeight}
+              derivedGroups={derivedGroups}
+              onSetGroupName={onSetGroupName}
+            />
+          ) : (
+            <VirtualEntityList
+              entities={displayedEntities}
+              selectedEntities={selectedEntities}
+              isDarkMode={isDarkMode}
+              themeColors={themeColors}
+              colorSettings={colorSettings}
+              onToggleEntity={onToggleEntity}
+              containerHeight={containerHeight}
+            />
+          )}
         </div>
       </div>
 
       {/* Legend */}
-      <SidebarLegend colorSettings={colorSettings} borderColor={borderColor} />
+      <SidebarLegend
+        colorSettings={colorSettings}
+        borderColor={borderColor}
+        derivedGroups={derivedGroups}
+      />
 
       {/* Style for select options */}
       <style>{`

@@ -38,7 +38,7 @@ const FieldDrawer = lazy(() =>
 );
 
 // Types and utilities
-import type { ColorSettings, LayoutMode } from './types/erdTypes';
+import type { ColorSettings, LayoutMode, DerivedGroup } from './types/erdTypes';
 import type { ERDSnapshot } from './types/snapshotTypes';
 import { exportToMermaid } from './utils/exportUtils';
 import { exportToDrawio, downloadDrawio } from './utils/drawioExport';
@@ -120,6 +120,12 @@ export default function ERDVisualizer({
     setEntityColor,
     clearEntityColor,
     clearAllEntityColors,
+    // Entity grouping
+    groupNames,
+    setGroupName,
+    derivedGroups,
+    groupFilter,
+    setGroupFilter,
   } = state;
 
   // Layout algorithms
@@ -408,6 +414,7 @@ export default function ERDVisualizer({
         collapsedEntities,
         colorSettings,
         entityColorOverrides,
+        groupNames,
         onProgress: (progress, message) => {
           setDrawioExportProgress({ progress, message });
         },
@@ -430,6 +437,7 @@ export default function ERDVisualizer({
     collapsedEntities,
     colorSettings,
     entityColorOverrides,
+    groupNames,
     showToast,
     isExportingDrawio,
   ]);
@@ -453,6 +461,7 @@ export default function ERDVisualizer({
         solutionFilter: currentState.solutionFilter,
         isDarkMode: currentState.isDarkMode,
         entityColorOverrides: currentState.entityColorOverrides,
+        groupNames: currentState.groupNames,
       };
 
       // Encode state
@@ -653,6 +662,10 @@ export default function ERDVisualizer({
           onCloseColorPicker={handleCloseColorPicker}
           colorPickerState={colorPickerState}
           onResetAllEntityColors={clearAllEntityColors}
+          derivedGroups={derivedGroups}
+          groupFilter={groupFilter}
+          onGroupFilterChange={setGroupFilter}
+          onSetGroupName={setGroupName}
           onCopyPNG={handleCopyPNG}
           onExportMermaid={handleExportMermaid}
           onExportSVG={handleExportSVG}
@@ -750,6 +763,11 @@ interface ERDVisualizerContentProps {
   onCloseColorPicker: () => void;
   colorPickerState: { entityName: string; anchorPosition: { x: number; y: number } } | null;
   onResetAllEntityColors: () => void;
+  // Entity grouping
+  derivedGroups: DerivedGroup[];
+  groupFilter: string;
+  onGroupFilterChange: (value: string) => void;
+  onSetGroupName: (color: string, name: string) => void;
   onCopyPNG: () => void;
   onExportMermaid: () => void;
   onExportSVG: () => void;
@@ -839,6 +857,10 @@ function ERDVisualizerContent({
   onCloseColorPicker,
   colorPickerState,
   onResetAllEntityColors,
+  derivedGroups,
+  groupFilter,
+  onGroupFilterChange,
+  onSetGroupName,
   onCopyPNG,
   onExportMermaid,
   onExportSVG,
@@ -934,6 +956,11 @@ function ERDVisualizerContent({
         onColorSettingsChange={onColorSettingsChange}
         entityColorOverrideCount={Object.keys(entityColorOverrides).length}
         onResetAllEntityColors={onResetAllEntityColors}
+        entityColorOverrides={entityColorOverrides}
+        derivedGroups={derivedGroups}
+        groupFilter={groupFilter}
+        onGroupFilterChange={onGroupFilterChange}
+        onSetGroupName={onSetGroupName}
       />
 
       {/* Main Canvas Area */}

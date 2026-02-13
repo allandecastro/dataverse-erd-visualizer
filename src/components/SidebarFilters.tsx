@@ -4,7 +4,7 @@
 
 import { memo } from 'react';
 import { Search, Eye, EyeOff } from 'lucide-react';
-import type { LayoutMode } from '@/types/erdTypes';
+import type { LayoutMode, DerivedGroup } from '@/types/erdTypes';
 import styles from '@/styles/Sidebar.module.css';
 
 export interface SidebarFiltersProps {
@@ -24,6 +24,9 @@ export interface SidebarFiltersProps {
   onLayoutModeChange: (mode: LayoutMode) => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
+  groupFilter: string;
+  groups: DerivedGroup[];
+  onGroupFilterChange: (value: string) => void;
 }
 
 export const SidebarFilters = memo(function SidebarFilters({
@@ -43,6 +46,9 @@ export const SidebarFilters = memo(function SidebarFilters({
   onLayoutModeChange,
   onExpandAll,
   onCollapseAll,
+  groupFilter,
+  groups,
+  onGroupFilterChange,
 }: SidebarFiltersProps) {
   const smallButtonBg = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
   const inputBg = isDarkMode ? '#1a1a1a' : '#ffffff';
@@ -111,7 +117,7 @@ export const SidebarFilters = memo(function SidebarFilters({
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'calc(100% - 12px) center',
           backgroundSize: '12px 12px',
-          marginBottom: '12px',
+          marginBottom: groups.length > 0 ? '8px' : '12px',
         }}
       >
         <option value="all">All Solutions</option>
@@ -123,6 +129,33 @@ export const SidebarFilters = memo(function SidebarFilters({
             </option>
           ))}
       </select>
+
+      {groups.length > 0 && (
+        <select
+          key={`group-${isDarkMode}`}
+          value={groupFilter}
+          onChange={(e) => onGroupFilterChange(e.target.value)}
+          className={styles.select}
+          style={{
+            backgroundColor: inputBg,
+            border: `1px solid ${borderColor}`,
+            color: textColor,
+            backgroundImage: selectArrowBg,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'calc(100% - 12px) center',
+            backgroundSize: '12px 12px',
+            marginBottom: '12px',
+          }}
+        >
+          <option value="all">All Groups</option>
+          {groups.map((group) => (
+            <option key={group.color} value={group.color}>
+              {group.name} ({group.entityNames.length})
+            </option>
+          ))}
+          <option value="__ungrouped__">Ungrouped</option>
+        </select>
+      )}
 
       {/* Layout Mode */}
       <select

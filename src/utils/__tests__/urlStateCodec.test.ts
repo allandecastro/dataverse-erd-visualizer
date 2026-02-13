@@ -335,6 +335,96 @@ describe('urlStateCodec', () => {
     });
   });
 
+  describe('groupNames (gn field)', () => {
+    it('should encode and decode groupNames', () => {
+      const stateWithGroups = {
+        ...mockState,
+        entityColorOverrides: { account: '#ef4444', contact: '#3b82f6' },
+        groupNames: { '#ef4444': 'Sales', '#3b82f6': 'Service' },
+      };
+
+      const encoded = encodeStateToURL(stateWithGroups);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.gn).toEqual({ '#ef4444': 'Sales', '#3b82f6': 'Service' });
+    });
+
+    it('should not include gn field when groupNames is empty', () => {
+      const stateWithEmptyGroups = {
+        ...mockState,
+        groupNames: {},
+      };
+
+      const encoded = encodeStateToURL(stateWithEmptyGroups);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.gn).toBeUndefined();
+    });
+
+    it('should not include gn field when groupNames is undefined', () => {
+      const encoded = encodeStateToURL(mockState);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.gn).toBeUndefined();
+    });
+
+    it('should expand groupNames from CompactState', () => {
+      const compactWithGroups: CompactState = {
+        e: ['account'],
+        p: { account: { x: 100, y: 200 } },
+        z: 1,
+        pn: { x: 0, y: 0 },
+        l: 'force',
+        f: { s: '', pub: '', sol: '' },
+        d: false,
+        v: '1.0.0',
+        co: { account: '#ef4444' },
+        gn: { '#ef4444': 'CRM Group' },
+      };
+
+      const expanded = expandCompactState(compactWithGroups);
+      expect(expanded.groupNames).toEqual({ '#ef4444': 'CRM Group' });
+    });
+
+    it('should not include groupNames when gn is absent in CompactState', () => {
+      const compactNoGroups: CompactState = {
+        e: ['account'],
+        p: { account: { x: 100, y: 200 } },
+        z: 1,
+        pn: { x: 0, y: 0 },
+        l: 'force',
+        f: { s: '', pub: '', sol: '' },
+        d: true,
+        v: '1.0.0',
+      };
+
+      const expanded = expandCompactState(compactNoGroups);
+      expect(expanded.groupNames).toBeUndefined();
+    });
+
+    it('should round-trip groupNames with color overrides', () => {
+      const fullState = {
+        ...mockState,
+        entityColorOverrides: {
+          account: '#ef4444',
+          contact: '#ef4444',
+        },
+        groupNames: { '#ef4444': 'My Sales Team' },
+      };
+
+      const encoded = encodeStateToURL(fullState);
+      const decoded = decodeStateFromURL(encoded);
+      expect(decoded.success).toBe(true);
+
+      const expanded = expandCompactState(decoded.state!);
+      expect(expanded.entityColorOverrides).toEqual({ account: '#ef4444', contact: '#ef4444' });
+      expect(expanded.groupNames).toEqual({ '#ef4444': 'My Sales Team' });
+    });
+  });
+
   describe('estimateURLSize', () => {
     it('should estimate URL length accurately', () => {
       const size = estimateURLSize(mockState);
