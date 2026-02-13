@@ -340,7 +340,7 @@ export function useLayoutAlgorithms({
   // Apply layout when mode or selection changes.
   // Debounce selection changes to avoid blocking the UI during bulk selection (e.g. "Select All").
   // Layout mode changes (user explicitly choosing a layout) apply immediately.
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const prevLayoutModeRef = useRef(layoutMode);
   const isFirstRenderRef = useRef(true);
 

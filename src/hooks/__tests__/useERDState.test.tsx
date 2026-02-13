@@ -214,6 +214,38 @@ describe('useERDState', () => {
       expect(result.current.selectedEntities.has('account')).toBe(false);
       expect(result.current.selectedEntities.has('contact')).toBe(false);
     });
+
+    it('should no-op when selectAll is called with an empty array', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.toggleEntity('account');
+      });
+      expect(result.current.selectedEntities.size).toBe(1);
+
+      // Empty array should not trigger state update
+      act(() => {
+        result.current.selectAll([]);
+      });
+
+      expect(result.current.selectedEntities.size).toBe(1);
+    });
+
+    it('should no-op when deselectAll is called with an empty array', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.selectAll();
+      });
+      expect(result.current.selectedEntities.size).toBe(3);
+
+      // Empty array should not trigger state update
+      act(() => {
+        result.current.deselectAll([]);
+      });
+
+      expect(result.current.selectedEntities.size).toBe(3);
+    });
   });
 
   describe('Filtered Entities and Relationships', () => {
