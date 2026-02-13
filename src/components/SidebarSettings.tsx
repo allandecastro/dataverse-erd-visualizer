@@ -13,6 +13,8 @@ export interface SidebarSettingsProps {
   textColor: string;
   textSecondary: string;
   onColorSettingsChange: (key: keyof ColorSettings, value: string) => void;
+  entityColorOverrideCount: number;
+  onResetAllEntityColors: () => void;
 }
 
 export const SidebarSettings = memo(function SidebarSettings({
@@ -22,6 +24,8 @@ export const SidebarSettings = memo(function SidebarSettings({
   textColor,
   textSecondary,
   onColorSettingsChange,
+  entityColorOverrideCount,
+  onResetAllEntityColors,
 }: SidebarSettingsProps) {
   const {
     customTableColor,
@@ -238,6 +242,36 @@ export const SidebarSettings = memo(function SidebarSettings({
               />
             </div>
           </>
+        )}
+
+        {/* Reset Per-Entity Colors */}
+        {entityColorOverrideCount > 0 && (
+          <div style={{ gridColumn: '1 / -1', marginTop: '4px' }}>
+            <button
+              onClick={onResetAllEntityColors}
+              style={{
+                width: '100%',
+                padding: '6px 12px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                border: `1px solid ${borderColor}`,
+                color: textColor,
+                backgroundColor: 'transparent',
+                transition: 'background-color 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = isDarkMode
+                  ? 'rgba(239, 68, 68, 0.15)'
+                  : 'rgba(239, 68, 68, 0.08)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+              }}
+            >
+              Reset All Table Colors ({entityColorOverrideCount} custom)
+            </button>
+          </div>
         )}
       </div>
     </div>

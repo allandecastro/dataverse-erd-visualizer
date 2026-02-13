@@ -39,6 +39,9 @@ export interface SerializableState {
 
   // Edge adjustments
   edgeOffsets: Record<string, { x: number; y: number }>;
+
+  // Per-entity color overrides (entity logicalName → hex color)
+  entityColorOverrides?: Record<string, string>;
 }
 
 /**

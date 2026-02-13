@@ -467,6 +467,55 @@ describe('drawioExport', () => {
     });
   });
 
+  describe('Entity Color Overrides', () => {
+    it('should use per-entity color override when provided', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entityColorOverrides: { account: '#ef4444' },
+      });
+      const text = await blobToText(blob);
+
+      // The account entity header should use the override color (#ef4444)
+      expect(text).toContain('#ef4444');
+    });
+
+    it('should use default color when no override exists', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entityColorOverrides: { account: '#ef4444' },
+      });
+      const text = await blobToText(blob);
+
+      // Contact should still use the default standardTableColor (#ffffff)
+      // Account should use override (#ef4444)
+      expect(text).toContain('#ef4444');
+      expect(text).toContain('#ffffff');
+    });
+
+    it('should handle empty entityColorOverrides', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entityColorOverrides: {},
+      });
+      const text = await blobToText(blob);
+
+      // Both entities should use the default standardTableColor
+      expect(text).toContain('#ffffff');
+      expect(text).not.toContain('#ef4444');
+    });
+
+    it('should handle undefined entityColorOverrides (backward compat)', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        // entityColorOverrides not provided at all
+      });
+      const text = await blobToText(blob);
+
+      expect(text).toContain('#ffffff');
+      expect(blob).toBeInstanceOf(Blob);
+    });
+  });
+
   describe('Performance', () => {
     it('should handle large diagrams (50+ entities)', async () => {
       const largeEntities: Entity[] = Array.from({ length: 50 }, (_, i) => ({

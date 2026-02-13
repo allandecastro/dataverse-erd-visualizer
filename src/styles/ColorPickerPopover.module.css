@@ -1,0 +1,172 @@
+/**
+ * Color Picker Popover styles
+ */
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9998;
+}
+
+.popover {
+  position: fixed;
+  z-index: 9999;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  min-width: 200px;
+}
+
+.popoverLight {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.popoverDark {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.title {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.titleLight {
+  color: #475569;
+}
+
+.titleDark {
+  color: #94a3b8;
+}
+
+.swatchGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swatch:hover {
+  transform: scale(1.15);
+}
+
+.swatchActive {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+.divider {
+  height: 1px;
+  margin: 8px 0;
+}
+
+.dividerLight {
+  background: #e2e8f0;
+}
+
+.dividerDark {
+  background: #334155;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 6px;
+}
+
+.actionButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.customButton {
+  composes: actionButton;
+}
+
+.customButtonLight {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.customButtonLight:hover {
+  background: #e2e8f0;
+}
+
+.customButtonDark {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+.customButtonDark:hover {
+  background: #475569;
+}
+
+.resetButton {
+  composes: actionButton;
+}
+
+.resetButtonLight {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.resetButtonLight:hover {
+  background: #fee2e2;
+}
+
+.resetButtonDark {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.resetButtonDark:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  margin-top: 4px;
+}
+
+.usedColorRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}

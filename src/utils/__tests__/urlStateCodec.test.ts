@@ -211,6 +211,128 @@ describe('urlStateCodec', () => {
     });
   });
 
+  describe('Entity Color Overrides in URL', () => {
+    it('should encode and decode entityColorOverrides', () => {
+      const stateWithColors = {
+        ...mockState,
+        entityColorOverrides: { account: '#ef4444', contact: '#22c55e' },
+      };
+
+      const encoded = encodeStateToURL(stateWithColors);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.co).toEqual({ account: '#ef4444', contact: '#22c55e' });
+    });
+
+    it('should not include co field when entityColorOverrides is empty', () => {
+      const stateNoColors = {
+        ...mockState,
+        entityColorOverrides: {},
+      };
+
+      const encoded = encodeStateToURL(stateNoColors);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.co).toBeUndefined();
+    });
+
+    it('should not include co field when entityColorOverrides is undefined', () => {
+      // mockState has no entityColorOverrides
+      const encoded = encodeStateToURL(mockState);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.co).toBeUndefined();
+    });
+
+    it('should expand entityColorOverrides from CompactState', () => {
+      const compactWithColors: CompactState = {
+        e: ['account', 'contact'],
+        p: { account: { x: 100, y: 200 }, contact: { x: 300, y: 400 } },
+        z: 1,
+        pn: { x: 0, y: 0 },
+        l: 'force',
+        f: { s: '', pub: '', sol: '' },
+        d: true,
+        v: '1.0.0',
+        co: { account: '#ef4444' },
+      };
+
+      const expanded = expandCompactState(compactWithColors);
+      expect(expanded.entityColorOverrides).toEqual({ account: '#ef4444' });
+    });
+
+    it('should not include entityColorOverrides when co is absent in CompactState', () => {
+      const compactNoColors: CompactState = {
+        e: ['account'],
+        p: { account: { x: 100, y: 200 } },
+        z: 1,
+        pn: { x: 0, y: 0 },
+        l: 'force',
+        f: { s: '', pub: '', sol: '' },
+        d: true,
+        v: '1.0.0',
+      };
+
+      const expanded = expandCompactState(compactNoColors);
+      expect(expanded.entityColorOverrides).toBeUndefined();
+    });
+
+    it('should keep URL size reasonable with color overrides', () => {
+      const stateWith10Colors = {
+        ...mockState,
+        entityColorOverrides: {
+          account: '#ef4444',
+          contact: '#22c55e',
+          lead: '#3b82f6',
+          opportunity: '#8b5cf6',
+          case: '#f97316',
+          task: '#eab308',
+          email: '#14b8a6',
+          note: '#ec4899',
+          user: '#0ea5e9',
+          team: '#64748b',
+        },
+        selectedEntities: [
+          'account',
+          'contact',
+          'lead',
+          'opportunity',
+          'case',
+          'task',
+          'email',
+          'note',
+          'user',
+          'team',
+        ],
+        entityPositions: {
+          account: { x: 0, y: 0, vx: 0, vy: 0 },
+          contact: { x: 100, y: 0, vx: 0, vy: 0 },
+          lead: { x: 200, y: 0, vx: 0, vy: 0 },
+          opportunity: { x: 300, y: 0, vx: 0, vy: 0 },
+          case: { x: 400, y: 0, vx: 0, vy: 0 },
+          task: { x: 0, y: 100, vx: 0, vy: 0 },
+          email: { x: 100, y: 100, vx: 0, vy: 0 },
+          note: { x: 200, y: 100, vx: 0, vy: 0 },
+          user: { x: 300, y: 100, vx: 0, vy: 0 },
+          team: { x: 400, y: 100, vx: 0, vy: 0 },
+        },
+      };
+
+      // Should encode successfully
+      const encoded = encodeStateToURL(stateWith10Colors);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(Object.keys(decoded.state?.co || {})).toHaveLength(10);
+
+      // URL with 10 entities + 10 colors should still be manageable
+      expect(encoded.length).toBeLessThan(2000);
+    });
+  });
+
   describe('estimateURLSize', () => {
     it('should estimate URL length accurately', () => {
       const size = estimateURLSize(mockState);

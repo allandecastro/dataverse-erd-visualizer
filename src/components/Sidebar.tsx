@@ -36,6 +36,8 @@ export interface SidebarProps {
   onLayoutModeChange: (mode: LayoutMode) => void;
   onToggleSettings: () => void;
   onColorSettingsChange: (key: keyof ColorSettings, value: string) => void;
+  entityColorOverrideCount: number;
+  onResetAllEntityColors: () => void;
 }
 
 export function Sidebar({
@@ -60,6 +62,8 @@ export function Sidebar({
   onLayoutModeChange,
   onToggleSettings,
   onColorSettingsChange,
+  entityColorOverrideCount,
+  onResetAllEntityColors,
 }: SidebarProps) {
   const { isDarkMode, toggleDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
@@ -133,6 +137,8 @@ export function Sidebar({
             textColor={textColor}
             textSecondary={textSecondary}
             onColorSettingsChange={onColorSettingsChange}
+            entityColorOverrideCount={entityColorOverrideCount}
+            onResetAllEntityColors={onResetAllEntityColors}
           />
         )}
 
