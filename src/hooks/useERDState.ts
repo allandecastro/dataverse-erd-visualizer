@@ -1,12 +1,24 @@
 /**
- * Custom hook for managing ERD Visualizer state
+ * Custom hook for managing ERD Visualizer state.
+ * Composes focused sub-hooks for color management, viewport, and entity selection.
  */
 
 import { useState, useCallback, useMemo } from 'react';
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
-import type { ToastType, ToastState, LayoutMode, ColorSettings } from '@/types/erdTypes';
+import type {
+  ToastType,
+  ToastState,
+  LayoutMode,
+  ColorSettings,
+  EntityFieldMap,
+  EntityFieldOrder,
+  EntityPositionMap,
+  EdgeOffsetMap,
+} from '@/types/erdTypes';
 import { getEntityPublisher } from '@/utils/entityUtils';
-import { deriveGroups } from '@/utils/groupUtils';
+import { useColorManagement } from './useColorManagement';
+import { useViewport } from './useViewport';
+import { useEntitySelection } from './useEntitySelection';
 
 export interface UseERDStateProps {
   entities: Entity[];
@@ -14,36 +26,53 @@ export interface UseERDStateProps {
 }
 
 export function useERDState({ entities, relationships }: UseERDStateProps) {
+  // === Composed sub-hooks ===
+  const {
+    entityColorOverrides,
+    setEntityColorOverrides,
+    groupNames,
+    setGroupNamesState,
+    groupFilter,
+    setGroupFilter,
+    setEntityColor,
+    clearEntityColor,
+    clearAllEntityColors,
+    setGroupName,
+    clearGroupName,
+    derivedGroups,
+  } = useColorManagement();
+
+  const { zoom, setZoom, pan, setPan, handleZoomIn, handleZoomOut, handleResetView } =
+    useViewport();
+
+  const { selectedEntities, setSelectedEntities, toggleEntity, selectAll, deselectAll } =
+    useEntitySelection(entities);
+
+  // === Local state ===
+
   // Theme
   const [isDarkMode, setIsDarkMode] = useState(true);
-
-  // Entity selection - start with none selected by default
-  const [selectedEntities, setSelectedEntities] = useState<Set<string>>(new Set());
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [publisherFilter, setPublisherFilter] = useState('all');
   const [solutionFilter, setSolutionFilter] = useState('all');
 
-  // Zoom and pan
-  const [zoom, setZoom] = useState(0.8);
-  const [pan, setPan] = useState({ x: 400, y: 100 });
-
   // Entity positions and layout
-  const [entityPositions, setEntityPositions] = useState<Record<string, EntityPosition>>({});
+  const [entityPositions, setEntityPositions] = useState<EntityPositionMap>({});
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('force');
 
   // Collapse state
   const [collapsedEntities, setCollapsedEntities] = useState<Set<string>>(new Set());
 
   // Field selection
-  const [selectedFields, setSelectedFields] = useState<Record<string, Set<string>>>({});
+  const [selectedFields, setSelectedFields] = useState<EntityFieldMap>({});
   const [showFieldSelector, setShowFieldSelector] = useState<string | null>(null);
   const [fieldSearchQueries, setFieldSearchQueries] = useState<Record<string, string>>({});
 
   // Field drawer state
   const [fieldDrawerEntity, setFieldDrawerEntity] = useState<string | null>(null);
-  const [fieldOrder, setFieldOrder] = useState<Record<string, string[]>>({});
+  const [fieldOrder, setFieldOrder] = useState<EntityFieldOrder>({});
 
   // Add related table dialog
   const [pendingLookupField, setPendingLookupField] = useState<{
@@ -53,14 +82,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   } | null>(null);
 
   // Edge offsets for manual adjustment of relationship lines (x and y offsets)
-  const [edgeOffsets, setEdgeOffsets] = useState<Record<string, { x: number; y: number }>>({});
-
-  // Per-entity color overrides (entity logicalName → hex color)
-  const [entityColorOverrides, setEntityColorOverrides] = useState<Record<string, string>>({});
-
-  // Entity grouping: group names map hex color → user-defined label
-  const [groupNames, setGroupNamesState] = useState<Record<string, string>>({});
-  const [groupFilter, setGroupFilter] = useState('all');
+  const [edgeOffsets, setEdgeOffsets] = useState<EdgeOffsetMap>({});
 
   // Settings
   const [showSettings, setShowSettings] = useState(false);
@@ -69,7 +91,6 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     standardTableColor: '#64748b',
     lookupColor: '#f97316',
     edgeStyle: 'smoothstep',
-    // Line customization defaults
     lineNotation: 'simple',
     lineStroke: 'solid',
     lineThickness: 1.5,
@@ -86,19 +107,14 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   // Toast
   const [toast, setToast] = useState<ToastState | null>(null);
 
-  // No auto-select - fields start empty, PK is shown automatically
+  // === Callbacks ===
 
-  // Show toast notification
   const showToast = useCallback((message: string, type: ToastType = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // Note: getEntityPublisher is now imported from @/utils/entityUtils
-
   // Filtered entities and relationships for the canvas
-  // Publisher/Solution filters only affect the sidebar list, NOT the canvas
-  // The canvas shows all selected entities regardless of filters
   const filteredEntities = useMemo(
     () => entities.filter((entity) => selectedEntities.has(entity.logicalName)),
     [entities, selectedEntities]
@@ -109,52 +125,6 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       relationships.filter((rel) => selectedEntities.has(rel.from) && selectedEntities.has(rel.to)),
     [relationships, selectedEntities]
   );
-
-  // Entity selection helpers
-  const toggleEntity = useCallback((entityName: string) => {
-    setSelectedEntities((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(entityName)) {
-        newSet.delete(entityName);
-      } else {
-        newSet.add(entityName);
-      }
-      return newSet;
-    });
-  }, []);
-
-  const selectAll = useCallback(
-    (entityNames?: string[]) => {
-      if (entityNames) {
-        if (entityNames.length === 0) return;
-        // Add specific entities to selection (filter-aware)
-        setSelectedEntities((prev) => {
-          const newSet = new Set(prev);
-          entityNames.forEach((name) => newSet.add(name));
-          return newSet;
-        });
-      } else {
-        // Select all entities
-        setSelectedEntities(new Set(entities.map((e) => e.logicalName)));
-      }
-    },
-    [entities]
-  );
-
-  const deselectAll = useCallback((entityNames?: string[]) => {
-    if (entityNames) {
-      if (entityNames.length === 0) return;
-      // Remove specific entities from selection (filter-aware)
-      setSelectedEntities((prev) => {
-        const newSet = new Set(prev);
-        entityNames.forEach((name) => newSet.delete(name));
-        return newSet;
-      });
-    } else {
-      // Deselect everything
-      setSelectedEntities(new Set());
-    }
-  }, []);
 
   // Collapse helpers
   const toggleCollapse = useCallback((entityName: string) => {
@@ -213,7 +183,6 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
 
   // Add field with FIFO ordering
   const addField = useCallback((entityName: string, fieldName: string) => {
-    // Add to order if not already present
     setFieldOrder((prev) => {
       const currentOrder = prev[entityName] || [];
       if (currentOrder.includes(fieldName)) return prev;
@@ -222,7 +191,6 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
         [entityName]: [...currentOrder, fieldName],
       };
     });
-    // Add to selected fields
     setSelectedFields((prev) => {
       const fields = prev[entityName] || new Set();
       return { ...prev, [entityName]: new Set([...fields, fieldName]) };
@@ -231,12 +199,10 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
 
   // Remove field from selection and order
   const removeField = useCallback((entityName: string, fieldName: string) => {
-    // Remove from order
     setFieldOrder((prev) => ({
       ...prev,
       [entityName]: (prev[entityName] || []).filter((f) => f !== fieldName),
     }));
-    // Remove from selected fields
     setSelectedFields((prev) => {
       const fields = new Set(prev[entityName] || []);
       fields.delete(fieldName);
@@ -245,13 +211,11 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   }, []);
 
   // Get ordered fields for an entity (PK first, then FIFO order)
-  // Respects collapsedEntities state - collapsed entities only show PK
   const getOrderedFields = useCallback(
     (entityName: string) => {
       const entity = entities.find((e) => e.logicalName === entityName);
       if (!entity) return [];
 
-      // Get PK attribute
       const pkAttr = entity.attributes.find((a) => a.isPrimaryKey);
       const pkName = pkAttr?.name;
 
@@ -267,7 +231,6 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       const orderedFields: string[] = [];
       if (pkName) orderedFields.push(pkName);
 
-      // Add fields in their FIFO order
       for (const fieldName of order) {
         if (fieldName !== pkName && selected.has(fieldName)) {
           orderedFields.push(fieldName);
@@ -279,7 +242,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     [entities, selectedFields, fieldOrder, collapsedEntities]
   );
 
-  // Update edge offset for manual path adjustment (supports both x and y)
+  // Update edge offset for manual path adjustment
   const updateEdgeOffset = useCallback((edgeId: string, offset: { x: number; y: number }) => {
     setEdgeOffsets((prev) => ({
       ...prev,
@@ -287,73 +250,19 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     }));
   }, []);
 
-  // Per-entity color override helpers
-  const setEntityColor = useCallback((entityName: string, color: string) => {
-    setEntityColorOverrides((prev) => ({ ...prev, [entityName]: color }));
-  }, []);
-
-  const clearEntityColor = useCallback((entityName: string) => {
-    setEntityColorOverrides((prev) => {
-      const next = { ...prev };
-      delete next[entityName];
-      return next;
-    });
-  }, []);
-
-  const clearAllEntityColors = useCallback(() => {
-    setEntityColorOverrides({});
-    setGroupNamesState({});
-    setGroupFilter('all');
-  }, []);
-
-  // Group name helpers
-  const setGroupName = useCallback((color: string, name: string) => {
-    const normalized = color.toLowerCase();
-    setGroupNamesState((prev) => ({ ...prev, [normalized]: name }));
-  }, []);
-
-  const clearGroupName = useCallback((color: string) => {
-    const normalized = color.toLowerCase();
-    setGroupNamesState((prev) => {
-      const next = { ...prev };
-      delete next[normalized];
-      return next;
-    });
-  }, []);
-
-  // Derive groups from color overrides + group names (memoized)
-  const derivedGroups = useMemo(
-    () => deriveGroups(entityColorOverrides, groupNames),
-    [entityColorOverrides, groupNames]
-  );
-
-  // Zoom helpers
-  const handleZoomIn = useCallback(() => {
-    setZoom((z) => Math.min(z + 0.1, 2));
-  }, []);
-
-  const handleZoomOut = useCallback(() => {
-    setZoom((z) => Math.max(z - 0.1, 0.3));
-  }, []);
-
-  const handleResetView = useCallback(() => {
-    setZoom(0.8);
-    setPan({ x: 400, y: 100 });
-  }, []);
-
-  // Derive publishers and solutions for filters (memoized to prevent recalculation)
+  // Derive publishers and solutions for filters
   const publishers = useMemo(
     () => ['all', ...new Set(entities.map((e) => getEntityPublisher(e)))].sort(),
     [entities]
   );
 
-  // Flatten all solutions from all entities (each entity can belong to multiple solutions)
   const solutions = useMemo(() => {
     const allSolutions = entities.flatMap((e) => e.solutions || []);
     return ['all', ...new Set(allSolutions)].sort();
   }, [entities]);
 
-  // Snapshot helpers: Extract serializable state for snapshots
+  // === Serialization ===
+
   const getSerializableState = useCallback(() => {
     return {
       selectedEntities: Array.from(selectedEntities),
@@ -376,6 +285,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       edgeOffsets,
       entityColorOverrides,
       groupNames,
+      groupFilter,
     };
   }, [
     selectedEntities,
@@ -396,9 +306,9 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     edgeOffsets,
     entityColorOverrides,
     groupNames,
+    groupFilter,
   ]);
 
-  // Snapshot helpers: Restore state from snapshot
   const restoreState = useCallback(
     (state: {
       selectedEntities: string[];
@@ -419,6 +329,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       edgeOffsets: Record<string, { x: number; y: number }>;
       entityColorOverrides?: Record<string, string>;
       groupNames?: Record<string, string>;
+      groupFilter?: string;
     }) => {
       setSelectedEntities(new Set(state.selectedEntities));
       setCollapsedEntities(new Set(state.collapsedEntities));
@@ -461,11 +372,32 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
       setShowMinimap(state.showMinimap);
       setIsSmartZoom(state.isSmartZoom);
       setEdgeOffsets(state.edgeOffsets);
-      setEntityColorOverrides(state.entityColorOverrides || {});
+      const restoredColors = state.entityColorOverrides || {};
+      setEntityColorOverrides(restoredColors);
       setGroupNamesState(state.groupNames || {});
-      setGroupFilter('all');
+
+      // Validate groupFilter: ensure the color still exists in entityColorOverrides
+      const restoredFilter = state.groupFilter || 'all';
+      if (
+        restoredFilter === 'all' ||
+        restoredFilter === '__ungrouped__' ||
+        Object.values(restoredColors).some((c) => c.toLowerCase() === restoredFilter.toLowerCase())
+      ) {
+        setGroupFilter(restoredFilter);
+      } else {
+        setGroupFilter('all'); // Color no longer exists — fall back
+      }
     },
-    []
+    // Setters from sub-hooks are stable (React guarantees useState setters don't change),
+    // but the React Compiler requires them listed since they originate outside this hook.
+    [
+      setSelectedEntities,
+      setZoom,
+      setPan,
+      setEntityColorOverrides,
+      setGroupNamesState,
+      setGroupFilter,
+    ]
   );
 
   return {
@@ -473,7 +405,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     isDarkMode,
     setIsDarkMode,
 
-    // Entity selection
+    // Entity selection (from useEntitySelection)
     selectedEntities,
     setSelectedEntities,
     toggleEntity,
@@ -490,7 +422,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     publishers,
     solutions,
 
-    // Zoom and pan
+    // Zoom and pan (from useViewport)
     zoom,
     setZoom,
     pan,
@@ -546,13 +478,13 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     colorSettings,
     setColorSettings,
 
-    // Per-entity color overrides
+    // Per-entity color overrides (from useColorManagement)
     entityColorOverrides,
     setEntityColor,
     clearEntityColor,
     clearAllEntityColors,
 
-    // Entity grouping (derived from color overrides)
+    // Entity grouping (from useColorManagement)
     groupNames,
     setGroupName,
     clearGroupName,

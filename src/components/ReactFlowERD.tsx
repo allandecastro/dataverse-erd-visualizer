@@ -40,6 +40,7 @@ import { SelfReferenceEdge } from './SelfReferenceEdge';
 import { DraggableEdge } from './DraggableEdge';
 import { EdgeMarkerDefinitions } from './EdgeMarkerDefinitions';
 import { getMarkerIdForNotation, getStrokeDashArray, getEdgeColor } from '@/utils/edgeMarkers';
+import { getEntityNodeColor } from '@/utils/entityUtils';
 import {
   EXPORT_PADDING,
   EXPORT_MIN_ZOOM,
@@ -51,6 +52,62 @@ import {
   GRID_SPACING_X,
   GRID_SPACING_Y,
 } from '@/constants';
+
+/**
+ * Build edge style and marker for a relationship based on color settings.
+ */
+function buildEdgeAppearance(
+  rel: EntityRelationship,
+  colorSettings: ColorSettings,
+  existingStyle?: React.CSSProperties
+) {
+  const edgeColor = getEdgeColor(
+    rel,
+    colorSettings.useRelationshipTypeColors || false,
+    colorSettings.lookupColor || '#f97316',
+    {
+      oneToMany: colorSettings.oneToManyColor,
+      manyToOne: colorSettings.manyToOneColor,
+      manyToMany: colorSettings.manyToManyColor,
+    }
+  );
+
+  const strokeDashArray = getStrokeDashArray(colorSettings.lineStroke || 'solid');
+
+  if (colorSettings.lineNotation === 'simple') {
+    return {
+      markerEnd: {
+        type: MarkerType.ArrowClosed as const,
+        color: edgeColor,
+        width: 15,
+        height: 15,
+      },
+      style: {
+        ...existingStyle,
+        stroke: edgeColor,
+        strokeWidth: colorSettings.lineThickness || 1.5,
+        strokeDasharray: strokeDashArray,
+      } as React.CSSProperties,
+    };
+  }
+
+  const markerId = getMarkerIdForNotation(
+    colorSettings.lineNotation || 'simple',
+    rel,
+    false,
+    colorSettings.useRelationshipTypeColors || false
+  );
+  return {
+    markerEnd: undefined,
+    style: {
+      ...existingStyle,
+      stroke: edgeColor,
+      strokeWidth: colorSettings.lineThickness || 1.5,
+      strokeDasharray: strokeDashArray,
+      markerEnd: `url(#${markerId})`,
+    } as React.CSSProperties,
+  };
+}
 
 // Register custom node types
 const nodeTypes = {
@@ -265,21 +322,10 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     const cols = Math.ceil(Math.sqrt(entities.length)) || 1;
 
     const newNodes: Node[] = entities.map((entity, index) => {
-      // Use entityPositions if available, otherwise fall back to grid
       const pos = entityPositions[entity.logicalName];
       const row = Math.floor(index / cols);
       const col = index % cols;
-
-      // Determine color based on publisher, with per-entity override support
-      const isCustom =
-        entity.publisher &&
-        !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
-          entity.publisher
-        );
-      const defaultColor = isCustom
-        ? colorSettings.customTableColor
-        : colorSettings.standardTableColor;
-      const color = entityColorOverrides?.[entity.logicalName] || defaultColor;
+      const color = getEntityNodeColor(entity, colorSettings, entityColorOverrides);
 
       return {
         id: entity.logicalName,
@@ -353,55 +399,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
 
       // Use draggable edge type for non-self-reference edges
       const edgeType = isSelfReference ? 'selfLoop' : 'draggable';
-
-      // Determine edge color based on settings
-      const edgeColor = getEdgeColor(
-        rel,
-        colorSettings.useRelationshipTypeColors || false,
-        colorSettings.lookupColor || '#f97316',
-        {
-          oneToMany: colorSettings.oneToManyColor,
-          manyToOne: colorSettings.manyToOneColor,
-          manyToMany: colorSettings.manyToManyColor,
-        }
-      );
-
-      // Determine stroke style
-      const strokeDashArray = getStrokeDashArray(colorSettings.lineStroke || 'solid');
-
-      // Determine marker type based on notation
-      // Keep marker size consistent regardless of line thickness
-      let markerEnd;
-      let edgeStyle: React.CSSProperties;
-
-      if (colorSettings.lineNotation === 'simple') {
-        markerEnd = {
-          type: MarkerType.ArrowClosed,
-          color: edgeColor,
-          width: 15,
-          height: 15,
-        };
-        edgeStyle = {
-          stroke: edgeColor,
-          strokeWidth: colorSettings.lineThickness || 1.5,
-          strokeDasharray: strokeDashArray,
-        };
-      } else {
-        const markerId = getMarkerIdForNotation(
-          colorSettings.lineNotation || 'simple',
-          rel,
-          false,
-          colorSettings.useRelationshipTypeColors || false
-        );
-        // For custom SVG markers, use CSS markerEnd property in style
-        markerEnd = undefined;
-        edgeStyle = {
-          stroke: edgeColor,
-          strokeWidth: colorSettings.lineThickness || 1.5,
-          strokeDasharray: strokeDashArray,
-          markerEnd: `url(#${markerId})`,
-        } as React.CSSProperties;
-      }
+      const { markerEnd, style: edgeStyle } = buildEdgeAppearance(rel, colorSettings);
 
       return {
         id: rel.schemaName,
@@ -465,15 +463,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         const entity = entities.find((e) => e.logicalName === node.id);
         if (!entity) return node;
 
-        const isCustom =
-          entity.publisher &&
-          !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
-            entity.publisher
-          );
-        const defaultColor = isCustom
-          ? colorSettings.customTableColor
-          : colorSettings.standardTableColor;
-        const color = entityColorOverrides?.[node.id] || defaultColor;
+        const color = getEntityNodeColor(entity, colorSettings, entityColorOverrides);
         const hasColorOverride = !!entityColorOverrides?.[node.id];
 
         // Only update if color actually changed
@@ -501,56 +491,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         const rel = relationships.find((r) => r.schemaName === edge.id);
         if (!rel) return edge;
 
-        // Determine edge color
-        const edgeColor = getEdgeColor(
-          rel,
-          colorSettings.useRelationshipTypeColors || false,
-          colorSettings.lookupColor || '#f97316',
-          {
-            oneToMany: colorSettings.oneToManyColor,
-            manyToOne: colorSettings.manyToOneColor,
-            manyToMany: colorSettings.manyToManyColor,
-          }
-        );
-
-        // Determine stroke style
-        const strokeDashArray = getStrokeDashArray(colorSettings.lineStroke || 'solid');
-
-        // Determine marker type
-        // Keep marker size consistent regardless of line thickness
-        let markerEnd;
-        let edgeStyle: React.CSSProperties;
-
-        if (colorSettings.lineNotation === 'simple') {
-          markerEnd = {
-            type: MarkerType.ArrowClosed,
-            color: edgeColor,
-            width: 15,
-            height: 15,
-          };
-          edgeStyle = {
-            ...edge.style,
-            stroke: edgeColor,
-            strokeWidth: colorSettings.lineThickness || 1.5,
-            strokeDasharray: strokeDashArray,
-          };
-        } else {
-          const markerId = getMarkerIdForNotation(
-            colorSettings.lineNotation || 'simple',
-            rel,
-            false,
-            colorSettings.useRelationshipTypeColors || false
-          );
-          // For custom SVG markers, use CSS markerEnd property in style
-          markerEnd = undefined;
-          edgeStyle = {
-            ...edge.style,
-            stroke: edgeColor,
-            strokeWidth: colorSettings.lineThickness || 1.5,
-            strokeDasharray: strokeDashArray,
-            markerEnd: `url(#${markerId})`,
-          } as React.CSSProperties;
-        }
+        const { markerEnd, style: edgeStyle } = buildEdgeAppearance(rel, colorSettings, edge.style);
 
         return {
           ...edge,

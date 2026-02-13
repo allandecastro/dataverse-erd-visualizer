@@ -3,8 +3,14 @@
  * Tests publisher extraction and entity utility functions
  */
 
-import { getEntityPublisher } from '../entityUtils';
+import {
+  getEntityPublisher,
+  isCustomEntity,
+  getEntityNodeColor,
+  STANDARD_PUBLISHERS,
+} from '../entityUtils';
 import type { Entity } from '@/types';
+import type { ColorSettings } from '@/types/erdTypes';
 
 describe('entityUtils', () => {
   describe('getEntityPublisher', () => {
@@ -193,6 +199,115 @@ describe('entityUtils', () => {
 
       // Should extract everything before first underscore
       expect(getEntityPublisher(entity)).toBe('contoso-corp');
+    });
+  });
+
+  describe('STANDARD_PUBLISHERS', () => {
+    it('should contain Microsoft publishers', () => {
+      expect(STANDARD_PUBLISHERS.has('Microsoft')).toBe(true);
+      expect(STANDARD_PUBLISHERS.has('Microsoft Dynamics 365')).toBe(true);
+      expect(STANDARD_PUBLISHERS.has('Microsoft Dynamics CRM')).toBe(true);
+    });
+
+    it('should not contain custom publishers', () => {
+      expect(STANDARD_PUBLISHERS.has('Contoso')).toBe(false);
+      expect(STANDARD_PUBLISHERS.has('Custom')).toBe(false);
+    });
+  });
+
+  describe('isCustomEntity', () => {
+    const makeEntity = (publisher?: string): Entity => ({
+      logicalName: 'test_entity',
+      displayName: 'Test',
+      objectTypeCode: 1,
+      isCustomEntity: !!publisher,
+      primaryIdAttribute: 'testid',
+      primaryNameAttribute: 'name',
+      attributes: [],
+      alternateKeys: [],
+      publisher,
+    });
+
+    it('should return true for custom publisher', () => {
+      expect(isCustomEntity(makeEntity('Contoso'))).toBe(true);
+    });
+
+    it('should return false for Microsoft publisher', () => {
+      expect(isCustomEntity(makeEntity('Microsoft'))).toBe(false);
+    });
+
+    it('should return false for Microsoft Dynamics 365', () => {
+      expect(isCustomEntity(makeEntity('Microsoft Dynamics 365'))).toBe(false);
+    });
+
+    it('should return false for Microsoft Dynamics CRM', () => {
+      expect(isCustomEntity(makeEntity('Microsoft Dynamics CRM'))).toBe(false);
+    });
+
+    it('should return false when publisher is undefined', () => {
+      expect(isCustomEntity(makeEntity(undefined))).toBe(false);
+    });
+  });
+
+  describe('getEntityNodeColor', () => {
+    const colorSettings: ColorSettings = {
+      customTableColor: '#ff0000',
+      standardTableColor: '#0000ff',
+      lookupColor: '#f97316',
+      edgeStyle: 'smoothstep',
+      lineNotation: 'simple',
+      lineStroke: 'solid',
+      lineThickness: 1.5,
+      useRelationshipTypeColors: false,
+    };
+
+    const makeEntity = (logicalName: string, publisher?: string): Entity => ({
+      logicalName,
+      displayName: logicalName,
+      objectTypeCode: 1,
+      isCustomEntity: !!publisher,
+      primaryIdAttribute: `${logicalName}id`,
+      primaryNameAttribute: 'name',
+      attributes: [],
+      alternateKeys: [],
+      publisher,
+    });
+
+    it('should return override color when entity has a color override', () => {
+      const entity = makeEntity('account', 'Microsoft');
+      const overrides = { account: '#22c55e' };
+      expect(getEntityNodeColor(entity, colorSettings, overrides)).toBe('#22c55e');
+    });
+
+    it('should return custom color for custom publisher entities', () => {
+      const entity = makeEntity('contoso_project', 'Contoso');
+      expect(getEntityNodeColor(entity, colorSettings)).toBe('#ff0000');
+    });
+
+    it('should return standard color for Microsoft entities', () => {
+      const entity = makeEntity('account', 'Microsoft');
+      expect(getEntityNodeColor(entity, colorSettings)).toBe('#0000ff');
+    });
+
+    it('should return standard color when publisher is undefined', () => {
+      const entity = makeEntity('account');
+      expect(getEntityNodeColor(entity, colorSettings)).toBe('#0000ff');
+    });
+
+    it('should prioritize override over publisher-based color', () => {
+      const entity = makeEntity('contoso_project', 'Contoso');
+      const overrides = { contoso_project: '#8b5cf6' };
+      expect(getEntityNodeColor(entity, colorSettings, overrides)).toBe('#8b5cf6');
+    });
+
+    it('should handle empty overrides object', () => {
+      const entity = makeEntity('account', 'Microsoft');
+      expect(getEntityNodeColor(entity, colorSettings, {})).toBe('#0000ff');
+    });
+
+    it('should handle undefined overrides', () => {
+      const entity = makeEntity('contoso_project', 'Contoso');
+      expect(getEntityNodeColor(entity, colorSettings, undefined)).toBe('#ff0000');
     });
   });
 });

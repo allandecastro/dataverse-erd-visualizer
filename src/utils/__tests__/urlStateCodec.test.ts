@@ -12,8 +12,10 @@ import {
   isURLSafe,
   getShareBaseUrl,
   getStateHash,
+  buildMinimalShareState,
   type CompactState,
 } from '../urlStateCodec';
+import type { SerializableState } from '@/types/snapshotTypes';
 
 describe('urlStateCodec', () => {
   const mockState = {
@@ -425,6 +427,107 @@ describe('urlStateCodec', () => {
     });
   });
 
+  describe('groupFilter (gf field)', () => {
+    it('should encode and decode groupFilter', () => {
+      const stateWithFilter = {
+        ...mockState,
+        entityColorOverrides: { account: '#ef4444' },
+        groupFilter: '#ef4444',
+      };
+
+      const encoded = encodeStateToURL(stateWithFilter);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.gf).toBe('#ef4444');
+    });
+
+    it('should not include gf field when groupFilter is "all"', () => {
+      const stateAllFilter = {
+        ...mockState,
+        groupFilter: 'all',
+      };
+
+      const encoded = encodeStateToURL(stateAllFilter);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.gf).toBeUndefined();
+    });
+
+    it('should not include gf field when groupFilter is undefined', () => {
+      const encoded = encodeStateToURL(mockState);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.gf).toBeUndefined();
+    });
+
+    it('should encode __ungrouped__ filter value', () => {
+      const stateUngrouped = {
+        ...mockState,
+        groupFilter: '__ungrouped__',
+      };
+
+      const encoded = encodeStateToURL(stateUngrouped);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.gf).toBe('__ungrouped__');
+    });
+
+    it('should expand groupFilter from CompactState', () => {
+      const compactWithFilter: CompactState = {
+        e: ['account'],
+        p: { account: { x: 100, y: 200 } },
+        z: 1,
+        pn: { x: 0, y: 0 },
+        l: 'force',
+        f: { s: '', pub: '', sol: '' },
+        d: false,
+        v: '1.0.0',
+        gf: '#ef4444',
+      };
+
+      const expanded = expandCompactState(compactWithFilter);
+      expect(expanded.groupFilter).toBe('#ef4444');
+    });
+
+    it('should not include groupFilter when gf is absent in CompactState', () => {
+      const compactNoFilter: CompactState = {
+        e: ['account'],
+        p: { account: { x: 100, y: 200 } },
+        z: 1,
+        pn: { x: 0, y: 0 },
+        l: 'force',
+        f: { s: '', pub: '', sol: '' },
+        d: true,
+        v: '1.0.0',
+      };
+
+      const expanded = expandCompactState(compactNoFilter);
+      expect(expanded.groupFilter).toBeUndefined();
+    });
+
+    it('should round-trip groupFilter with groups and colors', () => {
+      const fullState = {
+        ...mockState,
+        entityColorOverrides: { account: '#ef4444', contact: '#3b82f6' },
+        groupNames: { '#ef4444': 'Sales' },
+        groupFilter: '#ef4444',
+      };
+
+      const encoded = encodeStateToURL(fullState);
+      const decoded = decodeStateFromURL(encoded);
+      expect(decoded.success).toBe(true);
+
+      const expanded = expandCompactState(decoded.state!);
+      expect(expanded.entityColorOverrides).toEqual({ account: '#ef4444', contact: '#3b82f6' });
+      expect(expanded.groupNames).toEqual({ '#ef4444': 'Sales' });
+      expect(expanded.groupFilter).toBe('#ef4444');
+    });
+  });
+
   describe('estimateURLSize', () => {
     it('should estimate URL length accurately', () => {
       const size = estimateURLSize(mockState);
@@ -505,6 +608,7 @@ describe('urlStateCodec', () => {
         entityPositions: null,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentionally malformed input
       expect(() => encodeStateToURL(malformedState as any)).toThrow();
     });
 
@@ -680,6 +784,113 @@ describe('urlStateCodec', () => {
 
       const result = getStateHash();
       expect(result).toBe('');
+    });
+  });
+
+  describe('buildMinimalShareState', () => {
+    const fullState: SerializableState = {
+      selectedEntities: ['account', 'contact'],
+      collapsedEntities: ['contact'],
+      selectedFields: { account: ['name', 'accountid'] },
+      fieldOrder: { account: ['accountid', 'name'] },
+      entityPositions: { account: { x: 100, y: 200 }, contact: { x: 300, y: 400 } },
+      layoutMode: 'force',
+      zoom: 1.2,
+      pan: { x: 50, y: 75 },
+      searchQuery: 'test',
+      publisherFilter: 'all',
+      solutionFilter: 'all',
+      isDarkMode: true,
+      colorSettings: {
+        customTableColor: '#0ea5e9',
+        standardTableColor: '#64748b',
+        lookupColor: '#f97316',
+        edgeStyle: 'smoothstep',
+        lineNotation: 'simple',
+        lineStroke: 'solid',
+        lineThickness: 1.5,
+        useRelationshipTypeColors: false,
+      },
+      showMinimap: false,
+      isSmartZoom: false,
+      edgeOffsets: { edge1: { x: 10, y: 20 } },
+      entityColorOverrides: { account: '#ef4444' },
+      groupNames: { '#ef4444': 'Sales' },
+      groupFilter: 'all',
+    };
+
+    it('should include core state fields', () => {
+      const minimal = buildMinimalShareState(fullState);
+
+      expect(minimal.selectedEntities).toEqual(['account', 'contact']);
+      expect(minimal.entityPositions).toEqual(fullState.entityPositions);
+      expect(minimal.zoom).toBe(1.2);
+      expect(minimal.pan).toEqual({ x: 50, y: 75 });
+      expect(minimal.layoutMode).toBe('force');
+      expect(minimal.searchQuery).toBe('test');
+      expect(minimal.publisherFilter).toBe('all');
+      expect(minimal.solutionFilter).toBe('all');
+      expect(minimal.isDarkMode).toBe(true);
+    });
+
+    it('should strip heavy fields (colorSettings, fields, edgeOffsets)', () => {
+      const minimal = buildMinimalShareState(fullState);
+
+      expect(minimal).not.toHaveProperty('colorSettings');
+      expect(minimal).not.toHaveProperty('selectedFields');
+      expect(minimal).not.toHaveProperty('fieldOrder');
+      expect(minimal).not.toHaveProperty('edgeOffsets');
+      expect(minimal).not.toHaveProperty('collapsedEntities');
+      expect(minimal).not.toHaveProperty('showMinimap');
+      expect(minimal).not.toHaveProperty('isSmartZoom');
+    });
+
+    it('should include entityColorOverrides when non-empty', () => {
+      const minimal = buildMinimalShareState(fullState);
+
+      expect(minimal.entityColorOverrides).toEqual({ account: '#ef4444' });
+    });
+
+    it('should omit entityColorOverrides when empty', () => {
+      const stateWithoutColors = { ...fullState, entityColorOverrides: {} };
+      const minimal = buildMinimalShareState(stateWithoutColors);
+
+      expect(minimal).not.toHaveProperty('entityColorOverrides');
+    });
+
+    it('should include groupNames when non-empty', () => {
+      const minimal = buildMinimalShareState(fullState);
+
+      expect(minimal.groupNames).toEqual({ '#ef4444': 'Sales' });
+    });
+
+    it('should omit groupNames when empty', () => {
+      const stateWithoutNames = { ...fullState, groupNames: {} };
+      const minimal = buildMinimalShareState(stateWithoutNames);
+
+      expect(minimal).not.toHaveProperty('groupNames');
+    });
+
+    it('should include groupFilter when not "all"', () => {
+      const stateWithFilter = { ...fullState, groupFilter: '#ef4444' };
+      const minimal = buildMinimalShareState(stateWithFilter);
+
+      expect(minimal.groupFilter).toBe('#ef4444');
+    });
+
+    it('should omit groupFilter when "all"', () => {
+      const minimal = buildMinimalShareState(fullState);
+
+      expect(minimal).not.toHaveProperty('groupFilter');
+    });
+
+    it('should produce a valid state for encodeStateToURL', () => {
+      const minimal = buildMinimalShareState(fullState);
+
+      // Should not throw
+      const encoded = encodeStateToURL(minimal);
+      expect(typeof encoded).toBe('string');
+      expect(encoded.length).toBeGreaterThan(0);
     });
   });
 });

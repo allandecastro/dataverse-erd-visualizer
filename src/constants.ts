@@ -103,6 +103,16 @@ export const ITERATIONS = 100;
  */
 export const CENTER_FORCE = 0.001;
 
+/**
+ * X coordinate of the center point for force-directed layout (px)
+ */
+export const FORCE_CENTER_X = 600;
+
+/**
+ * Y coordinate of the center point for force-directed layout (px)
+ */
+export const FORCE_CENTER_Y = 400;
+
 // =============================================================================
 // AUTO-ARRANGE LAYOUT CONSTANTS
 // =============================================================================
@@ -251,6 +261,43 @@ export const TOAST_DURATION = 3000;
  * Default animation duration for transitions (milliseconds)
  */
 export const ANIMATION_DURATION = 300;
+
+/**
+ * Delay before showing feature guide on first visit (milliseconds)
+ */
+export const FEATURE_GUIDE_DELAY = 500;
+
+/**
+ * Delay after layout change before fitting view (milliseconds)
+ */
+export const LAYOUT_FIT_DELAY = 100;
+
+// =============================================================================
+// URL SHARING CONSTANTS
+// =============================================================================
+// Limits for share URL generation
+
+/**
+ * Maximum URL length for sharing (bytes)
+ * URLs longer than this will be rejected
+ */
+export const SHARE_URL_MAX_LENGTH = 32000;
+
+/**
+ * URL length threshold for compatibility warnings (bytes)
+ * URLs longer than this may not work in older browsers
+ */
+export const SHARE_URL_WARN_LENGTH = 2000;
+
+// =============================================================================
+// SNAPSHOT CONSTANTS
+// =============================================================================
+// Limits for snapshot management
+
+/**
+ * Maximum number of snapshots allowed
+ */
+export const MAX_SNAPSHOTS = 10;
 
 // =============================================================================
 // RELATIONSHIP DISPLAY

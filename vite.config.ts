@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
             fs.renameSync(htmlSrc, htmlDest);
             console.log('✓ HTML renamed: adc_dataverseerdvisualizer.html');
           }
-        }
+        },
       },
       // Custom plugin to transform HTML for Dataverse web resources
       isWebResource && {
@@ -76,8 +76,8 @@ export default defineConfig(({ mode }) => {
           }
 
           return transformed;
-        }
-      }
+        },
+      },
     ].filter(Boolean),
     resolve: {
       alias: {
@@ -97,13 +97,23 @@ export default defineConfig(({ mode }) => {
           // For web resource, output IIFE format (not ESM) for Dataverse compatibility
           format: isWebResource ? 'iife' : undefined,
           // For web resource, create a single bundle
-          manualChunks: isWebResource ? undefined : {
-            'react-vendor': ['react', 'react-dom'],
-          },
+          manualChunks: isWebResource
+            ? undefined
+            : {
+                'react-vendor': ['react', 'react-dom'],
+                'reactflow-vendor': ['@xyflow/react'],
+                'lz-string': ['lz-string'],
+              },
           // Web resource naming with adc_ prefix (Allan De Castro)
-          entryFileNames: isWebResource ? 'adc_dataverseerdvisualizer.js' : 'assets/[name]-[hash].js',
-          chunkFileNames: isWebResource ? 'adc_dataverseerdvisualizer-[name].js' : 'assets/[name]-[hash].js',
-          assetFileNames: isWebResource ? 'adc_dataverseerdvisualizer.[ext]' : 'assets/[name]-[hash].[ext]',
+          entryFileNames: isWebResource
+            ? 'adc_dataverseerdvisualizer.js'
+            : 'assets/[name]-[hash].js',
+          chunkFileNames: isWebResource
+            ? 'adc_dataverseerdvisualizer-[name].js'
+            : 'assets/[name]-[hash].js',
+          assetFileNames: isWebResource
+            ? 'adc_dataverseerdvisualizer.[ext]'
+            : 'assets/[name]-[hash].[ext]',
         },
       },
       // Optimize for web resource
