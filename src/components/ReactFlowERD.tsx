@@ -86,6 +86,9 @@ export interface ReactFlowERDProps {
   // Collapse support
   collapsedEntities?: Set<string>;
   onToggleCollapse?: (entityName: string) => void;
+  // Per-entity color overrides
+  entityColorOverrides?: Record<string, string>;
+  onOpenColorPicker?: (entityName: string, anchorRect: DOMRect) => void;
 }
 
 export interface ReactFlowERDRef {
@@ -118,6 +121,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     onEdgeOffsetChange,
     collapsedEntities,
     onToggleCollapse,
+    entityColorOverrides,
+    onOpenColorPicker,
   },
   ref
 ) {
@@ -265,13 +270,16 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
       const row = Math.floor(index / cols);
       const col = index % cols;
 
-      // Determine color based on publisher
+      // Determine color based on publisher, with per-entity override support
       const isCustom =
         entity.publisher &&
         !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
           entity.publisher
         );
-      const color = isCustom ? colorSettings.customTableColor : colorSettings.standardTableColor;
+      const defaultColor = isCustom
+        ? colorSettings.customTableColor
+        : colorSettings.standardTableColor;
+      const color = entityColorOverrides?.[entity.logicalName] || defaultColor;
 
       return {
         id: entity.logicalName,
@@ -288,6 +296,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
           onRemoveField,
           isCollapsed: collapsedEntities?.has(entity.logicalName) ?? false,
           onToggleCollapse,
+          hasColorOverride: !!entityColorOverrides?.[entity.logicalName],
+          onOpenColorPicker,
         } as TableNodeData,
       };
     });
@@ -439,6 +449,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     onEdgeOffsetChange,
     collapsedEntities,
     onToggleCollapse,
+    onOpenColorPicker,
     setNodes,
     setEdges,
   ]);
@@ -456,18 +467,29 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
           !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
             entity.publisher
           );
-        const color = isCustom ? colorSettings.customTableColor : colorSettings.standardTableColor;
+        const defaultColor = isCustom
+          ? colorSettings.customTableColor
+          : colorSettings.standardTableColor;
+        const color = entityColorOverrides?.[node.id] || defaultColor;
+        const hasColorOverride = !!entityColorOverrides?.[node.id];
 
         // Only update if color actually changed
-        if ((node.data as TableNodeData).color === color) return node;
+        const nodeData = node.data as TableNodeData;
+        if (nodeData.color === color && nodeData.hasColorOverride === hasColorOverride) return node;
 
         return {
           ...node,
-          data: { ...node.data, color },
+          data: { ...node.data, color, hasColorOverride },
         };
       })
     );
-  }, [colorSettings.customTableColor, colorSettings.standardTableColor, entities, setNodes]);
+  }, [
+    colorSettings.customTableColor,
+    colorSettings.standardTableColor,
+    entities,
+    entityColorOverrides,
+    setNodes,
+  ]);
 
   // Separate effect for edge color and style updates
   useEffect(() => {

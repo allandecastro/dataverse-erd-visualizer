@@ -27,6 +27,7 @@ import {
 } from './components';
 import { ReactFlowERD, type ReactFlowERDRef } from './components/ReactFlowERD';
 import { AddRelatedTableDialog } from './components/AddRelatedTableDialog';
+import { ColorPickerPopover } from './components/ColorPickerPopover';
 
 // Components - lazy loaded (not immediately needed)
 const FeatureGuide = lazy(() =>
@@ -108,6 +109,11 @@ export default function ERDVisualizer({
     // Edge offsets for manual adjustment
     edgeOffsets,
     updateEdgeOffset,
+    // Per-entity color overrides
+    entityColorOverrides,
+    setEntityColor,
+    clearEntityColor,
+    clearAllEntityColors,
   } = state;
 
   // Layout algorithms
@@ -136,6 +142,23 @@ export default function ERDVisualizer({
     showToast,
     entities,
   });
+
+  // Color picker popover state
+  const [colorPickerState, setColorPickerState] = useState<{
+    entityName: string;
+    anchorPosition: { x: number; y: number };
+  } | null>(null);
+
+  const handleOpenColorPicker = useCallback((entityName: string, anchorRect: DOMRect) => {
+    setColorPickerState({
+      entityName,
+      anchorPosition: { x: anchorRect.right + 4, y: anchorRect.top },
+    });
+  }, []);
+
+  const handleCloseColorPicker = useCallback(() => {
+    setColorPickerState(null);
+  }, []);
 
   // Draw.io export state
   const [isExportingDrawio, setIsExportingDrawio] = useState(false);
@@ -377,6 +400,7 @@ export default function ERDVisualizer({
         selectedFields,
         collapsedEntities,
         colorSettings,
+        entityColorOverrides,
         onProgress: (progress, message) => {
           setDrawioExportProgress({ progress, message });
         },
@@ -398,6 +422,7 @@ export default function ERDVisualizer({
     selectedFields,
     collapsedEntities,
     colorSettings,
+    entityColorOverrides,
     showToast,
     isExportingDrawio,
   ]);
@@ -420,6 +445,7 @@ export default function ERDVisualizer({
         publisherFilter: currentState.publisherFilter,
         solutionFilter: currentState.solutionFilter,
         isDarkMode: currentState.isDarkMode,
+        entityColorOverrides: currentState.entityColorOverrides,
       };
 
       // Encode state
@@ -613,6 +639,13 @@ export default function ERDVisualizer({
           onOpenFieldDrawer={handleOpenFieldDrawer}
           onRemoveField={handleRemoveField}
           onEdgeOffsetChange={updateEdgeOffset}
+          entityColorOverrides={entityColorOverrides}
+          onOpenColorPicker={handleOpenColorPicker}
+          onColorPickerChange={setEntityColor}
+          onColorPickerReset={clearEntityColor}
+          onCloseColorPicker={handleCloseColorPicker}
+          colorPickerState={colorPickerState}
+          onResetAllEntityColors={clearAllEntityColors}
           onCopyPNG={handleCopyPNG}
           onExportMermaid={handleExportMermaid}
           onExportSVG={handleExportSVG}
@@ -702,6 +735,14 @@ interface ERDVisualizerContentProps {
   onOpenFieldDrawer: (entityName: string) => void;
   onRemoveField: (entityName: string, fieldName: string) => void;
   onEdgeOffsetChange: (edgeId: string, offset: { x: number; y: number }) => void;
+  // Per-entity color overrides
+  entityColorOverrides: Record<string, string>;
+  onOpenColorPicker: (entityName: string, anchorRect: DOMRect) => void;
+  onColorPickerChange: (entityName: string, color: string) => void;
+  onColorPickerReset: (entityName: string) => void;
+  onCloseColorPicker: () => void;
+  colorPickerState: { entityName: string; anchorPosition: { x: number; y: number } } | null;
+  onResetAllEntityColors: () => void;
   onCopyPNG: () => void;
   onExportMermaid: () => void;
   onExportSVG: () => void;
@@ -784,6 +825,13 @@ function ERDVisualizerContent({
   onOpenFieldDrawer,
   onRemoveField,
   onEdgeOffsetChange,
+  entityColorOverrides,
+  onOpenColorPicker,
+  onColorPickerChange,
+  onColorPickerReset,
+  onCloseColorPicker,
+  colorPickerState,
+  onResetAllEntityColors,
   onCopyPNG,
   onExportMermaid,
   onExportSVG,
@@ -820,6 +868,19 @@ function ERDVisualizerContent({
   // Use theme from context
   const { isDarkMode, themeColors } = useTheme();
   const { bgColor, textColor } = themeColors;
+
+  const getEntityDefaultColor = useCallback(
+    (entityName: string) => {
+      const entity = entities.find((e) => e.logicalName === entityName);
+      const isCustom =
+        entity?.publisher &&
+        !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
+          entity.publisher
+        );
+      return isCustom ? colorSettings.customTableColor : colorSettings.standardTableColor;
+    },
+    [entities, colorSettings.customTableColor, colorSettings.standardTableColor]
+  );
 
   return (
     <div
@@ -864,6 +925,8 @@ function ERDVisualizerContent({
         onLayoutModeChange={onLayoutModeChange}
         onToggleSettings={onToggleSettings}
         onColorSettingsChange={onColorSettingsChange}
+        entityColorOverrideCount={Object.keys(entityColorOverrides).length}
+        onResetAllEntityColors={onResetAllEntityColors}
       />
 
       {/* Main Canvas Area */}
@@ -917,12 +980,32 @@ function ERDVisualizerContent({
             onEdgeOffsetChange={onEdgeOffsetChange}
             collapsedEntities={collapsedEntities}
             onToggleCollapse={onToggleCollapse}
+            entityColorOverrides={entityColorOverrides}
+            onOpenColorPicker={onOpenColorPicker}
           />
         </main>
       </div>
 
       {/* Toast Notification */}
       {toast && <Toast message={toast.message} type={toast.type} />}
+
+      {/* Color Picker Popover */}
+      {colorPickerState && (
+        <ColorPickerPopover
+          entityName={colorPickerState.entityName}
+          currentColor={
+            entityColorOverrides[colorPickerState.entityName] ||
+            getEntityDefaultColor(colorPickerState.entityName)
+          }
+          hasOverride={!!entityColorOverrides[colorPickerState.entityName]}
+          isDarkMode={isDarkMode}
+          anchorPosition={colorPickerState.anchorPosition}
+          usedColors={[...new Set(Object.values(entityColorOverrides))]}
+          onColorChange={onColorPickerChange}
+          onColorReset={onColorPickerReset}
+          onClose={onCloseColorPicker}
+        />
+      )}
 
       {/* Entity Search Dialog */}
       <EntitySearch

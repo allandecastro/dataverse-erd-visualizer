@@ -29,6 +29,7 @@ export interface CompactState {
   };
   d: boolean; // isDarkMode
   v: string; // version
+  co?: Record<string, string>; // entityColorOverrides (optional, only present when non-empty)
 }
 
 /**
@@ -81,6 +82,7 @@ export function encodeStateToURL(state: {
   publisherFilter: string;
   solutionFilter: string;
   isDarkMode: boolean;
+  entityColorOverrides?: Record<string, string>;
 }): string {
   try {
     // Build compact state object
@@ -101,6 +103,11 @@ export function encodeStateToURL(state: {
       d: state.isDarkMode,
       v: CODEC_VERSION,
     };
+
+    // Only include color overrides if non-empty (saves URL space)
+    if (state.entityColorOverrides && Object.keys(state.entityColorOverrides).length > 0) {
+      compactState.co = state.entityColorOverrides;
+    }
 
     // Serialize to JSON
     const json = JSON.stringify(compactState);
@@ -181,6 +188,8 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
     publisherFilter: compact.f.pub,
     solutionFilter: compact.f.sol,
     isDarkMode: compact.d,
+    // Restore per-entity color overrides if present
+    ...(compact.co ? { entityColorOverrides: compact.co } : {}),
     // Fields NOT restored from URL (use existing state or defaults):
     // - collapsedEntities
     // - selectedFields

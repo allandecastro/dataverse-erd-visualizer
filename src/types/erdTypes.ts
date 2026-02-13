@@ -111,6 +111,12 @@ export interface ERDState {
   colorSettings: ColorSettings;
   setColorSettings: (value: ColorSettings | ((prev: ColorSettings) => ColorSettings)) => void;
 
+  // Per-entity color overrides
+  entityColorOverrides: Record<string, string>;
+  setEntityColor: (entityName: string, color: string) => void;
+  clearEntityColor: (entityName: string) => void;
+  clearAllEntityColors: () => void;
+
   // Features
   showMinimap: boolean;
   setShowMinimap: (value: boolean) => void;
@@ -145,6 +151,8 @@ export interface SidebarProps {
   onLayoutModeChange: (mode: LayoutMode) => void;
   onToggleSettings: () => void;
   onColorSettingsChange: (key: keyof ColorSettings, value: string) => void;
+  entityColorOverrideCount: number;
+  onResetAllEntityColors: () => void;
 }
 
 // Props for Toolbar component (uses useTheme() for dark mode and theme colors)

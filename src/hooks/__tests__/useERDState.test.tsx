@@ -448,4 +448,224 @@ describe('useERDState', () => {
       expect(result.current.colorSettings.edgeStyle).toBe('straight');
     });
   });
+
+  describe('Entity Color Overrides', () => {
+    it('should initialize with empty entityColorOverrides', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      expect(result.current.entityColorOverrides).toEqual({});
+    });
+
+    it('should set a color override for an entity', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.setEntityColor('account', '#ef4444');
+      });
+
+      expect(result.current.entityColorOverrides).toEqual({ account: '#ef4444' });
+    });
+
+    it('should set multiple color overrides independently', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.setEntityColor('account', '#ef4444');
+      });
+      act(() => {
+        result.current.setEntityColor('contact', '#22c55e');
+      });
+
+      expect(result.current.entityColorOverrides).toEqual({
+        account: '#ef4444',
+        contact: '#22c55e',
+      });
+    });
+
+    it('should overwrite existing color override for same entity', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.setEntityColor('account', '#ef4444');
+      });
+      act(() => {
+        result.current.setEntityColor('account', '#3b82f6');
+      });
+
+      expect(result.current.entityColorOverrides).toEqual({ account: '#3b82f6' });
+    });
+
+    it('should clear a single entity color override', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.setEntityColor('account', '#ef4444');
+        result.current.setEntityColor('contact', '#22c55e');
+      });
+      act(() => {
+        result.current.clearEntityColor('account');
+      });
+
+      expect(result.current.entityColorOverrides).toEqual({ contact: '#22c55e' });
+      expect(result.current.entityColorOverrides.account).toBeUndefined();
+    });
+
+    it('should handle clearing a non-existent override gracefully', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.clearEntityColor('nonexistent');
+      });
+
+      expect(result.current.entityColorOverrides).toEqual({});
+    });
+
+    it('should clear all entity color overrides', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.setEntityColor('account', '#ef4444');
+        result.current.setEntityColor('contact', '#22c55e');
+        result.current.setEntityColor('new_custom', '#8b5cf6');
+      });
+      act(() => {
+        result.current.clearAllEntityColors();
+      });
+
+      expect(result.current.entityColorOverrides).toEqual({});
+    });
+
+    it('should include entityColorOverrides in serializable state', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      act(() => {
+        result.current.setEntityColor('account', '#ef4444');
+        result.current.setEntityColor('contact', '#22c55e');
+      });
+
+      const serialized = result.current.getSerializableState();
+
+      expect(serialized.entityColorOverrides).toEqual({
+        account: '#ef4444',
+        contact: '#22c55e',
+      });
+    });
+
+    it('should include empty entityColorOverrides in serializable state', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      const serialized = result.current.getSerializableState();
+
+      expect(serialized.entityColorOverrides).toEqual({});
+    });
+
+    it('should restore entityColorOverrides from state', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      const stateWithOverrides = {
+        selectedEntities: ['account'],
+        collapsedEntities: [],
+        selectedFields: {},
+        fieldOrder: {},
+        entityPositions: {},
+        layoutMode: 'force' as const,
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        searchQuery: '',
+        publisherFilter: 'all',
+        solutionFilter: 'all',
+        isDarkMode: true,
+        colorSettings: {
+          customTableColor: '#0ea5e9',
+          standardTableColor: '#64748b',
+          lookupColor: '#f97316',
+          edgeStyle: 'smoothstep' as const,
+          lineNotation: 'simple' as const,
+          lineStroke: 'solid' as const,
+          lineThickness: 1.5,
+          useRelationshipTypeColors: false,
+          oneToManyColor: '#f97316',
+          manyToOneColor: '#06b6d4',
+          manyToManyColor: '#8b5cf6',
+        },
+        showMinimap: false,
+        isSmartZoom: false,
+        edgeOffsets: {},
+        entityColorOverrides: {
+          account: '#ef4444',
+          contact: '#22c55e',
+        },
+      };
+
+      act(() => {
+        result.current.restoreState(stateWithOverrides);
+      });
+
+      expect(result.current.entityColorOverrides).toEqual({
+        account: '#ef4444',
+        contact: '#22c55e',
+      });
+    });
+
+    it('should restore with empty overrides when entityColorOverrides is missing (backward compat)', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      // First set some overrides
+      act(() => {
+        result.current.setEntityColor('account', '#ef4444');
+      });
+
+      // Restore old snapshot without entityColorOverrides
+      const oldState = {
+        selectedEntities: ['account'],
+        collapsedEntities: [],
+        selectedFields: {},
+        fieldOrder: {},
+        entityPositions: {},
+        layoutMode: 'force' as const,
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        searchQuery: '',
+        publisherFilter: 'all',
+        solutionFilter: 'all',
+        isDarkMode: true,
+        colorSettings: {
+          customTableColor: '#0ea5e9',
+          standardTableColor: '#64748b',
+          lookupColor: '#f97316',
+          edgeStyle: 'smoothstep' as const,
+        } as any,
+        showMinimap: false,
+        isSmartZoom: false,
+        edgeOffsets: {},
+        // No entityColorOverrides field
+      };
+
+      act(() => {
+        result.current.restoreState(oldState);
+      });
+
+      expect(result.current.entityColorOverrides).toEqual({});
+    });
+
+    it('should preserve entity color overrides independently of entity selection', () => {
+      const { result } = renderHook(() => useERDState(defaultProps));
+
+      // Set color override
+      act(() => {
+        result.current.setEntityColor('account', '#ef4444');
+      });
+
+      // Deselect and reselect entity
+      act(() => {
+        result.current.toggleEntity('account');
+      });
+      act(() => {
+        result.current.toggleEntity('account');
+      });
+
+      // Override should still be there
+      expect(result.current.entityColorOverrides).toEqual({ account: '#ef4444' });
+    });
+  });
 });
