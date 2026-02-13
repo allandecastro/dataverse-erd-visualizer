@@ -51,6 +51,10 @@ export const GroupedEntityList = memo(function GroupedEntityList({
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
 
+  // Keyboard navigation state
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
   // Build entity lookup by logical name for O(1) access
   const entityMap = useMemo(() => {
     const map = new Map<string, Entity>();
@@ -144,8 +148,8 @@ export const GroupedEntityList = memo(function GroupedEntityList({
     return { offsets: offs, totalHeight: offs[flatItems.length] };
   }, [flatItems]);
 
-  // Use the fixed-height virtual scroll hook with an average item height
-  // We'll compute our own visible range using binary search instead
+  // Custom virtual scrolling for variable-height items:
+  // we precompute cumulative offsets and use binary search to find the visible range.
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
 
@@ -225,6 +229,72 @@ export const GroupedEntityList = memo(function GroupedEntityList({
     [confirmRename, cancelRename]
   );
 
+  // Keyboard navigation handler for both group headers and entity rows
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, idx: number) => {
+      const item = flatItems[idx];
+      if (!item) return;
+
+      switch (e.key) {
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          if (item.type === 'group-header') {
+            toggleGroup(item.group.color);
+          } else {
+            onToggleEntity(item.entity.logicalName);
+          }
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          if (idx < flatItems.length - 1) {
+            const next = idx + 1;
+            setFocusedIndex(next);
+            const el = itemRefs.current.get(next);
+            if (el) {
+              el.focus();
+              el.scrollIntoView({ block: 'nearest' });
+            }
+          }
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          if (idx > 0) {
+            const prev = idx - 1;
+            setFocusedIndex(prev);
+            const el = itemRefs.current.get(prev);
+            if (el) {
+              el.focus();
+              el.scrollIntoView({ block: 'nearest' });
+            }
+          }
+          break;
+        case 'Home': {
+          e.preventDefault();
+          setFocusedIndex(0);
+          const el = itemRefs.current.get(0);
+          if (el) {
+            el.focus();
+            el.scrollIntoView({ block: 'nearest' });
+          }
+          break;
+        }
+        case 'End': {
+          e.preventDefault();
+          const last = flatItems.length - 1;
+          setFocusedIndex(last);
+          const el = itemRefs.current.get(last);
+          if (el) {
+            el.focus();
+            el.scrollIntoView({ block: 'nearest' });
+          }
+          break;
+        }
+      }
+    },
+    [flatItems, toggleGroup, onToggleEntity]
+  );
+
   return (
     <div
       ref={containerRef}
@@ -249,8 +319,15 @@ export const GroupedEntityList = memo(function GroupedEntityList({
             return (
               <div
                 key={`group-${item.group.color}`}
+                ref={(el) => {
+                  if (el) itemRefs.current.set(idx, el);
+                  else itemRefs.current.delete(idx);
+                }}
                 className={styles.groupHeader}
                 onClick={() => toggleGroup(item.group.color)}
+                onKeyDown={(e) => handleKeyDown(e, idx)}
+                onFocus={() => setFocusedIndex(idx)}
+                tabIndex={focusedIndex === idx || (focusedIndex === -1 && idx === 0) ? 0 : -1}
                 style={{
                   position: 'absolute',
                   top: offsets[idx],
@@ -319,9 +396,16 @@ export const GroupedEntityList = memo(function GroupedEntityList({
           return (
             <div
               key={entity.logicalName}
+              ref={(el) => {
+                if (el) itemRefs.current.set(idx, el);
+                else itemRefs.current.delete(idx);
+              }}
               role="treeitem"
               aria-selected={isSelected}
+              tabIndex={focusedIndex === idx || (focusedIndex === -1 && idx === 0) ? 0 : -1}
               onClick={() => onToggleEntity(entity.logicalName)}
+              onKeyDown={(e) => handleKeyDown(e, idx)}
+              onFocus={() => setFocusedIndex(idx)}
               style={{
                 position: 'absolute',
                 top: offsets[idx],
