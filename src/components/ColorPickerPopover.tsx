@@ -47,23 +47,47 @@ export function ColorPickerPopover({
   const popoverRef = useRef<HTMLDivElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
 
-  // Close on Escape key
+  // Focus the popover on mount, restore focus on unmount
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    popoverRef.current?.focus();
+    return () => {
+      previouslyFocused?.focus();
+    };
+  }, []);
+
+  // Close on Escape key and trap focus within the dialog
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key === 'Tab' && popoverRef.current) {
+        const focusable = popoverRef.current.querySelectorAll<HTMLElement>(
+          'button:not([tabindex="-1"]), input:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // All unique colors currently assigned to entities in the diagram
-  const uniqueUsedColors = usedColors;
-
   // Adjust position to keep popover within viewport
   const getPosition = useCallback(() => {
     const popoverWidth = 220;
     // Add extra height when "Used in diagram" section is visible
-    const popoverHeight = 180 + (uniqueUsedColors.length > 0 ? 44 : 0);
+    const popoverHeight = 180 + (usedColors.length > 0 ? 44 : 0);
     let x = anchorPosition.x;
     let y = anchorPosition.y;
 
@@ -77,7 +101,7 @@ export function ColorPickerPopover({
     if (y < 8) y = 8;
 
     return { left: x, top: y };
-  }, [anchorPosition, uniqueUsedColors.length]);
+  }, [anchorPosition, usedColors.length]);
 
   const handleSwatchClick = (color: string) => {
     onColorChange(entityName, color);
@@ -117,6 +141,8 @@ export function ColorPickerPopover({
         style={{ left: position.left, top: position.top }}
         role="dialog"
         aria-label="Choose table color"
+        aria-modal="true"
+        tabIndex={-1}
       >
         <div className={`${styles.title} ${isDarkMode ? styles.titleDark : styles.titleLight}`}>
           Table Color
@@ -143,7 +169,7 @@ export function ColorPickerPopover({
         </div>
 
         {/* Used in diagram - shows custom colors from other entities for reuse */}
-        {uniqueUsedColors.length > 0 && (
+        {usedColors.length > 0 && (
           <>
             <div
               className={`${styles.sectionLabel} ${isDarkMode ? styles.titleDark : styles.titleLight}`}
@@ -151,7 +177,7 @@ export function ColorPickerPopover({
               Used in diagram
             </div>
             <div className={styles.usedColorRow}>
-              {uniqueUsedColors.map((color) => {
+              {usedColors.map((color) => {
                 const isActive = normalizedCurrent === color.toLowerCase();
                 return (
                   <button
@@ -180,6 +206,7 @@ export function ColorPickerPopover({
           <button
             className={`${styles.customButton} ${isDarkMode ? styles.customButtonDark : styles.customButtonLight}`}
             onClick={handleCustomColor}
+            aria-label="Open custom color picker"
           >
             <Pipette size={12} />
             Custom
@@ -189,6 +216,7 @@ export function ColorPickerPopover({
             <button
               className={`${styles.resetButton} ${isDarkMode ? styles.resetButtonDark : styles.resetButtonLight}`}
               onClick={handleReset}
+              aria-label="Reset table color to default"
             >
               <RotateCcw size={12} />
               Reset

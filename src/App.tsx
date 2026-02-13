@@ -869,6 +869,19 @@ function ERDVisualizerContent({
   const { isDarkMode, themeColors } = useTheme();
   const { bgColor, textColor } = themeColors;
 
+  const getEntityDefaultColor = useCallback(
+    (entityName: string) => {
+      const entity = entities.find((e) => e.logicalName === entityName);
+      const isCustom =
+        entity?.publisher &&
+        !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
+          entity.publisher
+        );
+      return isCustom ? colorSettings.customTableColor : colorSettings.standardTableColor;
+    },
+    [entities, colorSettings.customTableColor, colorSettings.standardTableColor]
+  );
+
   return (
     <div
       style={{
@@ -982,15 +995,7 @@ function ERDVisualizerContent({
           entityName={colorPickerState.entityName}
           currentColor={
             entityColorOverrides[colorPickerState.entityName] ||
-            (() => {
-              const entity = entities.find((e) => e.logicalName === colorPickerState.entityName);
-              const isCustom =
-                entity?.publisher &&
-                !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
-                  entity.publisher
-                );
-              return isCustom ? colorSettings.customTableColor : colorSettings.standardTableColor;
-            })()
+            getEntityDefaultColor(colorPickerState.entityName)
           }
           hasOverride={!!entityColorOverrides[colorPickerState.entityName]}
           isDarkMode={isDarkMode}
