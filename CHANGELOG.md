@@ -5,6 +5,25 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8.0] - 2026-02-13
+
+### Added
+
+- **Per-Table Color Customization** - Assign unique header colors to individual entity tables:
+  - **Palette Button**: Click the palette icon on any table header to open a color picker
+  - **Preset Swatches**: 10 carefully chosen colors (Red, Orange, Yellow, Green, Teal, Sky, Blue, Violet, Pink, Slate) in a compact 5x2 grid
+  - **Custom Colors**: Pick any color via native color picker
+  - **Used in Diagram**: Quickly reuse colors already applied to other tables in the diagram
+  - **Reset to Default**: Revert individual tables or reset all overrides at once via Settings
+  - **Override Priority**: Per-entity colors take priority over global custom/standard table colors
+  - **Snapshot Support**: Per-table colors are saved and restored with snapshots
+  - **URL Sharing Support**: Per-table colors included in shared URLs (only when overrides exist, zero overhead otherwise)
+  - **Export Support**: Draw.io, PNG, and SVG exports all respect per-entity color overrides
+  - **Backward Compatible**: Snapshots and URLs without color overrides load gracefully with defaults
+  - **Tests**: 22 new tests covering state management, URL codec, serialization, backward compatibility, and export
+
+---
+
 ## [0.1.7.1] - 2026-02-13
 
 ### Added

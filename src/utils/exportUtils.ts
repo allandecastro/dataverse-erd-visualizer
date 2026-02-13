@@ -67,6 +67,8 @@ export interface ExportOptions {
   colorSettings: ColorSettings;
   /** Ordered field names per entity (PK first, then FIFO order) - matches on-screen display */
   orderedFieldsMap?: Record<string, string[]>;
+  /** Per-entity color overrides (entity logicalName → hex color) */
+  entityColorOverrides?: Record<string, string>;
 }
 
 /**
@@ -270,6 +272,7 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
     isDarkMode,
     colorSettings,
     orderedFieldsMap,
+    entityColorOverrides,
   } = options;
 
   const { customTableColor, standardTableColor, lookupColor } = colorSettings;
@@ -444,7 +447,8 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
 
     const x = pos.x - minX;
     const y = pos.y - minY;
-    const tableColor = entity.isCustomEntity ? customTableColor : standardTableColor;
+    const defaultTableColor = entity.isCustomEntity ? customTableColor : standardTableColor;
+    const tableColor = entityColorOverrides?.[entity.logicalName] || defaultTableColor;
     const isCollapsed = collapsedEntities.has(entity.logicalName);
     const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
     const cardHeight = getCardHeight(entity, isCollapsed);
@@ -689,6 +693,7 @@ export function exportToSVG(options: ExportOptions): string {
     isDarkMode,
     colorSettings,
     orderedFieldsMap,
+    entityColorOverrides,
   } = options;
 
   const { customTableColor, standardTableColor, lookupColor, edgeStyle } = colorSettings;
@@ -867,7 +872,8 @@ export function exportToSVG(options: ExportOptions): string {
     const pos = entityPositions[entity.logicalName];
     if (!pos) return;
 
-    const tableColor = entity.isCustomEntity ? customTableColor : standardTableColor;
+    const defaultTableColor = entity.isCustomEntity ? customTableColor : standardTableColor;
+    const tableColor = entityColorOverrides?.[entity.logicalName] || defaultTableColor;
     const isCollapsed = collapsedEntities.has(entity.logicalName);
     const visibleFields = getVisibleFields(entity, orderedFieldsMap, selectedFields);
     const cardHeight = getCardHeight(entity, isCollapsed);

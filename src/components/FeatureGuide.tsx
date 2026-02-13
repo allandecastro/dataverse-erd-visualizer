@@ -265,6 +265,12 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         tip: 'Click the gear icon in the sidebar to access settings',
       },
       {
+        title: 'Per-Table Colors',
+        description:
+          'Assign unique header colors to individual tables using the palette icon on each table header. Choose from 10 preset colors or pick a custom color.',
+        tip: 'Per-table colors override global settings and are saved with snapshots and shared URLs. Use "Reset All Table Colors" in Settings to clear all overrides',
+      },
+      {
         title: 'Relationship Line Notation',
         description:
           "Choose between Crow's Foot notation (database ERD standard), UML style (composition/aggregation diamonds), or Simple arrows.",

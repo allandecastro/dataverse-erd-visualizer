@@ -25,6 +25,7 @@ export interface DrawioExportOptions {
   selectedFields: Record<string, Set<string>>;
   collapsedEntities: Set<string>;
   colorSettings: ColorSettings;
+  entityColorOverrides?: Record<string, string>;
   onProgress?: (progress: number, message: string) => void;
 }
 
@@ -490,6 +491,7 @@ function generateDrawioXml(options: DrawioExportOptions): string {
     selectedFields,
     collapsedEntities,
     colorSettings,
+    entityColorOverrides,
     onProgress,
   } = options;
 
@@ -512,9 +514,10 @@ function generateDrawioXml(options: DrawioExportOptions): string {
     const id = generateId('entity', index);
     entityIdMap[entity.logicalName] = id;
 
-    const color = entity.isCustomEntity
+    const defaultColor = entity.isCustomEntity
       ? colorSettings.customTableColor
       : colorSettings.standardTableColor;
+    const color = entityColorOverrides?.[entity.logicalName] || defaultColor;
 
     const entitySelectedFields = selectedFields[entity.logicalName] || new Set<string>();
     const isCollapsed = collapsedEntities.has(entity.logicalName);
