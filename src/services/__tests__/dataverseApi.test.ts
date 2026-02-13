@@ -6,11 +6,14 @@
 import { dataverseApi } from '../dataverseApi';
 import type { EntityMetadataResult } from '@/types';
 
+// Shared mock for fetch — avoids `(globalThis as any).fetch` while keeping flexible mock types
+const mockFetch = vi.fn();
+
 describe('DataverseApiService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset the global fetch mock
-    (globalThis as any).fetch = vi.fn();
+    mockFetch.mockReset();
+    vi.stubGlobal('fetch', mockFetch);
   });
 
   describe('Initialization', () => {
@@ -35,7 +38,7 @@ describe('DataverseApiService', () => {
       expect(dataverseApi.isInDataverseContext()).toBe(true);
 
       // Cleanup
-      delete (window as any).Xrm;
+      vi.stubGlobal('Xrm', undefined);
     });
 
     it('should fallback to window origin when Xrm not available', () => {
@@ -71,11 +74,11 @@ describe('DataverseApiService', () => {
       expect(dataverseApi.isInDataverseContext()).toBe(true);
 
       // Cleanup
-      delete (window as any).Xrm;
+      vi.stubGlobal('Xrm', undefined);
     });
 
     it('should return false when Xrm is not available', () => {
-      delete (window as any).Xrm;
+      vi.stubGlobal('Xrm', undefined);
       expect(dataverseApi.isInDataverseContext()).toBe(false);
     });
   });
@@ -139,7 +142,7 @@ describe('DataverseApiService', () => {
       };
 
       // Setup fetch mock to return different responses based on URL
-      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
+      mockFetch.mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           return Promise.resolve({
             ok: true,
@@ -232,7 +235,7 @@ describe('DataverseApiService', () => {
       };
 
       let callCount = 0;
-      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
+      mockFetch.mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           callCount++;
           if (callCount === 1) {
@@ -279,7 +282,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
+      mockFetch.mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve(mockEntityResponse) });
         } else if (url.includes('Attributes?')) {
@@ -302,7 +305,7 @@ describe('DataverseApiService', () => {
     });
 
     it('should handle fetch errors gracefully', async () => {
-      ((globalThis as any).fetch as any).mockRejectedValue(new Error('Network error'));
+      mockFetch.mockRejectedValue(new Error('Network error'));
 
       dataverseApi.initialize();
 
@@ -447,7 +450,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      ((globalThis as any).fetch as any).mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockSolutionsResponse),
       });
@@ -464,7 +467,7 @@ describe('DataverseApiService', () => {
     });
 
     it('should return empty array on fetch error', async () => {
-      ((globalThis as any).fetch as any).mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: false,
         statusText: 'Not Found',
       });
@@ -491,7 +494,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      ((globalThis as any).fetch as any).mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockSolutionComponentsResponse),
       });
@@ -515,7 +518,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      ((globalThis as any).fetch as any).mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockSolutionComponentsResponse),
       });
@@ -531,7 +534,7 @@ describe('DataverseApiService', () => {
         { solutionId: 'sol1', uniqueName: 'CustomSolution', friendlyName: 'Custom Solution' },
       ];
 
-      ((globalThis as any).fetch as any).mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: false,
         statusText: 'Not Found',
       });
@@ -599,7 +602,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
+      mockFetch.mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve(mockEntityResponse) });
         } else if (url.includes('Attributes?')) {
@@ -661,7 +664,7 @@ describe('DataverseApiService', () => {
         ],
       };
 
-      ((globalThis as any).fetch as any).mockImplementation((url: string) => {
+      mockFetch.mockImplementation((url: string) => {
         if (url.includes('EntityDefinitions?')) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve(mockEntityResponse) });
         } else if (url.includes('Attributes?')) {

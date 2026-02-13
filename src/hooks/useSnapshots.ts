@@ -19,11 +19,67 @@ import {
   ensureUniqueName,
   isRecentTimestamp,
 } from '@/utils/snapshotSerializer';
-import { encodeStateToURL } from '@/utils/urlStateCodec';
-import { AUTO_SAVE_DEBOUNCE } from '@/constants';
+import { encodeStateToURL, buildMinimalShareState } from '@/utils/urlStateCodec';
+import { downloadFile } from '@/utils/fileDownload';
+import {
+  AUTO_SAVE_DEBOUNCE,
+  MAX_SNAPSHOTS,
+  SHARE_URL_MAX_LENGTH,
+  SHARE_URL_WARN_LENGTH,
+} from '@/constants';
 
 const CURRENT_VERSION = '1.0.0';
-const MAX_SNAPSHOTS = 10;
+
+/**
+ * Extract snapshots from imported JSON data.
+ * Supports both single-snapshot and "Export All" formats.
+ * Returns null if the data format is invalid.
+ */
+export function extractSnapshotsFromImport(data: Record<string, unknown>): ERDSnapshot[] | null {
+  if (data.erdVisualizerSnapshot === true) {
+    if (!data.snapshot) return null;
+    return [data.snapshot as ERDSnapshot];
+  }
+  if (data.erdVisualizerSnapshotsExport === true) {
+    if (!data.snapshots || !Array.isArray(data.snapshots)) return null;
+    return data.snapshots as ERDSnapshot[];
+  }
+  return null;
+}
+
+/**
+ * Assign unique IDs and names to imported snapshots to avoid conflicts.
+ */
+export function deduplicateImportedSnapshots(
+  importedSnapshots: ERDSnapshot[],
+  existingNames: string[]
+): ERDSnapshot[] {
+  const processed: ERDSnapshot[] = [];
+  for (const snapshot of importedSnapshots) {
+    const uniqueName = ensureUniqueName(snapshot.name, [
+      ...existingNames,
+      ...processed.map((s) => s.name),
+    ]);
+    processed.push({
+      ...snapshot,
+      id: generateSnapshotId(),
+      name: uniqueName,
+    });
+  }
+  return processed;
+}
+
+/**
+ * Build lookup maps for entity and field validation.
+ * Shared by validateSnapshot and filterInvalidEntries to avoid duplicate map creation.
+ */
+export function buildEntityLookupMaps(entities: Entity[]) {
+  const entityMap = new Map(entities.map((e) => [e.logicalName, e]));
+  const fieldMaps = new Map(
+    entities.map((e) => [e.logicalName, new Set(e.attributes.map((a) => a.name))])
+  );
+  return { entityMap, fieldMaps };
+}
 
 export interface UseSnapshotsProps {
   getSerializableState: () => SerializableState;
@@ -149,24 +205,21 @@ export function useSnapshots({
   // Validate snapshot schema (check for missing entities/fields)
   const validateSnapshot = useCallback(
     (snapshot: ERDSnapshot): SnapshotValidationResult => {
-      const entityMap = new Map(entities.map((e) => [e.logicalName, e]));
+      const { entityMap, fieldMaps } = buildEntityLookupMaps(entities);
       const missingEntities: string[] = [];
       const missingFields: Array<{ entity: string; field: string }> = [];
 
-      // Check selected entities
       snapshot.state.selectedEntities.forEach((entityName) => {
         if (!entityMap.has(entityName)) {
           missingEntities.push(entityName);
         }
       });
 
-      // Check selected fields
       Object.entries(snapshot.state.selectedFields).forEach(([entityName, fieldNames]) => {
-        const entity = entityMap.get(entityName);
-        if (entity) {
-          const entityFieldNames = new Set(entity.attributes.map((a) => a.name));
+        const fields = fieldMaps.get(entityName);
+        if (fields) {
           fieldNames.forEach((fieldName) => {
-            if (!entityFieldNames.has(fieldName)) {
+            if (!fields.has(fieldName)) {
               missingFields.push({ entity: entityName, field: fieldName });
             }
           });
@@ -185,34 +238,21 @@ export function useSnapshots({
   // Filter out missing entities/fields from snapshot state
   const filterInvalidEntries = useCallback(
     (state: SerializableState, _validation: SnapshotValidationResult): SerializableState => {
-      const entityMap = new Map(entities.map((e) => [e.logicalName, e]));
+      const { entityMap, fieldMaps } = buildEntityLookupMaps(entities);
       const validEntities = state.selectedEntities.filter((name) => entityMap.has(name));
 
-      // Filter selected fields
-      const validSelectedFields: Record<string, string[]> = {};
-      Object.entries(state.selectedFields).forEach(([entityName, fieldNames]) => {
-        const entity = entityMap.get(entityName);
-        if (entity) {
-          const entityFieldNames = new Set(entity.attributes.map((a) => a.name));
-          const validFields = fieldNames.filter((field) => entityFieldNames.has(field));
-          if (validFields.length > 0) {
-            validSelectedFields[entityName] = validFields;
+      // Filter fields using shared field maps
+      const filterFieldRecord = (record: Record<string, string[]>) => {
+        const result: Record<string, string[]> = {};
+        Object.entries(record).forEach(([entityName, fieldNames]) => {
+          const fields = fieldMaps.get(entityName);
+          if (fields) {
+            const valid = fieldNames.filter((f) => fields.has(f));
+            if (valid.length > 0) result[entityName] = valid;
           }
-        }
-      });
-
-      // Filter field order
-      const validFieldOrder: Record<string, string[]> = {};
-      Object.entries(state.fieldOrder).forEach(([entityName, fieldNames]) => {
-        const entity = entityMap.get(entityName);
-        if (entity) {
-          const entityFieldNames = new Set(entity.attributes.map((a) => a.name));
-          const validFields = fieldNames.filter((field) => entityFieldNames.has(field));
-          if (validFields.length > 0) {
-            validFieldOrder[entityName] = validFields;
-          }
-        }
-      });
+        });
+        return result;
+      };
 
       // Filter entity positions
       const validEntityPositions: Record<
@@ -229,8 +269,8 @@ export function useSnapshots({
         ...state,
         selectedEntities: validEntities,
         collapsedEntities: state.collapsedEntities.filter((name) => entityMap.has(name)),
-        selectedFields: validSelectedFields,
-        fieldOrder: validFieldOrder,
+        selectedFields: filterFieldRecord(state.selectedFields),
+        fieldOrder: filterFieldRecord(state.fieldOrder),
         entityPositions: validEntityPositions,
       };
     },
@@ -361,15 +401,8 @@ export function useSnapshots({
 
       const json = JSON.stringify(exportData, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `snapshot-${snapshot.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const filename = `snapshot-${snapshot.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
+      downloadFile(blob, filename);
 
       showToast('Snapshot exported to JSON!', 'success');
     },
@@ -386,18 +419,7 @@ export function useSnapshots({
       }
 
       try {
-        // Build minimal state from snapshot (same structure as handleGenerateShareURL in App.tsx)
-        const minimalState = {
-          selectedEntities: snapshot.state.selectedEntities,
-          entityPositions: snapshot.state.entityPositions,
-          zoom: snapshot.state.zoom,
-          pan: snapshot.state.pan,
-          layoutMode: snapshot.state.layoutMode,
-          searchQuery: snapshot.state.searchQuery,
-          publisherFilter: snapshot.state.publisherFilter,
-          solutionFilter: snapshot.state.solutionFilter,
-          isDarkMode: snapshot.state.isDarkMode,
-        };
+        const minimalState = buildMinimalShareState(snapshot.state);
 
         // Encode state to URL
         const encoded = encodeStateToURL(minimalState);
@@ -406,7 +428,7 @@ export function useSnapshots({
 
         // Check URL length
         const urlLength = shareUrl.length;
-        if (urlLength > 32000) {
+        if (urlLength > SHARE_URL_MAX_LENGTH) {
           showToast(
             'Snapshot too large to share via URL (32KB limit). Use Export instead.',
             'error'
@@ -418,7 +440,7 @@ export function useSnapshots({
         await navigator.clipboard.writeText(shareUrl);
 
         // Show success toast with optional warning
-        if (urlLength > 2000) {
+        if (urlLength > SHARE_URL_WARN_LENGTH) {
           showToast(
             `Share URL copied! (${urlLength} chars - may not work in older browsers)`,
             'warning'
@@ -456,15 +478,7 @@ export function useSnapshots({
 
     const json = JSON.stringify(exportData, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `snapshots-all-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadFile(blob, `snapshots-all-${Date.now()}.json`);
 
     showToast(`${exportData.count} snapshot(s) exported!`, 'success');
   }, [snapshots, lastAutoSave, autoSaveEnabled, showToast]);
@@ -478,57 +492,20 @@ export function useSnapshots({
           const json = e.target?.result as string;
           const data = JSON.parse(json);
 
-          // Check if this is a single snapshot or "Export All" format
-          const isSingleSnapshot = data.erdVisualizerSnapshot === true;
-          const isAllSnapshots = data.erdVisualizerSnapshotsExport === true;
-
-          if (!isSingleSnapshot && !isAllSnapshots) {
-            showToast('Invalid snapshot file (missing marker)', 'error');
+          const importedSnapshots = extractSnapshotsFromImport(data);
+          if (!importedSnapshots) {
+            showToast('Invalid snapshot file format', 'error');
             return;
           }
 
-          let importedSnapshots: ERDSnapshot[] = [];
-
-          if (isSingleSnapshot) {
-            // Single snapshot import
-            if (!data.snapshot) {
-              showToast('Invalid snapshot file (missing snapshot data)', 'error');
-              return;
-            }
-            importedSnapshots = [data.snapshot];
-          } else if (isAllSnapshots) {
-            // Multiple snapshots import ("Export All" format)
-            if (!data.snapshots || !Array.isArray(data.snapshots)) {
-              showToast('Invalid snapshots file (missing snapshots array)', 'error');
-              return;
-            }
-            importedSnapshots = data.snapshots;
-          }
-
-          // Process each imported snapshot
-          const existingNames = snapshots.map((s) => s.name);
-          const processedSnapshots: ERDSnapshot[] = [];
-
-          for (const snapshot of importedSnapshots) {
-            // Generate new ID to avoid conflicts
-            const importedSnapshot: ERDSnapshot = {
-              ...snapshot,
-              id: generateSnapshotId(),
-            };
-
-            // Ensure unique name
-            const uniqueName = ensureUniqueName(importedSnapshot.name, [
-              ...existingNames,
-              ...processedSnapshots.map((s) => s.name),
-            ]);
-            importedSnapshot.name = uniqueName;
-            processedSnapshots.push(importedSnapshot);
-          }
+          const processedSnapshots = deduplicateImportedSnapshots(
+            importedSnapshots,
+            snapshots.map((s) => s.name)
+          );
 
           // Add to snapshots (enforce max limit)
           let updatedSnapshots = [...snapshots, ...processedSnapshots];
           if (updatedSnapshots.length > MAX_SNAPSHOTS) {
-            // Keep the most recent snapshots
             updatedSnapshots.sort((a, b) => b.timestamp - a.timestamp);
             updatedSnapshots = updatedSnapshots.slice(0, MAX_SNAPSHOTS);
           }

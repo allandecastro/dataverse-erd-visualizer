@@ -16,7 +16,8 @@ import type {
   AlternateKey,
 } from '@/types';
 import type { ColorSettings } from '@/types/erdTypes';
-import { getAttributeBadge } from './badges';
+import { getAttributeBadge, getTypeLabel } from './badges';
+import { downloadFile } from './fileDownload';
 
 export interface DrawioExportOptions {
   entities: Entity[];
@@ -162,49 +163,6 @@ const escapeXml = (() => {
  */
 function generateId(prefix: string, index: number): string {
   return `${prefix}_${index}`;
-}
-
-/**
- * Get type label for an attribute (matching TableNode.tsx and exportUtils.ts)
- */
-function getTypeLabel(attr: EntityAttribute): string {
-  if (attr.isPrimaryKey) return 'Unique Identifier';
-  switch (attr.type) {
-    case 'Lookup':
-      return 'Lookup';
-    case 'Owner':
-      return 'Owner';
-    case 'Customer':
-      return 'Customer';
-    case 'String':
-      return 'Text';
-    case 'Memo':
-      return 'Multiline Text';
-    case 'Integer':
-      return 'Whole Number';
-    case 'BigInt':
-      return 'Big Integer';
-    case 'Decimal':
-      return 'Decimal Number';
-    case 'Double':
-      return 'Floating Point';
-    case 'Money':
-      return 'Currency';
-    case 'DateTime':
-      return 'Date and Time';
-    case 'Boolean':
-      return 'Yes/No';
-    case 'Picklist':
-      return 'Choice';
-    case 'State':
-      return 'Status';
-    case 'Status':
-      return 'Status Reason';
-    case 'UniqueIdentifier':
-      return 'Unique Identifier';
-    default:
-      return attr.type;
-  }
 }
 
 /**
@@ -654,10 +612,5 @@ export async function exportToDrawio(options: DrawioExportOptions): Promise<Blob
  * Download Draw.io file
  */
 export function downloadDrawio(blob: Blob, filename = 'dataverse-erd.drawio'): void {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
+  downloadFile(blob, filename);
 }

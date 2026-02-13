@@ -4,10 +4,10 @@
  */
 
 import { memo, useCallback, useRef, useState } from 'react';
-import { Link2 } from 'lucide-react';
 import type { Entity } from '@/types';
 import type { ThemeColors, ColorSettings } from '@/types/erdTypes';
 import { useVirtualScroll } from '../hooks/useVirtualScroll';
+import { EntityItemContent } from './EntityItemContent';
 
 const ITEM_HEIGHT = 52; // Height of each entity item in pixels
 const OVERSCAN = 5; // Number of items to render above/below visible area
@@ -128,9 +128,6 @@ export const VirtualEntityList = memo(function VirtualEntityList({
           if (!entity) return null;
 
           const isSelected = selectedEntities.has(entity.logicalName);
-          const hasLookups = entity.attributes.some(
-            (a) => a.type === 'Lookup' || a.type === 'Owner'
-          );
 
           return (
             <div
@@ -170,56 +167,14 @@ export const VirtualEntityList = memo(function VirtualEntityList({
                 transition: 'all 0.15s',
               }}
             >
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={() => {}}
-                tabIndex={-1}
-                aria-hidden="true"
-                style={{ cursor: 'pointer', accentColor: customTableColor }}
+              <EntityItemContent
+                entity={entity}
+                isSelected={isSelected}
+                customTableColor={customTableColor}
+                standardTableColor={standardTableColor}
+                lookupColor={lookupColor}
+                textSecondary={textSecondary}
               />
-              <div
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '2px',
-                  background: entity.isCustomEntity ? customTableColor : standardTableColor,
-                  flexShrink: 0,
-                }}
-                aria-hidden="true"
-              />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {entity.displayName}
-                </div>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    color: textSecondary,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {entity.logicalName}
-                </div>
-              </div>
-              {hasLookups && (
-                <Link2
-                  size={14}
-                  color={lookupColor}
-                  style={{ flexShrink: 0 }}
-                  aria-label="Has lookup relationships"
-                />
-              )}
             </div>
           );
         })}

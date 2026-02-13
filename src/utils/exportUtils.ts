@@ -14,48 +14,7 @@ import {
   FIELD_ROW_HEIGHT,
   FIELD_PADDING_TOP,
 } from '@/constants';
-import { getAttributeBadge } from './badges';
-
-// Get type label (matching TableNode.tsx getTypeLabel)
-function getTypeLabel(attr: EntityAttribute): string {
-  if (attr.isPrimaryKey) return 'Unique Identifier';
-  switch (attr.type) {
-    case 'Lookup':
-      return 'Lookup';
-    case 'Owner':
-      return 'Owner';
-    case 'Customer':
-      return 'Customer';
-    case 'String':
-      return 'Text';
-    case 'Memo':
-      return 'Multiline Text';
-    case 'Integer':
-      return 'Whole Number';
-    case 'BigInt':
-      return 'Big Integer';
-    case 'Decimal':
-      return 'Decimal Number';
-    case 'Double':
-      return 'Floating Point';
-    case 'Money':
-      return 'Currency';
-    case 'DateTime':
-      return 'Date and Time';
-    case 'Boolean':
-      return 'Yes/No';
-    case 'Picklist':
-      return 'Choice';
-    case 'State':
-      return 'Status';
-    case 'Status':
-      return 'Status Reason';
-    case 'UniqueIdentifier':
-      return 'Unique Identifier';
-    default:
-      return attr.type;
-  }
-}
+import { getAttributeBadge, getTypeLabel } from './badges';
 
 export interface ExportOptions {
   entities: Entity[];

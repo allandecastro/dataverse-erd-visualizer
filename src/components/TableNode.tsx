@@ -6,7 +6,7 @@ import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Plus, X, ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import type { Entity, EntityAttribute, AlternateKey } from '@/types';
-import { getAttributeBadge, isLookupType } from '../utils/badges';
+import { getAttributeBadge, getTypeLabel, isLookupType } from '../utils/badges';
 import { HEADER_HEIGHT, SUBHEADER_HEIGHT, FIELD_ROW_HEIGHT, FIELD_PADDING_TOP } from '@/constants';
 import styles from '@/styles/TableNode.module.css';
 
@@ -26,47 +26,6 @@ export interface TableNodeData extends Record<string, unknown> {
 interface TableNodeProps {
   data: TableNodeData;
   selected?: boolean;
-}
-
-// Get type label (using Dataverse/Power Apps terminology)
-function getTypeLabel(attr: EntityAttribute): string {
-  if (attr.isPrimaryKey) return 'Unique Identifier';
-  switch (attr.type) {
-    case 'Lookup':
-      return 'Lookup';
-    case 'Owner':
-      return 'Owner';
-    case 'Customer':
-      return 'Customer';
-    case 'String':
-      return 'Text';
-    case 'Memo':
-      return 'Multiline Text';
-    case 'Integer':
-      return 'Whole Number';
-    case 'BigInt':
-      return 'Big Integer';
-    case 'Decimal':
-      return 'Decimal Number';
-    case 'Double':
-      return 'Floating Point';
-    case 'Money':
-      return 'Currency';
-    case 'DateTime':
-      return 'Date and Time';
-    case 'Boolean':
-      return 'Yes/No';
-    case 'Picklist':
-      return 'Choice';
-    case 'State':
-      return 'Status';
-    case 'Status':
-      return 'Status Reason';
-    case 'UniqueIdentifier':
-      return 'Unique Identifier';
-    default:
-      return attr.type;
-  }
 }
 
 // Calculate the Y position for a field's handle
