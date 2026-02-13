@@ -37,7 +37,13 @@ describe('drawioExport', () => {
           type: 'UniqueIdentifier',
           isPrimaryKey: true,
         },
-        { name: 'name', displayName: 'Account Name', type: 'String', isPrimaryKey: false },
+        {
+          name: 'name',
+          displayName: 'Account Name',
+          type: 'String',
+          isPrimaryKey: false,
+          isPrimaryName: true,
+        },
       ],
       publisher: 'Microsoft',
       alternateKeys: [],
@@ -56,7 +62,13 @@ describe('drawioExport', () => {
           type: 'UniqueIdentifier',
           isPrimaryKey: true,
         },
-        { name: 'fullname', displayName: 'Full Name', type: 'String', isPrimaryKey: false },
+        {
+          name: 'fullname',
+          displayName: 'Full Name',
+          type: 'String',
+          isPrimaryKey: false,
+          isPrimaryName: true,
+        },
       ],
       publisher: 'Microsoft',
       alternateKeys: [],
@@ -306,6 +318,26 @@ describe('drawioExport', () => {
       const text = await blobToText(blob);
       expect(text).toContain('account');
       expect(text).toContain('Account');
+    });
+
+    it('should use teal fill color for primary name fields', async () => {
+      const blob = await exportToDrawio(baseOptions);
+      const text = await blobToText(blob);
+
+      // Primary name fields should have teal background
+      expect(text).toContain('fillColor=#ccfbf1');
+      // Primary key fields should have gold background
+      expect(text).toContain('fillColor=#fef3c7');
+    });
+
+    it('should show PN badge for primary name fields', async () => {
+      const blob = await exportToDrawio(baseOptions);
+      const text = await blobToText(blob);
+
+      // Account's "name" field should show [PN] badge
+      expect(text).toContain('[PN]');
+      // Contact's "fullname" field should also show [PN] badge
+      expect(text).toMatch(/\[PN\].*Full Name/);
     });
 
     it('should position entities at correct coordinates', async () => {

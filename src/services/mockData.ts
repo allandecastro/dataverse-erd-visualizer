@@ -170,7 +170,7 @@ const commonFields = () => [
  * Generate mock entities simulating a CRM system
  */
 export function generateMockEntities(): Entity[] {
-  return [
+  const entities: Entity[] = [
     // Account
     {
       logicalName: 'account',
@@ -3550,6 +3550,14 @@ export function generateMockEntities(): Entity[] {
       ],
     },
   ];
+
+  // Flag primary name attributes
+  entities.forEach((entity) => {
+    const pnAttr = entity.attributes.find((a) => a.name === entity.primaryNameAttribute);
+    if (pnAttr) pnAttr.isPrimaryName = true;
+  });
+
+  return entities;
 }
 
 /**
