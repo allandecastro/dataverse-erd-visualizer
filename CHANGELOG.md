@@ -5,6 +5,36 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8.1] - 2026-02-13
+
+### Fixed
+
+- **Bulk Selection Performance** - Fixed browser freeze when clicking "Select All" with 150+ entities:
+  - Debounced layout recalculation (300ms) for selection changes to prevent blocking the UI
+  - Skip expensive O(n²) force simulation when entities already have positions; grid-place only new entities
+  - Capped force simulation iterations to 30 for 100+ entities (from 100 default)
+  - Pre-built entity lookup Map for O(1) relationship resolution (replacing O(n) `find()` per edge)
+  - Layout mode changes and first render still apply immediately (no debounce)
+
+- **Share URL Dynamics 365 Context** - Fixed shared URLs losing Dynamics 365 navigation context:
+  - Share URLs now preserve the parent navigation URL (appid, pagetype, webresourceName) when running inside a Dynamics 365 iframe
+  - Added `getShareBaseUrl()` to read the parent frame's URL for correct D365 app context
+  - Added `getStateHash()` to check both current window and parent frame for URL hash state
+  - Fallback to current window URL when cross-origin access is blocked
+
+- **Filter-Aware Select All/None** - Fixed "All" and "None" buttons selecting/deselecting all entities regardless of active filters:
+  - When sidebar filters (search, publisher, solution) are active, "All" now selects only the displayed/filtered entities
+  - "None" similarly deselects only the displayed entities when filters are active
+  - Without active filters, behavior remains unchanged (selects/deselects all entities)
+  - Selection is additive when filtering — selecting filtered entities preserves previously selected entities outside the filter
+
+### Changed
+
+- `selectAll()` and `deselectAll()` now accept an optional `entityNames` parameter for targeted selection
+- Layout effect distinguishes first render from subsequent selection changes for proper debounce behavior
+
+---
+
 ## [0.1.8.0] - 2026-02-13
 
 ### Added
@@ -369,6 +399,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **v0.1.8.1** - February 2026 - Bulk selection performance, Share URL D365 context, filter-aware Select All
 - **v0.1.8.0** - February 2026 - Per-table color customization
 - **v0.1.7.1** - February 2026 - NICOLAS layout, primary name indicator, badge filtering, expanded mock data
 - **v0.1.7.0** - February 2026 - Relationship line customization, quality gates

@@ -26,8 +26,8 @@ export interface SidebarProps {
   showSettings: boolean;
   colorSettings: ColorSettings;
   onToggleEntity: (entityName: string) => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
+  onSelectAll: (entityNames?: string[]) => void;
+  onDeselectAll: (entityNames?: string[]) => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
   onSearchChange: (value: string) => void;
@@ -107,6 +107,23 @@ export function Sidebar({
     return matchesSearch && matchesPublisher && matchesSolution;
   });
 
+  // When filters are active, All/None should only affect the displayed (filtered) entities
+  const isFiltered = displayedEntities.length !== entities.length;
+  const handleSelectAll = () => {
+    if (isFiltered) {
+      onSelectAll(displayedEntities.map((e) => e.logicalName));
+    } else {
+      onSelectAll();
+    }
+  };
+  const handleDeselectAll = () => {
+    if (isFiltered) {
+      onDeselectAll(displayedEntities.map((e) => e.logicalName));
+    } else {
+      onDeselectAll();
+    }
+  };
+
   return (
     <aside
       className={styles.sidebar}
@@ -181,14 +198,14 @@ export function Sidebar({
           </div>
           <div className={styles.buttonGroup}>
             <button
-              onClick={onSelectAll}
+              onClick={handleSelectAll}
               className={styles.smallButton}
               style={{ border: `1px solid ${borderColor}`, color: textColor }}
             >
               All
             </button>
             <button
-              onClick={onDeselectAll}
+              onClick={handleDeselectAll}
               className={styles.smallButton}
               style={{ border: `1px solid ${borderColor}`, color: textColor }}
             >

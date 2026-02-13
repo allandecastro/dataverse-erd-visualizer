@@ -7,8 +7,8 @@ import { useEffect, useCallback } from 'react';
 
 export interface KeyboardShortcutsOptions {
   // Selection
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
+  onSelectAll: (entityNames?: string[]) => void;
+  onDeselectAll: (entityNames?: string[]) => void;
   // Search
   onOpenSearch: () => void;
   // Snapshots

@@ -118,12 +118,37 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     });
   }, []);
 
-  const selectAll = useCallback(() => {
-    setSelectedEntities(new Set(entities.map((e) => e.logicalName)));
-  }, [entities]);
+  const selectAll = useCallback(
+    (entityNames?: string[]) => {
+      if (entityNames) {
+        if (entityNames.length === 0) return;
+        // Add specific entities to selection (filter-aware)
+        setSelectedEntities((prev) => {
+          const newSet = new Set(prev);
+          entityNames.forEach((name) => newSet.add(name));
+          return newSet;
+        });
+      } else {
+        // Select all entities
+        setSelectedEntities(new Set(entities.map((e) => e.logicalName)));
+      }
+    },
+    [entities]
+  );
 
-  const deselectAll = useCallback(() => {
-    setSelectedEntities(new Set());
+  const deselectAll = useCallback((entityNames?: string[]) => {
+    if (entityNames) {
+      if (entityNames.length === 0) return;
+      // Remove specific entities from selection (filter-aware)
+      setSelectedEntities((prev) => {
+        const newSet = new Set(prev);
+        entityNames.forEach((name) => newSet.delete(name));
+        return newSet;
+      });
+    } else {
+      // Deselect everything
+      setSelectedEntities(new Set());
+    }
   }, []);
 
   // Collapse helpers

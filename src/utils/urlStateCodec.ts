@@ -202,6 +202,59 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
 }
 
 /**
+ * Get the proper base URL for sharing, preserving Dynamics 365 navigation context.
+ *
+ * When the app runs as a Dynamics 365 web resource, it's loaded in an iframe.
+ * window.location points to the iframe URL (e.g., /{guid}/webresources/name.html)
+ * but the share URL should use the parent navigation URL
+ * (e.g., /main.aspx?appid=...&pagetype=webresource&webresourceName=name.html)
+ * so recipients land in the correct Dynamics 365 app context.
+ */
+export function getShareBaseUrl(): string {
+  try {
+    // If we're in an iframe, try to use the parent's URL (same-origin access)
+    if (window.parent && window.parent !== window) {
+      const parentUrl = window.parent.location.href;
+      // Strip any existing hash from parent URL
+      const hashIndex = parentUrl.indexOf('#');
+      return hashIndex >= 0 ? parentUrl.slice(0, hashIndex) : parentUrl;
+    }
+  } catch {
+    // Cross-origin access blocked — fall back to current window
+  }
+
+  // Fallback: use current window location (development mode or direct access)
+  return window.location.origin + window.location.pathname + window.location.search;
+}
+
+/**
+ * Get the URL hash containing encoded state.
+ *
+ * When loaded inside a Dynamics 365 iframe, the hash is on the parent URL
+ * (main.aspx?...#encoded_state), not the iframe URL. This function checks
+ * both locations.
+ *
+ * @returns Hash string without # prefix, or empty string if none found
+ */
+export function getStateHash(): string {
+  // Check current window hash first
+  const currentHash = window.location.hash.slice(1);
+  if (currentHash) return currentHash;
+
+  // If in an iframe, check parent window hash (Dynamics 365 scenario)
+  try {
+    if (window.parent && window.parent !== window) {
+      const parentHash = window.parent.location.hash.slice(1);
+      if (parentHash) return parentHash;
+    }
+  } catch {
+    // Cross-origin access blocked — no parent hash available
+  }
+
+  return '';
+}
+
+/**
  * Estimate URL size for given state
  * @param state State to encode
  * @returns Approximate URL length in characters
@@ -209,7 +262,7 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
 export function estimateURLSize(state: Parameters<typeof encodeStateToURL>[0]): number {
   const encoded = encodeStateToURL(state);
   // Full URL = base URL + hash + encoded state
-  const baseUrl = window.location.origin + window.location.pathname;
+  const baseUrl = getShareBaseUrl();
   return baseUrl.length + 1 + encoded.length; // +1 for #
 }
 

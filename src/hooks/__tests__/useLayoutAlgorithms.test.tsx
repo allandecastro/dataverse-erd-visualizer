@@ -6,6 +6,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useLayoutAlgorithms, type UseLayoutAlgorithmsProps } from '../useLayoutAlgorithms';
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
+import type { LayoutMode } from '@/types/erdTypes';
 
 describe('useLayoutAlgorithms', () => {
   const mockEntities: Entity[] = [
@@ -508,6 +509,109 @@ describe('useLayoutAlgorithms', () => {
 
       // Should not trigger any layout (preserve user positions)
       expect(mockSetEntityPositions).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Debounce Behavior', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should apply layout immediately on first render (no debounce)', () => {
+      renderHook(() =>
+        useLayoutAlgorithms({
+          ...defaultProps,
+          layoutMode: 'grid',
+        })
+      );
+
+      // First render should apply immediately without waiting for debounce
+      expect(mockSetEntityPositions).toHaveBeenCalledTimes(1);
+    });
+
+    it('should apply layout immediately when layoutMode changes', () => {
+      const { rerender } = renderHook(
+        (props: UseLayoutAlgorithmsProps) => useLayoutAlgorithms(props),
+        {
+          initialProps: { ...defaultProps, layoutMode: 'grid' as LayoutMode },
+        }
+      );
+
+      mockSetEntityPositions.mockClear();
+
+      // Change layout mode — should apply immediately
+      rerender({ ...defaultProps, layoutMode: 'auto' as LayoutMode });
+
+      expect(mockSetEntityPositions).toHaveBeenCalledTimes(1);
+    });
+
+    it('should debounce layout when only selectedEntities changes', () => {
+      const { rerender } = renderHook(
+        (props: UseLayoutAlgorithmsProps) => useLayoutAlgorithms(props),
+        {
+          initialProps: { ...defaultProps, layoutMode: 'grid' as LayoutMode },
+        }
+      );
+
+      mockSetEntityPositions.mockClear();
+
+      // Change selection — should NOT apply immediately (debounced)
+      rerender({
+        ...defaultProps,
+        layoutMode: 'grid' as LayoutMode,
+        selectedEntities: new Set(['account', 'contact']),
+      });
+
+      expect(mockSetEntityPositions).not.toHaveBeenCalled();
+
+      // After 300ms debounce, layout should be applied
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(mockSetEntityPositions).toHaveBeenCalledTimes(1);
+    });
+
+    it('should cancel pending debounce when layoutMode changes', () => {
+      const { rerender } = renderHook(
+        (props: UseLayoutAlgorithmsProps) => useLayoutAlgorithms(props),
+        {
+          initialProps: { ...defaultProps, layoutMode: 'grid' as LayoutMode },
+        }
+      );
+
+      mockSetEntityPositions.mockClear();
+
+      // Change selection — debounced
+      rerender({
+        ...defaultProps,
+        layoutMode: 'grid' as LayoutMode,
+        selectedEntities: new Set(['account']),
+      });
+
+      expect(mockSetEntityPositions).not.toHaveBeenCalled();
+
+      // Before debounce fires, change layout mode — should apply immediately
+      rerender({
+        ...defaultProps,
+        layoutMode: 'auto' as LayoutMode,
+        selectedEntities: new Set(['account']),
+      });
+
+      // layoutMode change triggers immediate apply (1 call)
+      expect(mockSetEntityPositions).toHaveBeenCalledTimes(1);
+
+      // Advance timers — the debounced selection change should have been cancelled
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      // No additional calls from the cancelled debounce
+      expect(mockSetEntityPositions).toHaveBeenCalledTimes(1);
     });
   });
 });

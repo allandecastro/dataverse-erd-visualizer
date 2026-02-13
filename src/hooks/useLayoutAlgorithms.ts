@@ -16,7 +16,7 @@
  * ```
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { Entity, EntityRelationship, EntityPosition } from '@/types';
 import type { LayoutMode } from '@/types/erdTypes';
 import {
@@ -73,6 +73,38 @@ export function useLayoutAlgorithms({
 
     if (filteredEntities.length === 0) return;
 
+    // Check how many entities already have positions — if most do, only place new ones
+    // instead of running the expensive O(n²) force simulation
+    const entitiesWithPositions = filteredEntities.filter((e) => entityPositions[e.logicalName]);
+    const newEntities = filteredEntities.filter((e) => !entityPositions[e.logicalName]);
+
+    if (entitiesWithPositions.length > 0 && newEntities.length > 0) {
+      // Most entities already positioned — just grid-place new ones near existing layout
+      const newPositions: Record<string, EntityPosition> = { ...entityPositions };
+      const cols = Math.ceil(Math.sqrt(newEntities.length)) || 1;
+
+      // Find the bounding box of existing positions to place new entities nearby
+      let maxY = 0;
+      entitiesWithPositions.forEach((e) => {
+        const pos = entityPositions[e.logicalName];
+        if (pos && pos.y > maxY) maxY = pos.y;
+      });
+
+      newEntities.forEach((entity, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        newPositions[entity.logicalName] = {
+          x: GRID_START_X + col * GRID_SPACING_X,
+          y: maxY + GRID_SPACING_Y + row * GRID_SPACING_Y,
+        };
+      });
+
+      setEntityPositions(newPositions);
+      return;
+    }
+
+    // Full force simulation — only runs when no entities have positions yet
+    // (e.g., first layout or explicit layout mode change)
     const newPositions: Record<string, EntityPosition> = {};
 
     filteredEntities.forEach((entity) => {
@@ -92,8 +124,11 @@ export function useLayoutAlgorithms({
       }
     });
 
-    for (let iter = 0; iter < ITERATIONS; iter++) {
-      const alpha = 1 - iter / ITERATIONS;
+    // Cap iterations based on entity count to avoid blocking the UI
+    const iterationCount = filteredEntities.length > 100 ? Math.min(ITERATIONS, 30) : ITERATIONS;
+
+    for (let iter = 0; iter < iterationCount; iter++) {
+      const alpha = 1 - iter / iterationCount;
 
       filteredEntities.forEach((entity1) => {
         filteredEntities.forEach((entity2) => {
@@ -302,20 +337,37 @@ export function useLayoutAlgorithms({
     setEntityPositions(newPositions);
   }, [entities, selectedEntities, relationships, setEntityPositions]);
 
-  // Apply layout when mode changes (skip for 'manual' mode to preserve user-defined positions)
+  // Apply layout when mode or selection changes.
+  // Debounce selection changes to avoid blocking the UI during bulk selection (e.g. "Select All").
+  // Layout mode changes (user explicitly choosing a layout) apply immediately.
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const prevLayoutModeRef = useRef(layoutMode);
+  const isFirstRenderRef = useRef(true);
+
   useEffect(() => {
-    if (layoutMode === 'force') {
-      applyForceLayout();
-    } else if (layoutMode === 'grid') {
-      applyGridLayout();
-    } else if (layoutMode === 'auto') {
-      applyAutoArrange();
-    } else if (layoutMode === 'nicolas') {
-      applyNicolasLayout();
+    const layoutModeChanged = prevLayoutModeRef.current !== layoutMode;
+    prevLayoutModeRef.current = layoutMode;
+    const isFirstRender = isFirstRenderRef.current;
+    isFirstRenderRef.current = false;
+
+    if (layoutMode === 'manual') return;
+
+    const applyLayout = () => {
+      if (layoutMode === 'force') applyForceLayout();
+      else if (layoutMode === 'grid') applyGridLayout();
+      else if (layoutMode === 'auto') applyAutoArrange();
+      else if (layoutMode === 'nicolas') applyNicolasLayout();
+    };
+
+    if (isFirstRender || layoutModeChanged) {
+      clearTimeout(debounceRef.current);
+      applyLayout();
+    } else {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(applyLayout, 300);
     }
-    // 'manual' mode: Skip auto-layout, preserve existing positions
-    // Note: Only trigger on layoutMode and selectedEntities changes to avoid infinite loops
-    // The layout functions themselves are stable due to their useCallback wrappers
+
+    return () => clearTimeout(debounceRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layoutMode, selectedEntities]);
 
