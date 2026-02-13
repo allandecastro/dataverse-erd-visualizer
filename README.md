@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.8.0_BETA-blue?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.1.8.1_BETA-blue?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
   <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml"><img src="https://github.com/allandecastro/dataverse-erd-visualizer/actions/workflows/release.yml/badge.svg" alt="CD" /></a>
@@ -74,7 +74,7 @@
 
 | Feature                | Description                                                                                                                               |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Search & Filter**    | Quick search by table name, filter by publisher/solution                                                                                  |
+| **Search & Filter**    | Quick search by table name, filter by publisher/solution, filter-aware Select All/None                                                    |
 | **Field Selector**     | Choose which fields to display per table with badge-type filtering                                                                        |
 | **Primary Name Badge** | Cyan "PN" badge identifies each entity's primary name column ([#48](https://github.com/allandecastro/dataverse-erd-visualizer/issues/48)) |
 | **Snapshots**          | Save/restore complete diagram states with auto-save, export/import                                                                        |
@@ -229,7 +229,7 @@ npm run test:ui
 
 **Test Coverage:**
 
-- **347 tests** across 16 test suites
+- **380 tests** across 16 test suites
 - Unit tests for utilities (URL codec, Draw.io export, badges, serialization, edge markers, NICOLAS layout)
 - Integration tests for hooks (useERDState, useSnapshots, useLayoutAlgorithms, useKeyboardShortcuts)
 - Component tests (EdgeMarkerDefinitions, Toast)
@@ -488,7 +488,7 @@ dataverse-erd-visualizer/
 
 **Quality Gates**
 
-- Comprehensive test suite with 347 tests (Vitest + React Testing Library)
+- Comprehensive test suite with 380 tests (Vitest + React Testing Library)
 - Unit tests for critical utilities (URL codec, Draw.io export, badges, NICOLAS layout)
 - Integration tests for core hooks (useERDState, useSnapshots, useLayoutAlgorithms)
 - Algorithm tests (Leiden community detection, Sugiyama layout, strip-packing)

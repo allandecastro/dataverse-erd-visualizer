@@ -10,6 +10,8 @@ import {
   expandCompactState,
   estimateURLSize,
   isURLSafe,
+  getShareBaseUrl,
+  getStateHash,
   type CompactState,
 } from '../urlStateCodec';
 
@@ -448,6 +450,146 @@ describe('urlStateCodec', () => {
 
       // Compressed string should be shorter than original JSON
       expect(encoded.length).toBeLessThan(json.length);
+    });
+  });
+
+  describe('getShareBaseUrl', () => {
+    afterEach(() => {
+      Object.defineProperty(window, 'parent', {
+        value: window,
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    it('should return current window URL when not in iframe', () => {
+      Object.defineProperty(window, 'parent', {
+        value: window,
+        writable: true,
+        configurable: true,
+      });
+
+      const result = getShareBaseUrl();
+      expect(result).toContain(window.location.origin);
+    });
+
+    it('should use parent URL when in an iframe (same-origin)', () => {
+      const mockParent = {
+        location: {
+          href: 'https://org.crm.dynamics.com/main.aspx?appid=abc123&pagetype=webresource&webresourceName=adc_erd.html',
+        },
+      };
+
+      Object.defineProperty(window, 'parent', {
+        value: mockParent,
+        writable: true,
+        configurable: true,
+      });
+
+      const result = getShareBaseUrl();
+      expect(result).toBe(
+        'https://org.crm.dynamics.com/main.aspx?appid=abc123&pagetype=webresource&webresourceName=adc_erd.html'
+      );
+    });
+
+    it('should strip hash from parent URL', () => {
+      const mockParent = {
+        location: {
+          href: 'https://org.crm.dynamics.com/main.aspx?appid=abc123#existingHash',
+        },
+      };
+
+      Object.defineProperty(window, 'parent', {
+        value: mockParent,
+        writable: true,
+        configurable: true,
+      });
+
+      const result = getShareBaseUrl();
+      expect(result).toBe('https://org.crm.dynamics.com/main.aspx?appid=abc123');
+      expect(result).not.toContain('#');
+    });
+
+    it('should fall back to current window when cross-origin parent access throws', () => {
+      const throwingParent = new Proxy(
+        {},
+        {
+          get(_, prop) {
+            if (prop === 'location') throw new DOMException('Blocked by CORS');
+            return undefined;
+          },
+        }
+      );
+
+      Object.defineProperty(window, 'parent', {
+        value: throwingParent,
+        writable: true,
+        configurable: true,
+      });
+
+      const result = getShareBaseUrl();
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+    });
+  });
+
+  describe('getStateHash', () => {
+    afterEach(() => {
+      Object.defineProperty(window, 'parent', {
+        value: window,
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    it('should return empty string when no hash is present', () => {
+      // jsdom default has empty hash
+      Object.defineProperty(window, 'parent', {
+        value: window,
+        writable: true,
+        configurable: true,
+      });
+
+      const result = getStateHash();
+      expect(result).toBe('');
+    });
+
+    it('should check parent hash when current window has no hash (iframe scenario)', () => {
+      const mockParent = {
+        location: {
+          hash: '#parentEncodedState',
+        },
+      };
+
+      Object.defineProperty(window, 'parent', {
+        value: mockParent,
+        writable: true,
+        configurable: true,
+      });
+
+      const result = getStateHash();
+      expect(result).toBe('parentEncodedState');
+    });
+
+    it('should return empty string when cross-origin parent access throws', () => {
+      const throwingParent = new Proxy(
+        {},
+        {
+          get(_, prop) {
+            if (prop === 'location') throw new DOMException('Blocked by CORS');
+            return undefined;
+          },
+        }
+      );
+
+      Object.defineProperty(window, 'parent', {
+        value: throwingParent,
+        writable: true,
+        configurable: true,
+      });
+
+      const result = getStateHash();
+      expect(result).toBe('');
     });
   });
 });
