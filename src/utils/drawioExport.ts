@@ -347,6 +347,8 @@ function generateFieldCell(
   let fillColor = '#ffffff'; // Standard fields
   if (field.isPrimaryKey) {
     fillColor = '#fef3c7'; // Gold tint for primary keys
+  } else if (field.isPrimaryName) {
+    fillColor = '#ccfbf1'; // Teal tint for primary name
   } else if (
     field.isLookup ||
     field.type === 'Lookup' ||
