@@ -227,6 +227,9 @@ function leidenLevel(
     commNodes.get(c)!.push(node);
   }
 
+  // Deterministic counter for new singleton community IDs
+  let nextCommId = Math.max(...community.values()) + 1;
+
   for (const [, members] of commNodes) {
     if (members.length <= 2) continue;
 
@@ -245,8 +248,8 @@ function leidenLevel(
 
       // If node has more external than internal connections, split it out
       if (externalEdges > internalEdges && internalEdges === 0) {
-        // Assign to singleton community
-        const newComm = nodes.length + Math.floor(Math.random() * 10000);
+        // Assign to singleton community using deterministic ID
+        const newComm = nextCommId++;
         const ki = nodeDegrees.get(node)!;
         const oldComm = community.get(node)!;
         communityTotDeg.set(oldComm, (communityTotDeg.get(oldComm) || 0) - ki);
