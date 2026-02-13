@@ -174,5 +174,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout main
           git add README.md package.json
-          git diff --staged --quiet || git commit -m "chore: update version to ${{ steps.version.outputs.VERSION }} [skip ci]"
+          git diff --staged --quiet || git commit --no-verify -m "chore: update version to ${{ steps.version.outputs.VERSION }} [skip ci]"
           git push origin main
