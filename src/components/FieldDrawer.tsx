@@ -4,7 +4,13 @@
 
 import { useState, useMemo } from 'react';
 import type { Entity, EntityAttribute } from '@/types';
-import { getAttributeBadge, isLookupType, isCustomAttribute } from '../utils/badges';
+import {
+  getAttributeBadge,
+  getAvailableBadges,
+  filterByBadge,
+  isLookupType,
+  isCustomAttribute,
+} from '../utils/badges';
 import { useTheme } from '@/context';
 import { FieldDrawerHeader } from './FieldDrawerHeader';
 import { FieldDrawerList } from './FieldDrawerList';
@@ -29,14 +35,17 @@ export function FieldDrawer({
 }: FieldDrawerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
-  const [showLookupsOnly, setShowLookupsOnly] = useState(false);
   const [showCustomOnly, setShowCustomOnly] = useState(false);
+  const [activeBadgeFilter, setActiveBadgeFilter] = useState<string | null>(null);
 
   const { isDarkMode, themeColors, colors } = useTheme();
 
   // Use theme colors for consistency with Sidebar and Toolbar
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
   const { inputBg, inputBorder, hoverBg } = colors;
+
+  // Compute available badges from entity attributes
+  const availableBadges = useMemo(() => getAvailableBadges(entity.attributes), [entity.attributes]);
 
   // Filter attributes
   const filteredAttributes = useMemo(() => {
@@ -56,20 +65,22 @@ export function FieldDrawer({
       attrs = attrs.filter((attr) => selectedFields.has(attr.name) || attr.isPrimaryKey);
     }
 
-    // Lookups only filter
-    if (showLookupsOnly) {
-      attrs = attrs.filter((attr) => isLookupType(attr));
-    }
-
     // Custom only filter
     if (showCustomOnly) {
       attrs = attrs.filter((attr) => isCustomAttribute(attr));
     }
 
-    // Sort: PK first, then alphabetically
+    // Badge type filter
+    if (activeBadgeFilter) {
+      attrs = filterByBadge(attrs, activeBadgeFilter);
+    }
+
+    // Sort: PK first, then PN, then alphabetically
     attrs.sort((a, b) => {
       if (a.isPrimaryKey && !b.isPrimaryKey) return -1;
       if (!a.isPrimaryKey && b.isPrimaryKey) return 1;
+      if (a.isPrimaryName && !b.isPrimaryName) return -1;
+      if (!a.isPrimaryName && b.isPrimaryName) return 1;
       return a.displayName.localeCompare(b.displayName);
     });
 
@@ -78,8 +89,8 @@ export function FieldDrawer({
     entity.attributes,
     searchQuery,
     showSelectedOnly,
-    showLookupsOnly,
     showCustomOnly,
+    activeBadgeFilter,
     selectedFields,
   ]);
 
@@ -146,8 +157,9 @@ export function FieldDrawer({
         titleId={drawerTitleId}
         searchQuery={searchQuery}
         showSelectedOnly={showSelectedOnly}
-        showLookupsOnly={showLookupsOnly}
         showCustomOnly={showCustomOnly}
+        availableBadges={availableBadges}
+        activeBadgeFilter={activeBadgeFilter}
         isDarkMode={isDarkMode}
         headerBg={panelBg}
         borderColor={borderColor}
@@ -157,8 +169,10 @@ export function FieldDrawer({
         inputBorder={inputBorder}
         onSearchChange={setSearchQuery}
         onToggleSelectedOnly={() => setShowSelectedOnly(!showSelectedOnly)}
-        onToggleLookupsOnly={() => setShowLookupsOnly(!showLookupsOnly)}
         onToggleCustomOnly={() => setShowCustomOnly(!showCustomOnly)}
+        onBadgeFilterChange={(label) =>
+          setActiveBadgeFilter(activeBadgeFilter === label ? null : label)
+        }
         onClose={onClose}
       />
 

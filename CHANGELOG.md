@@ -31,6 +31,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Includes entities from Sales, Service, Marketing, HR, Finance, and more
   - Better simulation of real-world Dataverse environments
 
+- **Primary Name Indicator** ([#48](https://github.com/allandecastro/dataverse-erd-visualizer/issues/48)) - Visual indicator for each entity's primary name column:
+  - **PN Badge**: Cyan badge on entity cards, field drawer, and Draw.io export
+  - **Teal Background**: `#ccfbf1` fill color in Draw.io export for primary name fields
+  - **Sort Priority**: Primary name fields sort after primary key, before other fields
+  - **Selectable**: Unlike PK (always locked), PN fields can be toggled on/off
+
+- **Badge-Based Field Filtering** ([#48](https://github.com/allandecastro/dataverse-erd-visualizer/issues/48)) - Dynamic field type filters in the Field Drawer:
+  - Clickable badge chips (PK, PN, LKP, TXT, INT, DT, etc.) computed from entity attributes
+  - Each chip shows badge color, label, and field count
+  - Click to filter, click again to clear; only one badge filter active at a time
+  - Replaces hardcoded "Lookups" filter with dynamic badge-based approach
+  - **Tests**: 12 new tests for `getAvailableBadges()` and `filterByBadge()` utilities
+
 ### Changed
 
 - **LayoutMode Type Consolidation** - Unified `LayoutMode` type as single source of truth in `types/index.ts`, re-exported from `erdTypes.ts` to eliminate duplication
@@ -337,7 +350,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
-- **v0.1.7.1** - February 2026 - NICOLAS layout algorithm, layout dropdown, expanded mock data (150 entities)
+- **v0.1.7.1** - February 2026 - NICOLAS layout, primary name indicator, badge filtering, expanded mock data
 - **v0.1.7.0** - February 2026 - Relationship line customization, quality gates
 - **v0.1.6.0** - February 2025 - Share URL, Snapshots
 - **v0.1.5.0** - February 2025 - Snapshot management system

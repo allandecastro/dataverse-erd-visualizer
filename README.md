@@ -72,14 +72,15 @@
 
 ### User Experience
 
-| Feature                | Description                                                                               |
-| ---------------------- | ----------------------------------------------------------------------------------------- |
-| **Search & Filter**    | Quick search by table name, filter by publisher/solution                                  |
-| **Field Selector**     | Choose which fields to display per table                                                  |
-| **Snapshots**          | Save/restore complete diagram states with auto-save, export/import                        |
-| **Share URL**          | Generate shareable URLs with one-click clipboard copy, automatic state restoration        |
-| **Keyboard Shortcuts** | Ctrl+S (save), Ctrl+Shift+S (snapshots), Ctrl+Shift+C (share), / (search), Esc (deselect) |
-| **Feature Guide**      | Interactive onboarding for new users                                                      |
+| Feature                | Description                                                                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Search & Filter**    | Quick search by table name, filter by publisher/solution                                                                                  |
+| **Field Selector**     | Choose which fields to display per table with badge-type filtering                                                                        |
+| **Primary Name Badge** | Cyan "PN" badge identifies each entity's primary name column ([#48](https://github.com/allandecastro/dataverse-erd-visualizer/issues/48)) |
+| **Snapshots**          | Save/restore complete diagram states with auto-save, export/import                                                                        |
+| **Share URL**          | Generate shareable URLs with one-click clipboard copy, automatic state restoration                                                        |
+| **Keyboard Shortcuts** | Ctrl+S (save), Ctrl+Shift+S (snapshots), Ctrl+Shift+C (share), / (search), Esc (deselect)                                                 |
+| **Feature Guide**      | Interactive onboarding for new users                                                                                                      |
 
 ### Export & Customization
 
@@ -228,7 +229,7 @@ npm run test:ui
 
 **Test Coverage:**
 
-- **330 tests** across 16 test suites
+- **347 tests** across 16 test suites
 - Unit tests for utilities (URL codec, Draw.io export, badges, serialization, edge markers, NICOLAS layout)
 - Integration tests for hooks (useERDState, useSnapshots, useLayoutAlgorithms, useKeyboardShortcuts)
 - Component tests (EdgeMarkerDefinitions, Toast)
@@ -487,7 +488,7 @@ dataverse-erd-visualizer/
 
 **Quality Gates**
 
-- Comprehensive test suite with 330 tests (Vitest + React Testing Library)
+- Comprehensive test suite with 347 tests (Vitest + React Testing Library)
 - Unit tests for critical utilities (URL codec, Draw.io export, badges, NICOLAS layout)
 - Integration tests for core hooks (useERDState, useSnapshots, useLayoutAlgorithms)
 - Algorithm tests (Leiden community detection, Sugiyama layout, strip-packing)
