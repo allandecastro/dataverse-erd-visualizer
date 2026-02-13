@@ -42,7 +42,13 @@ import type { ColorSettings, LayoutMode } from './types/erdTypes';
 import type { ERDSnapshot } from './types/snapshotTypes';
 import { exportToMermaid } from './utils/exportUtils';
 import { exportToDrawio, downloadDrawio } from './utils/drawioExport';
-import { encodeStateToURL, decodeStateFromURL, expandCompactState } from './utils/urlStateCodec';
+import {
+  encodeStateToURL,
+  decodeStateFromURL,
+  expandCompactState,
+  getShareBaseUrl,
+  getStateHash,
+} from './utils/urlStateCodec';
 import { validateURLState, filterInvalidURLEntries } from './utils/urlStateValidation';
 
 interface ERDVisualizerProps {
@@ -187,7 +193,8 @@ export default function ERDVisualizer({
 
   // URL state restoration - HIGHEST PRIORITY (runs once on mount)
   useEffect(() => {
-    const hash = window.location.hash.slice(1); // Remove # prefix
+    // Check both current window and parent window hash (for D365 iframe scenario)
+    const hash = getStateHash();
 
     if (!hash) return; // No URL state, let localStorage auto-save handle it
 
@@ -451,8 +458,8 @@ export default function ERDVisualizer({
       // Encode state
       const encoded = encodeStateToURL(minimalState);
 
-      // Build full URL
-      const baseUrl = window.location.origin + window.location.pathname + window.location.search;
+      // Build full URL (preserves D365 navigation context when in iframe)
+      const baseUrl = getShareBaseUrl();
       const shareUrl = `${baseUrl}#${encoded}`;
 
       // Check URL length
@@ -718,8 +725,8 @@ interface ERDVisualizerContentProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
   reactFlowRef: React.RefObject<ReactFlowERDRef | null>;
   onToggleEntity: (name: string) => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
+  onSelectAll: (entityNames?: string[]) => void;
+  onDeselectAll: (entityNames?: string[]) => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
   collapsedEntities: Set<string>;
