@@ -569,8 +569,7 @@ function generateDrawioXml(options: DrawioExportOptions): string {
 
     let groupIdx = 0;
     for (const [color, positions] of colorToPositions) {
-      const name = groupNames[color];
-      if (!name) continue;
+      const name = groupNames[color]!;
       // Calculate bounding box
       const minX = Math.min(...positions.map((p) => p.x));
       const minY = Math.min(...positions.map((p) => p.y));
