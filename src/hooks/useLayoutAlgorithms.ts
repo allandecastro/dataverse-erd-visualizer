@@ -33,6 +33,7 @@ import {
   LEVEL_HEIGHT,
   HORIZONTAL_SPACING,
 } from '@/constants';
+import { computeNicolasLayout } from '@/utils/nicolasLayout';
 
 export interface UseLayoutAlgorithmsProps {
   entities: Entity[];
@@ -275,6 +276,32 @@ export function useLayoutAlgorithms({
     setEntityPositions(newPositions);
   }, [entities, selectedEntities, relationships, setEntityPositions]);
 
+  /**
+   * NICOLAS layout: community-aware hierarchical layout.
+   *
+   * Algorithm:
+   * 1. Leiden community detection groups entities by relationship density
+   * 2. Sugiyama hierarchical layout within each community
+   * 3. Strip-packing of community bounding boxes for inter-community placement
+   * 4. Optional L2 grouping for large entity sets (15+)
+   */
+  const applyNicolasLayout = useCallback(() => {
+    const filteredEntities = entities.filter((e) => selectedEntities.has(e.logicalName));
+    if (filteredEntities.length === 0) return;
+
+    const filteredRelationships = relationships.filter(
+      (rel) => selectedEntities.has(rel.from) && selectedEntities.has(rel.to)
+    );
+
+    const newPositions = computeNicolasLayout(
+      filteredEntities,
+      filteredRelationships,
+      selectedEntities
+    );
+
+    setEntityPositions(newPositions);
+  }, [entities, selectedEntities, relationships, setEntityPositions]);
+
   // Apply layout when mode changes (skip for 'manual' mode to preserve user-defined positions)
   useEffect(() => {
     if (layoutMode === 'force') {
@@ -283,6 +310,8 @@ export function useLayoutAlgorithms({
       applyGridLayout();
     } else if (layoutMode === 'auto') {
       applyAutoArrange();
+    } else if (layoutMode === 'nicolas') {
+      applyNicolasLayout();
     }
     // 'manual' mode: Skip auto-layout, preserve existing positions
     // Note: Only trigger on layoutMode and selectedEntities changes to avoid infinite loops
@@ -294,5 +323,6 @@ export function useLayoutAlgorithms({
     applyForceLayout,
     applyGridLayout,
     applyAutoArrange,
+    applyNicolasLayout,
   };
 }

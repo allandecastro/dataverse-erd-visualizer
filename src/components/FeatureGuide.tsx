@@ -111,8 +111,8 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       {
         title: 'Layout Modes',
         description:
-          'Choose between Force-Directed (organic), Grid (structured), or Auto (hybrid) layouts.',
-        tip: 'Click the layout button in the sidebar to cycle through modes',
+          'Choose between Force-Directed (organic), Grid (structured), Auto (hybrid), NICOLAS (Nested Intelligent COmmunity Layout & Alignment System), or Manual (free positioning) layouts.',
+        tip: 'Use the layout dropdown in the sidebar to switch between modes',
       },
       {
         title: 'Minimap',

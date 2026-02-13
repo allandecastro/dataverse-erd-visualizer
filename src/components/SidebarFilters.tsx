@@ -3,7 +3,7 @@
  */
 
 import { memo } from 'react';
-import { Search, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Search, Eye, EyeOff } from 'lucide-react';
 import type { LayoutMode } from '@/types/erdTypes';
 import styles from '@/styles/Sidebar.module.css';
 
@@ -44,20 +44,12 @@ export const SidebarFilters = memo(function SidebarFilters({
   onExpandAll,
   onCollapseAll,
 }: SidebarFiltersProps) {
-  const buttonBg = isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
   const smallButtonBg = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
   const inputBg = isDarkMode ? '#1a1a1a' : '#ffffff';
 
   // SVG chevron arrow for select dropdown - properly encoded for CSS url()
   const arrowColor = isDarkMode ? '%23e2e8f0' : '%231e293b';
   const selectArrowBg = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${arrowColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`;
-
-  const cycleLayoutMode = () => {
-    const modes: LayoutMode[] = ['force', 'grid', 'auto', 'manual'];
-    const currentIndex = modes.indexOf(layoutMode);
-    const nextMode = modes[(currentIndex + 1) % modes.length];
-    onLayoutModeChange(nextMode);
-  };
 
   return (
     <>
@@ -133,26 +125,27 @@ export const SidebarFilters = memo(function SidebarFilters({
       </select>
 
       {/* Layout Mode */}
-      <div className={styles.layoutButtonGroup}>
-        <button
-          onClick={cycleLayoutMode}
-          className={styles.layoutButton}
-          style={{
-            background: buttonBg,
-            border: `1px solid ${borderColor}`,
-            color: textColor,
-          }}
-        >
-          <RefreshCw size={14} />
-          {layoutMode === 'force'
-            ? 'Force'
-            : layoutMode === 'grid'
-              ? 'Grid'
-              : layoutMode === 'auto'
-                ? 'Auto'
-                : 'Manual'}
-        </button>
-      </div>
+      <select
+        key={`layout-${isDarkMode}`}
+        value={layoutMode}
+        onChange={(e) => onLayoutModeChange(e.target.value as LayoutMode)}
+        className={styles.select}
+        style={{
+          backgroundColor: inputBg,
+          border: `1px solid ${borderColor}`,
+          color: textColor,
+          backgroundImage: selectArrowBg,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'calc(100% - 12px) center',
+          backgroundSize: '12px 12px',
+        }}
+      >
+        <option value="force">Layout: Force-Directed</option>
+        <option value="grid">Layout: Grid</option>
+        <option value="auto">Layout: Auto-Arrange</option>
+        <option value="nicolas">Layout: NICOLAS</option>
+        <option value="manual">Layout: Manual</option>
+      </select>
 
       {/* Expand/Collapse */}
       <div className={styles.expandCollapseGroup}>
