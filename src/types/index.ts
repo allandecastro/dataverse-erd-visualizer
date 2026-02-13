@@ -31,6 +31,7 @@ export interface EntityAttribute {
   displayName: string;
   type: AttributeType;
   isPrimaryKey?: boolean;
+  isPrimaryName?: boolean;
   isLookup?: boolean;
   lookupTarget?: string; // Target entity logical name for lookup fields
   isCustomAttribute?: boolean; // Whether this is a custom attribute (vs. standard OOB attribute)

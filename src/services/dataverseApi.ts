@@ -368,6 +368,7 @@ class DataverseApiService {
         displayName: attr.DisplayName?.UserLocalizedLabel?.Label || attr.LogicalName,
         type: this.mapAttributeType(attrType),
         isPrimaryKey,
+        isPrimaryName: attr.LogicalName === entityMeta.PrimaryNameAttribute,
         isLookup,
         lookupTarget:
           isLookupType && attr.Targets && attr.Targets.length > 0 ? attr.Targets[0] : undefined,

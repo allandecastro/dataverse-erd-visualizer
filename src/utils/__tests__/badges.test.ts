@@ -3,7 +3,13 @@
  * Validates attribute type badge generation and classification
  */
 
-import { getAttributeBadge, isLookupType, isCustomAttribute } from '../badges';
+import {
+  getAttributeBadge,
+  isLookupType,
+  isCustomAttribute,
+  getAvailableBadges,
+  filterByBadge,
+} from '../badges';
 import type { EntityAttribute } from '@/types';
 
 describe('badges', () => {
@@ -260,6 +266,49 @@ describe('badges', () => {
       expect(badge.color).toBe('#6b7280');
     });
 
+    it('should return PN badge for primary name attribute', () => {
+      const attr: EntityAttribute = {
+        name: 'name',
+        displayName: 'Account Name',
+        type: 'String',
+        isPrimaryName: true,
+      };
+
+      const badge = getAttributeBadge(attr);
+
+      expect(badge.label).toBe('PN');
+      expect(badge.color).toBe('#06b6d4');
+    });
+
+    it('should prioritize PK badge over PN badge', () => {
+      const attr: EntityAttribute = {
+        name: 'accountid',
+        displayName: 'Account ID',
+        type: 'UniqueIdentifier',
+        isPrimaryKey: true,
+        isPrimaryName: true,
+      };
+
+      const badge = getAttributeBadge(attr);
+
+      // PK should take priority over PN
+      expect(badge.label).toBe('PK');
+    });
+
+    it('should prioritize PN badge over type-specific badge', () => {
+      const attr: EntityAttribute = {
+        name: 'fullname',
+        displayName: 'Full Name',
+        type: 'String',
+        isPrimaryName: true,
+      };
+
+      const badge = getAttributeBadge(attr);
+
+      // Should be PN, not TXT
+      expect(badge.label).toBe('PN');
+    });
+
     it('should prioritize PK badge over type-specific badge', () => {
       const attr: EntityAttribute = {
         name: 'accountid',
@@ -389,6 +438,160 @@ describe('badges', () => {
       };
 
       expect(isCustomAttribute(attr)).toBe(true);
+    });
+  });
+
+  describe('getAvailableBadges', () => {
+    const sampleAttributes: EntityAttribute[] = [
+      {
+        name: 'accountid',
+        displayName: 'Account ID',
+        type: 'UniqueIdentifier',
+        isPrimaryKey: true,
+      },
+      { name: 'name', displayName: 'Account Name', type: 'String', isPrimaryName: true },
+      { name: 'description', displayName: 'Description', type: 'String' },
+      { name: 'parentaccountid', displayName: 'Parent Account', type: 'Lookup' },
+      { name: 'ownerid', displayName: 'Owner', type: 'Owner' },
+      { name: 'revenue', displayName: 'Revenue', type: 'Money' },
+      { name: 'createdon', displayName: 'Created On', type: 'DateTime' },
+      { name: 'statecode', displayName: 'Status', type: 'State' },
+    ];
+
+    it('should return unique badge types with counts', () => {
+      const badges = getAvailableBadges(sampleAttributes);
+
+      expect(badges.find((b) => b.label === 'PK')).toEqual({
+        label: 'PK',
+        color: '#f59e0b',
+        count: 1,
+      });
+      expect(badges.find((b) => b.label === 'PN')).toEqual({
+        label: 'PN',
+        color: '#06b6d4',
+        count: 1,
+      });
+      expect(badges.find((b) => b.label === 'LKP')).toEqual({
+        label: 'LKP',
+        color: '#ef4444',
+        count: 2,
+      });
+      expect(badges.find((b) => b.label === 'TXT')).toEqual({
+        label: 'TXT',
+        color: '#8b5cf6',
+        count: 1,
+      });
+    });
+
+    it('should include all badge types present in attributes', () => {
+      const badges = getAvailableBadges(sampleAttributes);
+      const labels = badges.map((b) => b.label);
+
+      expect(labels).toContain('PK');
+      expect(labels).toContain('PN');
+      expect(labels).toContain('LKP');
+      expect(labels).toContain('TXT');
+      expect(labels).toContain('CUR');
+      expect(labels).toContain('DT');
+      expect(labels).toContain('STS');
+    });
+
+    it('should not include badge types not in attributes', () => {
+      const badges = getAvailableBadges(sampleAttributes);
+      const labels = badges.map((b) => b.label);
+
+      expect(labels).not.toContain('INT');
+      expect(labels).not.toContain('Y/N');
+      expect(labels).not.toContain('CHC');
+      expect(labels).not.toContain('MLT');
+    });
+
+    it('should return empty array for empty attributes', () => {
+      expect(getAvailableBadges([])).toEqual([]);
+    });
+
+    it('should correctly count Lookup, Owner, and Customer as LKP', () => {
+      const attrs: EntityAttribute[] = [
+        { name: 'parentid', displayName: 'Parent', type: 'Lookup' },
+        { name: 'ownerid', displayName: 'Owner', type: 'Owner' },
+        { name: 'customerid', displayName: 'Customer', type: 'Customer' },
+      ];
+
+      const badges = getAvailableBadges(attrs);
+      const lkp = badges.find((b) => b.label === 'LKP');
+
+      expect(lkp).toBeDefined();
+      expect(lkp!.count).toBe(3);
+      expect(badges).toHaveLength(1);
+    });
+
+    it('should correctly count Integer and BigInt as INT', () => {
+      const attrs: EntityAttribute[] = [
+        { name: 'count', displayName: 'Count', type: 'Integer' },
+        { name: 'version', displayName: 'Version', type: 'BigInt' },
+      ];
+
+      const badges = getAvailableBadges(attrs);
+      const int = badges.find((b) => b.label === 'INT');
+
+      expect(int).toBeDefined();
+      expect(int!.count).toBe(2);
+    });
+  });
+
+  describe('filterByBadge', () => {
+    const mixedAttributes: EntityAttribute[] = [
+      {
+        name: 'accountid',
+        displayName: 'Account ID',
+        type: 'UniqueIdentifier',
+        isPrimaryKey: true,
+      },
+      { name: 'name', displayName: 'Account Name', type: 'String', isPrimaryName: true },
+      { name: 'description', displayName: 'Description', type: 'String' },
+      { name: 'parentaccountid', displayName: 'Parent Account', type: 'Lookup' },
+      { name: 'ownerid', displayName: 'Owner', type: 'Owner' },
+      { name: 'revenue', displayName: 'Revenue', type: 'Money' },
+      { name: 'numberofemployees', displayName: 'Employees', type: 'Integer' },
+      { name: 'createdon', displayName: 'Created On', type: 'DateTime' },
+    ];
+
+    it('should filter to only PK fields', () => {
+      const result = filterByBadge(mixedAttributes, 'PK');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('accountid');
+    });
+
+    it('should filter to only PN fields', () => {
+      const result = filterByBadge(mixedAttributes, 'PN');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('name');
+    });
+
+    it('should filter to all LKP fields (Lookup + Owner)', () => {
+      const result = filterByBadge(mixedAttributes, 'LKP');
+
+      expect(result).toHaveLength(2);
+      expect(result.map((a) => a.name)).toEqual(['parentaccountid', 'ownerid']);
+    });
+
+    it('should filter to TXT fields (excludes PN even though type is String)', () => {
+      const result = filterByBadge(mixedAttributes, 'TXT');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('description');
+    });
+
+    it('should return empty array when no fields match badge', () => {
+      const result = filterByBadge(mixedAttributes, 'CHC');
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('should return empty array for empty attributes', () => {
+      expect(filterByBadge([], 'TXT')).toEqual([]);
     });
   });
 });

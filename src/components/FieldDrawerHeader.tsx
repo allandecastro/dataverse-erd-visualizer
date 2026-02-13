@@ -3,7 +3,8 @@
  */
 
 import { memo } from 'react';
-import { X, Search, CheckCircle, Link, Wrench } from 'lucide-react';
+import { X, Search, CheckCircle, Wrench } from 'lucide-react';
+import type { BadgeCount } from '../utils/badges';
 import styles from '@/styles/FieldDrawerHeader.module.css';
 
 export interface FieldDrawerHeaderProps {
@@ -12,8 +13,9 @@ export interface FieldDrawerHeaderProps {
   titleId?: string;
   searchQuery: string;
   showSelectedOnly: boolean;
-  showLookupsOnly: boolean;
   showCustomOnly: boolean;
+  availableBadges: BadgeCount[];
+  activeBadgeFilter: string | null;
   isDarkMode: boolean;
   headerBg: string;
   borderColor: string;
@@ -23,8 +25,8 @@ export interface FieldDrawerHeaderProps {
   inputBorder: string;
   onSearchChange: (value: string) => void;
   onToggleSelectedOnly: () => void;
-  onToggleLookupsOnly: () => void;
   onToggleCustomOnly: () => void;
+  onBadgeFilterChange: (label: string) => void;
   onClose: () => void;
 }
 
@@ -33,8 +35,9 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
   titleId,
   searchQuery,
   showSelectedOnly,
-  showLookupsOnly,
   showCustomOnly,
+  availableBadges,
+  activeBadgeFilter,
   isDarkMode,
   headerBg,
   borderColor,
@@ -44,8 +47,8 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
   inputBorder,
   onSearchChange,
   onToggleSelectedOnly,
-  onToggleLookupsOnly,
   onToggleCustomOnly,
+  onBadgeFilterChange,
   onClose,
 }: FieldDrawerHeaderProps) {
   const getSelectedButtonStyle = () => ({
@@ -57,17 +60,6 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
         ? '#374151'
         : '#f3f4f6',
     color: showSelectedOnly ? (isDarkMode ? '#86efac' : '#166534') : textSecondary,
-  });
-
-  const getLookupsButtonStyle = () => ({
-    background: showLookupsOnly
-      ? isDarkMode
-        ? '#9a3412'
-        : '#ffedd5'
-      : isDarkMode
-        ? '#374151'
-        : '#f3f4f6',
-    color: showLookupsOnly ? (isDarkMode ? '#fdba74' : '#9a3412') : textSecondary,
   });
 
   const getCustomButtonStyle = () => ({
@@ -142,16 +134,6 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
           Selected
         </button>
         <button
-          onClick={onToggleLookupsOnly}
-          aria-pressed={showLookupsOnly}
-          aria-label="Show lookup fields only"
-          className={styles.filterButton}
-          style={getLookupsButtonStyle()}
-        >
-          <Link size={14} aria-hidden="true" />
-          Lookups
-        </button>
-        <button
           onClick={onToggleCustomOnly}
           aria-pressed={showCustomOnly}
           aria-label="Show custom fields only"
@@ -161,6 +143,36 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
           <Wrench size={14} aria-hidden="true" />
           Custom
         </button>
+      </div>
+
+      {/* Badge Type Filters */}
+      <div role="group" aria-label="Filter by field type" className={styles.badgeFilterGroup}>
+        {availableBadges.map((badge) => {
+          const isActive = activeBadgeFilter === badge.label;
+          return (
+            <button
+              key={badge.label}
+              onClick={() => onBadgeFilterChange(badge.label)}
+              aria-pressed={isActive}
+              aria-label={`Filter by ${badge.label} fields`}
+              className={styles.badgeChip}
+              style={{
+                background: isActive ? badge.color : isDarkMode ? '#374151' : '#f3f4f6',
+                color: isActive ? '#ffffff' : textSecondary,
+                borderColor: isActive ? badge.color : 'transparent',
+              }}
+            >
+              <span
+                className={styles.badgeChipDot}
+                style={{
+                  background: isActive ? '#ffffff' : badge.color,
+                }}
+              />
+              {badge.label}
+              <span className={styles.badgeChipCount}>{badge.count}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

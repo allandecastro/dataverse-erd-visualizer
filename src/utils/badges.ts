@@ -17,6 +17,9 @@ export function getAttributeBadge(attr: EntityAttribute): AttributeBadge {
   if (attr.isPrimaryKey) {
     return { label: 'PK', color: '#f59e0b' };
   }
+  if (attr.isPrimaryName) {
+    return { label: 'PN', color: '#06b6d4' };
+  }
   if (attr.type === 'Lookup' || attr.type === 'Owner' || attr.type === 'Customer') {
     return { label: 'LKP', color: '#ef4444' };
   }
@@ -71,4 +74,41 @@ export function isLookupType(attr: EntityAttribute): boolean {
  */
 export function isCustomAttribute(attr: EntityAttribute): boolean {
   return attr.isCustomAttribute === true;
+}
+
+export interface BadgeCount {
+  label: string;
+  color: string;
+  count: number;
+}
+
+/**
+ * Compute available badge types from a list of attributes with counts
+ */
+export function getAvailableBadges(attributes: EntityAttribute[]): BadgeCount[] {
+  const badgeMap = new Map<string, { color: string; count: number }>();
+  attributes.forEach((attr) => {
+    const badge = getAttributeBadge(attr);
+    const existing = badgeMap.get(badge.label);
+    if (existing) {
+      existing.count++;
+    } else {
+      badgeMap.set(badge.label, { color: badge.color, count: 1 });
+    }
+  });
+  return Array.from(badgeMap.entries()).map(([label, { color, count }]) => ({
+    label,
+    color,
+    count,
+  }));
+}
+
+/**
+ * Filter attributes by badge label
+ */
+export function filterByBadge(
+  attributes: EntityAttribute[],
+  badgeLabel: string
+): EntityAttribute[] {
+  return attributes.filter((attr) => getAttributeBadge(attr).label === badgeLabel);
 }
