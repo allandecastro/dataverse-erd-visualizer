@@ -119,6 +119,61 @@ export const LEVEL_HEIGHT = 320;
 export const HORIZONTAL_SPACING = 380;
 
 // =============================================================================
+// NICOLAS LAYOUT CONSTANTS (Community-Aware Hierarchical Layout)
+// =============================================================================
+// Parameters for the NICOLAS (Nested Intelligent COmmunity Layout & Alignment System)
+
+/**
+ * Padding inside each community bounding box (px)
+ */
+export const NICOLAS_COMMUNITY_PADDING = 60;
+
+/**
+ * Gap between community bounding boxes (px)
+ */
+export const NICOLAS_INTER_COMMUNITY_GAP = 120;
+
+/**
+ * Horizontal spacing between entities within a community (px)
+ */
+export const NICOLAS_INTRA_SPACING_X = 380;
+
+/**
+ * Vertical spacing between layers within a community (px)
+ */
+export const NICOLAS_INTRA_SPACING_Y = 320;
+
+/**
+ * Minimum entities to trigger Leiden community detection
+ */
+export const NICOLAS_MIN_COMMUNITY_SIZE = 6;
+
+/**
+ * Leiden algorithm resolution parameter (higher = more communities)
+ */
+export const NICOLAS_LEIDEN_RESOLUTION = 1.0;
+
+/**
+ * Leiden max iterations for convergence
+ */
+export const NICOLAS_LEIDEN_MAX_ITERATIONS = 50;
+
+/**
+ * Sugiyama barycenter iterations for crossing minimization
+ */
+export const NICOLAS_SUGIYAMA_ITERATIONS = 24;
+
+/**
+ * Starting X position for NICOLAS layout (px)
+ */
+export const NICOLAS_START_X = 100;
+
+/**
+ * Starting Y position for NICOLAS layout (px)
+ */
+export const NICOLAS_START_Y = 80;
+
+// =============================================================================
 // EXPORT CONSTANTS
 // =============================================================================
 // Parameters for image/diagram exports
