@@ -169,6 +169,32 @@ export const SidebarSettings = memo(function SidebarSettings({
           </select>
         </div>
 
+        {/* Field Label Display Mode */}
+        <div>
+          <label className={styles.settingsLabel} style={{ color: textSecondary }}>
+            Field Label Display
+          </label>
+          <select
+            key={`fieldlabel-${isDarkMode}`}
+            value={colorSettings.fieldLabelMode || 'displayName'}
+            onChange={(e) => onColorSettingsChange('fieldLabelMode', e.target.value)}
+            className={styles.settingsSelect}
+            style={{
+              backgroundColor: inputBg,
+              border: `1px solid ${borderColor}`,
+              color: textColor,
+              backgroundImage: selectArrowBg,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'calc(100% - 10px) center',
+              backgroundSize: '12px 12px',
+            }}
+          >
+            <option value="displayName">Display Name</option>
+            <option value="schemaName">Schema Name</option>
+            <option value="both">Both (Display + Schema)</option>
+          </select>
+        </div>
+
         {/* Line Thickness Slider */}
         <div>
           <label className={styles.settingsLabel} style={{ color: textSecondary }}>

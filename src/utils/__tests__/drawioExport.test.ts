@@ -109,6 +109,7 @@ describe('drawioExport', () => {
     oneToManyColor: '#f97316',
     manyToOneColor: '#06b6d4',
     manyToManyColor: '#8b5cf6',
+    fieldLabelMode: 'displayName' as const,
   };
 
   const baseOptions: DrawioExportOptions = {

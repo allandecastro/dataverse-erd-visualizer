@@ -154,6 +154,23 @@
   color: #374151;
 }
 
+/* Field Schema Name (secondary line in "both" mode) */
+.fieldSchemaName {
+  font-size: 10px;
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fieldSchemaNameDark {
+  color: #9ca3af;
+}
+
+.fieldSchemaNameLight {
+  color: #6b7280;
+}
+
 /* Field Type */
 .fieldType {
   font-size: 10px;
