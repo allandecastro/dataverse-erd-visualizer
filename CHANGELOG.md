@@ -5,6 +5,21 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Field Label Display Mode** ([#56](https://github.com/allandecastro/dataverse-erd-visualizer/issues/56)) - Choose how field names are shown on entity cards:
+  - **Display Name** (default) — friendly name only (e.g., "Account Name")
+  - **Schema Name** — logical/schema name only (e.g., "name")
+  - **Both** — display name with schema name in parentheses below (e.g., "Account Name" + "(name)")
+  - Setting available in sidebar Settings under "Field Label Display"
+  - Respected across all export formats: PNG, SVG, Draw.io, and Mermaid
+  - Saved and restored with snapshots
+  - Added to Feature Guide under Customization
+
+---
+
 ## [0.1.9.0] - 2026-02-13
 
 ### Added
@@ -421,6 +436,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **Unreleased** - February 2026 - Field label display mode (display name, schema name, or both)
 - **v0.1.8.1** - February 2026 - Bulk selection performance, Share URL D365 context, filter-aware Select All
 - **v0.1.8.0** - February 2026 - Per-table color customization
 - **v0.1.7.1** - February 2026 - NICOLAS layout, primary name indicator, badge filtering, expanded mock data
