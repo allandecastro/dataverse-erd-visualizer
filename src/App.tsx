@@ -47,6 +47,7 @@ import {
   encodeStateToURL,
   decodeStateFromURL,
   expandCompactState,
+  getFieldLabelModeFromCompact,
   getShareBaseUrl,
   getStateHash,
   buildMinimalShareState,
@@ -242,7 +243,16 @@ export default function ERDVisualizer({
         // Filter out missing entities
         const filteredState = filterInvalidURLEntries(decoded.state, validation);
         const expandedState = expandCompactState(filteredState);
-        const mergedState = { ...state.getSerializableState(), ...expandedState };
+        const currentState = state.getSerializableState();
+        const urlFieldLabelMode = getFieldLabelModeFromCompact(filteredState) ?? 'displayName';
+        const mergedState = {
+          ...currentState,
+          ...expandedState,
+          colorSettings: {
+            ...currentState.colorSettings,
+            fieldLabelMode: urlFieldLabelMode,
+          },
+        };
         state.restoreState(mergedState);
         showToast(
           `Shared state loaded (${validation.missingEntities.length} ${
@@ -253,7 +263,16 @@ export default function ERDVisualizer({
       } else {
         // Valid state, restore directly
         const expandedState = expandCompactState(decoded.state);
-        const mergedState = { ...state.getSerializableState(), ...expandedState };
+        const currentState = state.getSerializableState();
+        const urlFieldLabelMode = getFieldLabelModeFromCompact(decoded.state) ?? 'displayName';
+        const mergedState = {
+          ...currentState,
+          ...expandedState,
+          colorSettings: {
+            ...currentState.colorSettings,
+            fieldLabelMode: urlFieldLabelMode,
+          },
+        };
         state.restoreState(mergedState);
         showToast('Shared state loaded successfully!', 'success');
       }

@@ -7,7 +7,14 @@ import { Handle, Position } from '@xyflow/react';
 import { Plus, X, ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import type { Entity, EntityAttribute, AlternateKey } from '@/types';
 import { getAttributeBadge, getTypeLabel, isLookupType } from '../utils/badges';
-import { HEADER_HEIGHT, SUBHEADER_HEIGHT, FIELD_ROW_HEIGHT, FIELD_PADDING_TOP } from '@/constants';
+import {
+  HEADER_HEIGHT,
+  SUBHEADER_HEIGHT,
+  FIELD_ROW_HEIGHT,
+  FIELD_ROW_HEIGHT_BOTH,
+  FIELD_PADDING_TOP,
+} from '@/constants';
+import type { FieldLabelMode } from '@/types/erdTypes';
 import styles from '@/styles/TableNode.module.css';
 
 export interface TableNodeData extends Record<string, unknown> {
@@ -21,6 +28,7 @@ export interface TableNodeData extends Record<string, unknown> {
   onToggleCollapse?: (entityName: string) => void;
   hasColorOverride?: boolean;
   onOpenColorPicker?: (entityName: string, anchorRect: DOMRect) => void;
+  fieldLabelMode?: FieldLabelMode;
 }
 
 interface TableNodeProps {
@@ -30,13 +38,9 @@ interface TableNodeProps {
 
 // Calculate the Y position for a field's handle
 // Layout constants imported from @/constants for consistency
-function getFieldHandleTop(fieldIndex: number): number {
+function getFieldHandleTop(fieldIndex: number, rowHeight: number = FIELD_ROW_HEIGHT): number {
   return (
-    HEADER_HEIGHT +
-    SUBHEADER_HEIGHT +
-    FIELD_PADDING_TOP +
-    fieldIndex * FIELD_ROW_HEIGHT +
-    FIELD_ROW_HEIGHT / 2
+    HEADER_HEIGHT + SUBHEADER_HEIGHT + FIELD_PADDING_TOP + fieldIndex * rowHeight + rowHeight / 2
   );
 }
 
@@ -52,6 +56,7 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
     onToggleCollapse,
     hasColorOverride,
     onOpenColorPicker,
+    fieldLabelMode = 'displayName',
   } = data;
 
   // Get attributes to display based on orderedFields or just PK
@@ -65,10 +70,13 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
   // Get alternate keys
   const alternateKeys = entity.alternateKeys || [];
 
+  // Effective row height depends on field label mode
+  const effectiveRowHeight = fieldLabelMode === 'both' ? FIELD_ROW_HEIGHT_BOTH : FIELD_ROW_HEIGHT;
+
   // Find primary key for default handle position
   const pkAttr = displayAttributes.find((a) => a.isPrimaryKey);
   const pkIndex = pkAttr ? displayAttributes.findIndex((a) => a.isPrimaryKey) : 0;
-  const defaultHandleTop = getFieldHandleTop(pkIndex);
+  const defaultHandleTop = getFieldHandleTop(pkIndex, effectiveRowHeight);
 
   const nodeClasses = [
     styles.tableNode,
@@ -80,7 +88,7 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
     <div className={nodeClasses}>
       {/* Per-field handles for precise edge connections */}
       {displayAttributes.map((attr, index) => {
-        const handleTop = getFieldHandleTop(index);
+        const handleTop = getFieldHandleTop(index, effectiveRowHeight);
         const isPK = attr.isPrimaryKey;
         const isLookup = isLookupType(attr);
 
@@ -209,7 +217,7 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
             <div
               key={attr.name}
               className={`${styles.fieldRow} ${isDarkMode ? styles.fieldRowDark : styles.fieldRowLight}`}
-              style={{ height: FIELD_ROW_HEIGHT }}
+              style={{ height: effectiveRowHeight }}
             >
               {/* Badge */}
               <span className={styles.fieldBadge} style={{ background: badge.color }}>
@@ -217,11 +225,26 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
               </span>
 
               {/* Field name */}
-              <span
-                className={`${styles.fieldName} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}
-              >
-                {attr.displayName || attr.name}
-              </span>
+              {fieldLabelMode === 'both' ? (
+                <div className={styles.fieldNameBoth}>
+                  <span
+                    className={`${styles.fieldNameDisplay} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}
+                  >
+                    {attr.displayName || attr.name}
+                  </span>
+                  <span
+                    className={`${styles.fieldSchemaName} ${isDarkMode ? styles.fieldSchemaNameDark : styles.fieldSchemaNameLight}`}
+                  >
+                    {attr.name}
+                  </span>
+                </div>
+              ) : (
+                <span
+                  className={`${styles.fieldName} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}
+                >
+                  {fieldLabelMode === 'schemaName' ? attr.name : attr.displayName || attr.name}
+                </span>
+              )}
 
               {/* Type */}
               <span
