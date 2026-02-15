@@ -13,6 +13,7 @@ import {
   getShareBaseUrl,
   getStateHash,
   buildMinimalShareState,
+  getFieldLabelModeFromCompact,
   type CompactState,
 } from '../urlStateCodec';
 import type { SerializableState } from '@/types/snapshotTypes';
@@ -885,6 +886,22 @@ describe('urlStateCodec', () => {
       expect(minimal).not.toHaveProperty('groupFilter');
     });
 
+    it('should include fieldLabelMode when not default', () => {
+      const stateWithSchemaMode = {
+        ...fullState,
+        colorSettings: { ...fullState.colorSettings, fieldLabelMode: 'schemaName' as const },
+      };
+      const minimal = buildMinimalShareState(stateWithSchemaMode);
+
+      expect(minimal.fieldLabelMode).toBe('schemaName');
+    });
+
+    it('should omit fieldLabelMode when default (displayName)', () => {
+      const minimal = buildMinimalShareState(fullState);
+
+      expect(minimal).not.toHaveProperty('fieldLabelMode');
+    });
+
     it('should produce a valid state for encodeStateToURL', () => {
       const minimal = buildMinimalShareState(fullState);
 
@@ -892,6 +909,95 @@ describe('urlStateCodec', () => {
       const encoded = encodeStateToURL(minimal);
       expect(typeof encoded).toBe('string');
       expect(encoded.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('fieldLabelMode URL round-trip', () => {
+    it('should encode flm when mode is schemaName and decode it back', () => {
+      const stateToEncode = {
+        selectedEntities: ['account'],
+        entityPositions: { account: { x: 0, y: 0 } },
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        layoutMode: 'force' as const,
+        searchQuery: '',
+        publisherFilter: 'all',
+        solutionFilter: 'all',
+        isDarkMode: false,
+        fieldLabelMode: 'schemaName' as const,
+      };
+
+      const encoded = encodeStateToURL(stateToEncode);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.flm).toBe('schemaName');
+    });
+
+    it('should encode flm when mode is both and decode it back', () => {
+      const stateToEncode = {
+        selectedEntities: ['account'],
+        entityPositions: { account: { x: 0, y: 0 } },
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        layoutMode: 'force' as const,
+        searchQuery: '',
+        publisherFilter: 'all',
+        solutionFilter: 'all',
+        isDarkMode: false,
+        fieldLabelMode: 'both' as const,
+      };
+
+      const encoded = encodeStateToURL(stateToEncode);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.flm).toBe('both');
+    });
+
+    it('should omit flm when mode is default displayName', () => {
+      const stateToEncode = {
+        selectedEntities: ['account'],
+        entityPositions: { account: { x: 0, y: 0 } },
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        layoutMode: 'force' as const,
+        searchQuery: '',
+        publisherFilter: 'all',
+        solutionFilter: 'all',
+        isDarkMode: false,
+        fieldLabelMode: 'displayName' as const,
+      };
+
+      const encoded = encodeStateToURL(stateToEncode);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.flm).toBeUndefined();
+    });
+
+    it('should handle backward-compatible hashes without flm', () => {
+      // Simulate an older hash that lacks flm field
+      const stateToEncode = {
+        selectedEntities: ['account'],
+        entityPositions: { account: { x: 0, y: 0 } },
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        layoutMode: 'force' as const,
+        searchQuery: '',
+        publisherFilter: 'all',
+        solutionFilter: 'all',
+        isDarkMode: false,
+        // no fieldLabelMode — simulates pre-feature URL
+      };
+
+      const encoded = encodeStateToURL(stateToEncode);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.flm).toBeUndefined();
+      // getFieldLabelModeFromCompact should return undefined for missing flm
+      expect(getFieldLabelModeFromCompact(decoded.state!)).toBeUndefined();
     });
   });
 });

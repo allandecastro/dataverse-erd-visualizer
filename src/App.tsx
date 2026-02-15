@@ -244,13 +244,13 @@ export default function ERDVisualizer({
         const filteredState = filterInvalidURLEntries(decoded.state, validation);
         const expandedState = expandCompactState(filteredState);
         const currentState = state.getSerializableState();
-        const urlFieldLabelMode = getFieldLabelModeFromCompact(filteredState);
+        const urlFieldLabelMode = getFieldLabelModeFromCompact(filteredState) ?? 'displayName';
         const mergedState = {
           ...currentState,
           ...expandedState,
           colorSettings: {
             ...currentState.colorSettings,
-            ...(urlFieldLabelMode ? { fieldLabelMode: urlFieldLabelMode } : {}),
+            fieldLabelMode: urlFieldLabelMode,
           },
         };
         state.restoreState(mergedState);
@@ -264,13 +264,13 @@ export default function ERDVisualizer({
         // Valid state, restore directly
         const expandedState = expandCompactState(decoded.state);
         const currentState = state.getSerializableState();
-        const urlFieldLabelMode = getFieldLabelModeFromCompact(decoded.state);
+        const urlFieldLabelMode = getFieldLabelModeFromCompact(decoded.state) ?? 'displayName';
         const mergedState = {
           ...currentState,
           ...expandedState,
           colorSettings: {
             ...currentState.colorSettings,
-            ...(urlFieldLabelMode ? { fieldLabelMode: urlFieldLabelMode } : {}),
+            fieldLabelMode: urlFieldLabelMode,
           },
         };
         state.restoreState(mergedState);
