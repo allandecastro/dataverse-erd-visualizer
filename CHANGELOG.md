@@ -14,8 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Schema Name** — logical/schema name only (e.g., "name")
   - **Both** — display name with schema name below (e.g., "Account Name" with "name" underneath)
   - Setting available in sidebar Settings under "Field Label Display"
-  - Respected across all export formats: PNG, SVG, Draw.io, and Mermaid
-  - Saved and restored with snapshots
+  - Respected across visual export formats: PNG, SVG, and Draw.io (Mermaid always uses schema names per ERD syntax)
+  - Saved and restored with snapshots and shared URLs
   - Added to Feature Guide under Customization
 
 ---
@@ -437,6 +437,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Version History
 
 - **Unreleased** - February 2026 - Field label display mode (display name, schema name, or both)
+- **v0.1.9.0** - February 2026 - Entity grouping via color association
 - **v0.1.8.1** - February 2026 - Bulk selection performance, Share URL D365 context, filter-aware Select All
 - **v0.1.8.0** - February 2026 - Per-table color customization
 - **v0.1.7.1** - February 2026 - NICOLAS layout, primary name indicator, badge filtering, expanded mock data
