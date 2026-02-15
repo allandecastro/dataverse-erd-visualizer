@@ -46,6 +46,7 @@ import {
   encodeStateToURL,
   decodeStateFromURL,
   expandCompactState,
+  getFieldLabelModeFromCompact,
   getShareBaseUrl,
   getStateHash,
 } from './utils/urlStateCodec';
@@ -233,7 +234,16 @@ export default function ERDVisualizer({
         // Filter out missing entities
         const filteredState = filterInvalidURLEntries(decoded.state, validation);
         const expandedState = expandCompactState(filteredState);
-        const mergedState = { ...state.getSerializableState(), ...expandedState };
+        const currentState = state.getSerializableState();
+        const urlFieldLabelMode = getFieldLabelModeFromCompact(filteredState);
+        const mergedState = {
+          ...currentState,
+          ...expandedState,
+          colorSettings: {
+            ...currentState.colorSettings,
+            ...(urlFieldLabelMode ? { fieldLabelMode: urlFieldLabelMode } : {}),
+          },
+        };
         state.restoreState(mergedState);
         showToast(
           `Shared state loaded (${validation.missingEntities.length} ${
@@ -244,7 +254,16 @@ export default function ERDVisualizer({
       } else {
         // Valid state, restore directly
         const expandedState = expandCompactState(decoded.state);
-        const mergedState = { ...state.getSerializableState(), ...expandedState };
+        const currentState = state.getSerializableState();
+        const urlFieldLabelMode = getFieldLabelModeFromCompact(decoded.state);
+        const mergedState = {
+          ...currentState,
+          ...expandedState,
+          colorSettings: {
+            ...currentState.colorSettings,
+            ...(urlFieldLabelMode ? { fieldLabelMode: urlFieldLabelMode } : {}),
+          },
+        };
         state.restoreState(mergedState);
         showToast('Shared state loaded successfully!', 'success');
       }
@@ -462,6 +481,7 @@ export default function ERDVisualizer({
         isDarkMode: currentState.isDarkMode,
         entityColorOverrides: currentState.entityColorOverrides,
         groupNames: currentState.groupNames,
+        fieldLabelMode: currentState.colorSettings.fieldLabelMode,
       };
 
       // Encode state
