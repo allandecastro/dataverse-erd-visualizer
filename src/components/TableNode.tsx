@@ -275,7 +275,7 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
                   <span
                     className={`${styles.fieldSchemaName} ${isDarkMode ? styles.fieldSchemaNameDark : styles.fieldSchemaNameLight}`}
                   >
-                    {attr.name}
+                    ({attr.name})
                   </span>
                 </span>
               ) : (
