@@ -269,7 +269,12 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
               {fieldLabelMode === 'both' ? (
                 <span
                   className={`${styles.fieldName} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}
-                  style={{ flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.2 }}
+                  style={{
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    lineHeight: 1.2,
+                    gap: 2,
+                  }}
                 >
                   <span>{attr.displayName || attr.name}</span>
                   <span
