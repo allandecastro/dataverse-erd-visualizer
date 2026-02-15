@@ -49,7 +49,8 @@ export type MinimalShareState = Parameters<typeof encodeStateToURL>[0];
 
 /**
  * Build minimal state for URL sharing.
- * Strips heavy fields (colorSettings, fields, edgeOffsets) to keep URLs small.
+ * Strips heavy fields (full colorSettings, fields, edgeOffsets) to keep URLs small.
+ * Preserves share-relevant settings like fieldLabelMode, groupFilter, and color overrides.
  * Shared between App.tsx handleGenerateShareURL and useSnapshots shareSnapshot.
  */
 export function buildMinimalShareState(state: SerializableState): MinimalShareState {
