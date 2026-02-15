@@ -4,22 +4,28 @@
  */
 
 import { useState, useCallback } from 'react';
+import {
+  VIEWPORT_DEFAULT_ZOOM,
+  VIEWPORT_DEFAULT_PAN,
+  VIEWPORT_MIN_ZOOM,
+  VIEWPORT_MAX_ZOOM,
+} from '@/constants';
 
 export function useViewport() {
-  const [zoom, setZoom] = useState(0.8);
-  const [pan, setPan] = useState({ x: 400, y: 100 });
+  const [zoom, setZoom] = useState(VIEWPORT_DEFAULT_ZOOM);
+  const [pan, setPan] = useState(VIEWPORT_DEFAULT_PAN);
 
   const handleZoomIn = useCallback(() => {
-    setZoom((z) => Math.min(z + 0.1, 2));
+    setZoom((z) => Math.min(z + 0.1, VIEWPORT_MAX_ZOOM));
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    setZoom((z) => Math.max(z - 0.1, 0.3));
+    setZoom((z) => Math.max(z - 0.1, VIEWPORT_MIN_ZOOM));
   }, []);
 
   const handleResetView = useCallback(() => {
-    setZoom(0.8);
-    setPan({ x: 400, y: 100 });
+    setZoom(VIEWPORT_DEFAULT_ZOOM);
+    setPan(VIEWPORT_DEFAULT_PAN);
   }, []);
 
   return {

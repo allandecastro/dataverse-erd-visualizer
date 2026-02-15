@@ -4,13 +4,19 @@
 
 import { renderHook, act } from '@testing-library/react';
 import { useViewport } from '../useViewport';
+import {
+  VIEWPORT_DEFAULT_ZOOM,
+  VIEWPORT_DEFAULT_PAN,
+  VIEWPORT_MIN_ZOOM,
+  VIEWPORT_MAX_ZOOM,
+} from '@/constants';
 
 describe('useViewport', () => {
   it('should initialize with default values', () => {
     const { result } = renderHook(() => useViewport());
 
-    expect(result.current.zoom).toBe(0.8);
-    expect(result.current.pan).toEqual({ x: 400, y: 100 });
+    expect(result.current.zoom).toBe(VIEWPORT_DEFAULT_ZOOM);
+    expect(result.current.pan).toEqual(VIEWPORT_DEFAULT_PAN);
   });
 
   it('should zoom in by 0.1', () => {
@@ -18,7 +24,7 @@ describe('useViewport', () => {
 
     act(() => result.current.handleZoomIn());
 
-    expect(result.current.zoom).toBeCloseTo(0.9);
+    expect(result.current.zoom).toBeCloseTo(VIEWPORT_DEFAULT_ZOOM + 0.1);
   });
 
   it('should zoom out by 0.1', () => {
@@ -26,10 +32,10 @@ describe('useViewport', () => {
 
     act(() => result.current.handleZoomOut());
 
-    expect(result.current.zoom).toBeCloseTo(0.7);
+    expect(result.current.zoom).toBeCloseTo(VIEWPORT_DEFAULT_ZOOM - 0.1);
   });
 
-  it('should not zoom beyond maximum (2)', () => {
+  it(`should not zoom beyond maximum (${VIEWPORT_MAX_ZOOM})`, () => {
     const { result } = renderHook(() => useViewport());
 
     // Zoom in many times
@@ -37,10 +43,10 @@ describe('useViewport', () => {
       act(() => result.current.handleZoomIn());
     }
 
-    expect(result.current.zoom).toBe(2);
+    expect(result.current.zoom).toBe(VIEWPORT_MAX_ZOOM);
   });
 
-  it('should not zoom below minimum (0.3)', () => {
+  it(`should not zoom below minimum (${VIEWPORT_MIN_ZOOM})`, () => {
     const { result } = renderHook(() => useViewport());
 
     // Zoom out many times
@@ -48,7 +54,7 @@ describe('useViewport', () => {
       act(() => result.current.handleZoomOut());
     }
 
-    expect(result.current.zoom).toBeCloseTo(0.3);
+    expect(result.current.zoom).toBeCloseTo(VIEWPORT_MIN_ZOOM);
   });
 
   it('should reset view to defaults', () => {
@@ -66,8 +72,8 @@ describe('useViewport', () => {
     // Reset
     act(() => result.current.handleResetView());
 
-    expect(result.current.zoom).toBe(0.8);
-    expect(result.current.pan).toEqual({ x: 400, y: 100 });
+    expect(result.current.zoom).toBe(VIEWPORT_DEFAULT_ZOOM);
+    expect(result.current.pan).toEqual(VIEWPORT_DEFAULT_PAN);
   });
 
   it('should allow setting zoom directly', () => {
