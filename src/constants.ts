@@ -278,13 +278,13 @@ export const LAYOUT_FIT_DELAY = 100;
 // Limits for share URL generation
 
 /**
- * Maximum URL length for sharing (bytes)
+ * Maximum URL length for sharing (characters)
  * URLs longer than this will be rejected
  */
 export const SHARE_URL_MAX_LENGTH = 32000;
 
 /**
- * URL length threshold for compatibility warnings (bytes)
+ * URL length threshold for compatibility warnings (characters)
  * URLs longer than this may not work in older browsers
  */
 export const SHARE_URL_WARN_LENGTH = 2000;
