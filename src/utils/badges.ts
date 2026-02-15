@@ -63,6 +63,49 @@ export function getAttributeBadge(attr: EntityAttribute): AttributeBadge {
 }
 
 /**
+ * Get a human-readable type label for an attribute (using Dataverse/Power Apps terminology)
+ */
+export function getTypeLabel(attr: EntityAttribute): string {
+  if (attr.isPrimaryKey) return 'Unique Identifier';
+  switch (attr.type) {
+    case 'Lookup':
+      return 'Lookup';
+    case 'Owner':
+      return 'Owner';
+    case 'Customer':
+      return 'Customer';
+    case 'String':
+      return 'Text';
+    case 'Memo':
+      return 'Multiline Text';
+    case 'Integer':
+      return 'Whole Number';
+    case 'BigInt':
+      return 'Big Integer';
+    case 'Decimal':
+      return 'Decimal Number';
+    case 'Double':
+      return 'Floating Point';
+    case 'Money':
+      return 'Currency';
+    case 'DateTime':
+      return 'Date and Time';
+    case 'Boolean':
+      return 'Yes/No';
+    case 'Picklist':
+      return 'Choice';
+    case 'State':
+      return 'Status';
+    case 'Status':
+      return 'Status Reason';
+    case 'UniqueIdentifier':
+      return 'Unique Identifier';
+    default:
+      return attr.type;
+  }
+}
+
+/**
  * Check if an attribute is a lookup type (Lookup, Owner, or Customer)
  */
 export function isLookupType(attr: EntityAttribute): boolean {

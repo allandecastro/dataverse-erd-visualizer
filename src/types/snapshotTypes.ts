@@ -45,6 +45,9 @@ export interface SerializableState {
 
   // Group names (hex color → user-assigned group name)
   groupNames?: Record<string, string>;
+
+  // Active group filter (color hex or 'all' / '__ungrouped__')
+  groupFilter?: string;
 }
 
 /**
