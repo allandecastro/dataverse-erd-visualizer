@@ -154,6 +154,21 @@
   color: #374151;
 }
 
+/* Field Name - "Both" mode (two-line layout matching FieldDrawer) */
+.fieldNameBoth {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldNameDisplay {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Field Schema Name (secondary line in "both" mode) */
 .fieldSchemaName {
   font-size: 10px;

@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Field Label Display Mode** ([#56](https://github.com/allandecastro/dataverse-erd-visualizer/issues/56)) - Choose how field names are shown on entity cards:
   - **Display Name** (default) — friendly name only (e.g., "Account Name")
   - **Schema Name** — logical/schema name only (e.g., "name")
-  - **Both** — display name with schema name in parentheses below (e.g., "Account Name" + "(name)")
+  - **Both** — display name with schema name below (e.g., "Account Name" with "name" underneath)
   - Setting available in sidebar Settings under "Field Label Display"
   - Respected across all export formats: PNG, SVG, Draw.io, and Mermaid
   - Saved and restored with snapshots

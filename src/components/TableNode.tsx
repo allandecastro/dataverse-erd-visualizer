@@ -267,22 +267,18 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
 
               {/* Field name */}
               {fieldLabelMode === 'both' ? (
-                <span
-                  className={`${styles.fieldName} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}
-                  style={{
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    lineHeight: 1.2,
-                    gap: 2,
-                  }}
-                >
-                  <span>{attr.displayName || attr.name}</span>
+                <div className={styles.fieldNameBoth}>
+                  <span
+                    className={`${styles.fieldNameDisplay} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}
+                  >
+                    {attr.displayName || attr.name}
+                  </span>
                   <span
                     className={`${styles.fieldSchemaName} ${isDarkMode ? styles.fieldSchemaNameDark : styles.fieldSchemaNameLight}`}
                   >
-                    ({attr.name})
+                    {attr.name}
                   </span>
-                </span>
+                </div>
               ) : (
                 <span
                   className={`${styles.fieldName} ${isDarkMode ? styles.fieldNameDark : styles.fieldNameLight}`}

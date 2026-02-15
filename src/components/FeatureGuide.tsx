@@ -291,7 +291,7 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       {
         title: 'Field Label Display',
         description:
-          'Choose how field names are displayed on entity cards: Display Name only, Schema Name only, or Both (display name with schema name in parentheses below).',
+          'Choose how field names are displayed on entity cards: Display Name only, Schema Name only, or Both (display name with schema name below).',
         tip: 'Use "Both" mode to see the friendly name alongside the logical name — helpful when customizing or debugging fields',
       },
       {
