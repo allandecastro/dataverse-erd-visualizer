@@ -5,7 +5,7 @@
 
 import * as LZString from 'lz-string';
 import type { EntityPosition } from '@/types';
-import type { LayoutMode } from '@/types/erdTypes';
+import type { LayoutMode, FieldLabelMode } from '@/types/erdTypes';
 import type { SerializableState } from '@/types/snapshotTypes';
 
 const CODEC_VERSION = '1.0.0';
@@ -31,6 +31,7 @@ export interface CompactState {
   v: string; // version
   co?: Record<string, string>; // entityColorOverrides (optional, only present when non-empty)
   gn?: Record<string, string>; // groupNames (optional, only present when non-empty)
+  flm?: FieldLabelMode; // fieldLabelMode (optional, only present when not default 'displayName')
 }
 
 /**
@@ -85,6 +86,7 @@ export function encodeStateToURL(state: {
   isDarkMode: boolean;
   entityColorOverrides?: Record<string, string>;
   groupNames?: Record<string, string>;
+  fieldLabelMode?: FieldLabelMode;
 }): string {
   try {
     // Build compact state object
@@ -114,6 +116,11 @@ export function encodeStateToURL(state: {
     // Only include group names if non-empty
     if (state.groupNames && Object.keys(state.groupNames).length > 0) {
       compactState.gn = state.groupNames;
+    }
+
+    // Only include fieldLabelMode if not default
+    if (state.fieldLabelMode && state.fieldLabelMode !== 'displayName') {
+      compactState.flm = state.fieldLabelMode;
     }
 
     // Serialize to JSON
@@ -203,11 +210,19 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
     // - collapsedEntities
     // - selectedFields
     // - fieldOrder
-    // - colorSettings
+    // - colorSettings (except fieldLabelMode, handled below)
     // - showMinimap
     // - isSmartZoom
     // - edgeOffsets
   };
+}
+
+/**
+ * Extract fieldLabelMode from CompactState (if present)
+ * Kept separate from expandCompactState to avoid partial colorSettings override
+ */
+export function getFieldLabelModeFromCompact(compact: CompactState): FieldLabelMode | undefined {
+  return compact.flm;
 }
 
 /**

@@ -397,6 +397,9 @@ export function useSnapshots({
           publisherFilter: snapshot.state.publisherFilter,
           solutionFilter: snapshot.state.solutionFilter,
           isDarkMode: snapshot.state.isDarkMode,
+          entityColorOverrides: snapshot.state.entityColorOverrides,
+          groupNames: snapshot.state.groupNames,
+          fieldLabelMode: snapshot.state.colorSettings?.fieldLabelMode,
         };
 
         // Encode state to URL
