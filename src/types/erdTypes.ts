@@ -17,6 +17,9 @@ export type LineNotationStyle = 'simple' | 'crowsfoot' | 'uml';
 // Line stroke style types
 export type LineStrokeStyle = 'solid' | 'dashed' | 'dotted';
 
+// Field label display mode (display name, schema/logical name, or both)
+export type FieldLabelMode = 'displayName' | 'schemaName' | 'both';
+
 // Cardinality end types for crow's foot notation
 export type CardinalityEnd = 'one' | 'many' | 'one-optional' | 'many-optional';
 
@@ -51,6 +54,9 @@ export interface ColorSettings {
   oneToManyColor?: string;
   manyToOneColor?: string;
   manyToManyColor?: string;
+
+  // Field label display mode
+  fieldLabelMode: FieldLabelMode;
 }
 
 // Derived group — computed at runtime from entityColorOverrides + groupNames

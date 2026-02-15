@@ -15,7 +15,7 @@ import type {
   EntityAttribute,
   AlternateKey,
 } from '@/types';
-import type { ColorSettings } from '@/types/erdTypes';
+import type { ColorSettings, FieldLabelMode } from '@/types/erdTypes';
 import { getAttributeBadge } from './badges';
 
 export interface DrawioExportOptions {
@@ -335,12 +335,23 @@ function generateFieldCell(
   id: string,
   parentId: string,
   field: EntityAttribute,
-  yOffset: number
+  yOffset: number,
+  fieldLabelMode: FieldLabelMode = 'displayName'
 ): string {
   const badge = getAttributeBadge(field);
   const typeLabel = getTypeLabel(field);
   const customSuffix = field.isCustomAttribute ? ' (Custom)' : '';
-  const fieldLabel = `[${badge.label}] ${field.displayName}${customSuffix} | ${typeLabel}`;
+
+  // Build field name portion based on label mode
+  let fieldNamePart: string;
+  if (fieldLabelMode === 'schemaName') {
+    fieldNamePart = `${field.name}${customSuffix}`;
+  } else if (fieldLabelMode === 'both') {
+    fieldNamePart = `${field.displayName}${customSuffix} (${field.name})`;
+  } else {
+    fieldNamePart = `${field.displayName}${customSuffix}`;
+  }
+  const fieldLabel = `[${badge.label}] ${fieldNamePart} | ${typeLabel}`;
 
   // Truncate if too long
   const truncatedLabel = fieldLabel.length > 60 ? fieldLabel.substring(0, 57) + '...' : fieldLabel;
@@ -419,7 +430,8 @@ function generateEntityCell(
   color: string,
   selectedFields: Set<string>,
   isCollapsed: boolean,
-  primaryKey?: EntityAttribute
+  primaryKey?: EntityAttribute,
+  fieldLabelMode: FieldLabelMode = 'displayName'
 ): string[] {
   // Calculate dynamic height
   const height = calculateEntityHeight(entity, selectedFields, isCollapsed, primaryKey);
@@ -450,7 +462,13 @@ function generateEntityCell(
   let currentY = HEADER_HEIGHT + SUBHEADER_HEIGHT;
 
   visibleFields.forEach((field, index) => {
-    cells[cellIndex++] = generateFieldCell(`${id}_field_${index}`, id, field, currentY);
+    cells[cellIndex++] = generateFieldCell(
+      `${id}_field_${index}`,
+      id,
+      field,
+      currentY,
+      fieldLabelMode
+    );
     currentY += FIELD_ROW_HEIGHT;
   });
 
@@ -534,7 +552,8 @@ function generateDrawioXml(options: DrawioExportOptions): string {
       color,
       entitySelectedFields,
       isCollapsed,
-      primaryKey
+      primaryKey,
+      colorSettings.fieldLabelMode || 'displayName'
     );
 
     // Add to main cells array

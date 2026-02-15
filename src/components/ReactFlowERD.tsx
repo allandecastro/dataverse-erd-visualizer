@@ -298,6 +298,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
           onToggleCollapse,
           hasColorOverride: !!entityColorOverrides?.[entity.logicalName],
           onOpenColorPicker,
+          fieldLabelMode: colorSettings.fieldLabelMode,
         } as TableNodeData,
       };
     });
@@ -476,19 +477,30 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         const color = entityColorOverrides?.[node.id] || defaultColor;
         const hasColorOverride = !!entityColorOverrides?.[node.id];
 
-        // Only update if color actually changed
+        // Only update if something actually changed
         const nodeData = node.data as TableNodeData;
-        if (nodeData.color === color && nodeData.hasColorOverride === hasColorOverride) return node;
+        if (
+          nodeData.color === color &&
+          nodeData.hasColorOverride === hasColorOverride &&
+          nodeData.fieldLabelMode === colorSettings.fieldLabelMode
+        )
+          return node;
 
         return {
           ...node,
-          data: { ...node.data, color, hasColorOverride },
+          data: {
+            ...node.data,
+            color,
+            hasColorOverride,
+            fieldLabelMode: colorSettings.fieldLabelMode,
+          },
         };
       })
     );
   }, [
     colorSettings.customTableColor,
     colorSettings.standardTableColor,
+    colorSettings.fieldLabelMode,
     entities,
     entityColorOverrides,
     setNodes,

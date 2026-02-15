@@ -4,7 +4,7 @@
  */
 
 import type { Entity, EntityRelationship, EntityPosition, EntityAttribute } from '@/types';
-import type { ColorSettings, EdgeStyle } from '@/types/erdTypes';
+import type { ColorSettings, EdgeStyle, FieldLabelMode } from '@/types/erdTypes';
 import { MERMAID_TYPE_MAP } from '@/types/erdTypes';
 import {
   CARD_WIDTH,
@@ -12,6 +12,7 @@ import {
   HEADER_HEIGHT,
   SUBHEADER_HEIGHT,
   FIELD_ROW_HEIGHT,
+  FIELD_ROW_HEIGHT_BOTH,
   FIELD_PADDING_TOP,
 } from '@/constants';
 import { getAttributeBadge } from './badges';
@@ -55,6 +56,21 @@ function getTypeLabel(attr: EntityAttribute): string {
     default:
       return attr.type;
   }
+}
+
+/**
+ * Get effective field row height based on label mode
+ */
+function getEffectiveRowHeight(mode: FieldLabelMode): number {
+  return mode === 'both' ? FIELD_ROW_HEIGHT_BOTH : FIELD_ROW_HEIGHT;
+}
+
+/**
+ * Get the primary field display label based on label mode
+ */
+function getFieldDisplayLabel(attr: EntityAttribute, mode: FieldLabelMode): string {
+  if (mode === 'schemaName') return attr.name;
+  return attr.displayName || attr.name;
 }
 
 export interface ExportOptions {
@@ -158,7 +174,8 @@ function getConnectionPoint(
   fieldName: string | undefined,
   side: 'left' | 'right',
   orderedFieldsMap?: Record<string, string[]>,
-  selectedFields?: Record<string, Set<string>>
+  selectedFields?: Record<string, Set<string>>,
+  rowHeight: number = FIELD_ROW_HEIGHT
 ): { x: number; y: number } {
   const entity = entities.find((e) => e.logicalName === entityName);
   const pos = entityPositions[entityName];
@@ -179,8 +196,8 @@ function getConnectionPoint(
         HEADER_HEIGHT +
         SUBHEADER_HEIGHT +
         FIELD_PADDING_TOP +
-        fieldIndex * FIELD_ROW_HEIGHT +
-        FIELD_ROW_HEIGHT / 2;
+        fieldIndex * rowHeight +
+        rowHeight / 2;
     }
   }
 
@@ -286,6 +303,8 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
   }
 
   const { edgeStyle } = colorSettings;
+  const fieldLabelMode = colorSettings.fieldLabelMode || 'displayName';
+  const effectiveRowHeight = getEffectiveRowHeight(fieldLabelMode);
 
   // Calculate card height for an entity (matching TableNode design)
   const getCardHeight = (entity: Entity, isCollapsed: boolean): number => {
@@ -296,7 +315,7 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
       HEADER_HEIGHT +
       SUBHEADER_HEIGHT +
       FIELD_PADDING_TOP +
-      visibleFields.length * FIELD_ROW_HEIGHT +
+      visibleFields.length * effectiveRowHeight +
       8
     );
   };
@@ -373,7 +392,8 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
       lookupField?.name,
       startSide,
       orderedFieldsMap,
-      selectedFields
+      selectedFields,
+      effectiveRowHeight
     );
     const end = getConnectionPoint(
       entities,
@@ -383,7 +403,8 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
       toEntity.primaryIdAttribute,
       endSide,
       orderedFieldsMap,
-      selectedFields
+      selectedFields,
+      effectiveRowHeight
     );
 
     // Adjust for canvas offset
@@ -501,7 +522,7 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
         // Field row background on hover area
         ctx.fillStyle = isDarkMode ? '#252525' : '#fafafa';
         ctx.beginPath();
-        ctx.rect(x + 4, fieldY, CARD_WIDTH - 8, FIELD_ROW_HEIGHT - 2);
+        ctx.rect(x + 4, fieldY, CARD_WIDTH - 8, effectiveRowHeight - 2);
         ctx.fill();
 
         // Badge (left side)
@@ -516,25 +537,38 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
         ctx.textBaseline = 'middle';
         ctx.fillText(badge.label, x + 22, fieldY + 14);
 
-        // Field display name (middle)
+        // Field display name (middle) — mode-aware
         ctx.fillStyle = isDarkMode ? '#e2e8f0' : '#1e293b';
-        ctx.font = '500 12px system-ui';
         ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        const displayName = attr.displayName || attr.name;
-        ctx.fillText(displayName.substring(0, 20), x + 44, fieldY + FIELD_ROW_HEIGHT / 2);
+        if (fieldLabelMode === 'both') {
+          // Two-line: display name on top, schema name below
+          ctx.font = '500 12px system-ui';
+          ctx.textBaseline = 'alphabetic';
+          const primaryLabel = (attr.displayName || attr.name).substring(0, 20);
+          ctx.fillText(primaryLabel, x + 44, fieldY + effectiveRowHeight / 2 - 2);
+
+          ctx.fillStyle = isDarkMode ? '#94a3b8' : '#64748b';
+          ctx.font = '10px monospace';
+          ctx.fillText(attr.name.substring(0, 25), x + 44, fieldY + effectiveRowHeight / 2 + 12);
+        } else {
+          ctx.font = '500 12px system-ui';
+          ctx.textBaseline = 'middle';
+          const displayName = getFieldDisplayLabel(attr, fieldLabelMode);
+          ctx.fillText(displayName.substring(0, 20), x + 44, fieldY + effectiveRowHeight / 2);
+        }
 
         // Type label (right side)
         ctx.fillStyle = isDarkMode ? '#64748b' : '#94a3b8';
         ctx.font = '11px system-ui';
         ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
         ctx.fillText(
           typeLabel.substring(0, 15),
           x + CARD_WIDTH - 12,
-          fieldY + FIELD_ROW_HEIGHT / 2
+          fieldY + effectiveRowHeight / 2
         );
 
-        fieldY += FIELD_ROW_HEIGHT;
+        fieldY += effectiveRowHeight;
       });
     }
   });
@@ -697,6 +731,8 @@ export function exportToSVG(options: ExportOptions): string {
   } = options;
 
   const { customTableColor, standardTableColor, lookupColor, edgeStyle } = colorSettings;
+  const svgFieldLabelMode = colorSettings.fieldLabelMode || 'displayName';
+  const svgEffectiveRowHeight = getEffectiveRowHeight(svgFieldLabelMode);
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
 
@@ -709,7 +745,7 @@ export function exportToSVG(options: ExportOptions): string {
       HEADER_HEIGHT +
       SUBHEADER_HEIGHT +
       FIELD_PADDING_TOP +
-      visibleFields.length * FIELD_ROW_HEIGHT +
+      visibleFields.length * svgEffectiveRowHeight +
       8
     );
   };
@@ -791,7 +827,8 @@ export function exportToSVG(options: ExportOptions): string {
       lookupField?.name,
       startSide,
       orderedFieldsMap,
-      selectedFields
+      selectedFields,
+      svgEffectiveRowHeight
     );
     const end = getConnectionPoint(
       entities,
@@ -801,7 +838,8 @@ export function exportToSVG(options: ExportOptions): string {
       toEntity.primaryIdAttribute,
       endSide,
       orderedFieldsMap,
-      selectedFields
+      selectedFields,
+      svgEffectiveRowHeight
     );
 
     // Generate path based on edge style
@@ -953,7 +991,7 @@ export function exportToSVG(options: ExportOptions): string {
         fieldBg.setAttribute('x', (pos.x + 4).toString());
         fieldBg.setAttribute('y', fieldY.toString());
         fieldBg.setAttribute('width', (CARD_WIDTH - 8).toString());
-        fieldBg.setAttribute('height', (FIELD_ROW_HEIGHT - 2).toString());
+        fieldBg.setAttribute('height', (svgEffectiveRowHeight - 2).toString());
         fieldBg.setAttribute('fill', isDarkMode ? '#252525' : '#fafafa');
         svg.appendChild(fieldBg);
 
@@ -978,22 +1016,46 @@ export function exportToSVG(options: ExportOptions): string {
         badgeText.textContent = badge.label;
         svg.appendChild(badgeText);
 
-        // Field display name (middle)
-        const fieldName = document.createElementNS(svgNS, 'text');
-        fieldName.setAttribute('x', (pos.x + 44).toString());
-        fieldName.setAttribute('y', (fieldY + FIELD_ROW_HEIGHT / 2 + 4).toString());
-        fieldName.setAttribute('fill', isDarkMode ? '#e2e8f0' : '#1e293b');
-        fieldName.setAttribute('font-size', '12');
-        fieldName.setAttribute('font-weight', '500');
-        fieldName.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
-        const displayName = attr.displayName || attr.name;
-        fieldName.textContent = displayName.substring(0, 20);
-        svg.appendChild(fieldName);
+        // Field display name (middle) — mode-aware
+        if (svgFieldLabelMode === 'both') {
+          // Two-line: display name on top, schema name below
+          const fieldNamePrimary = document.createElementNS(svgNS, 'text');
+          fieldNamePrimary.setAttribute('x', (pos.x + 44).toString());
+          fieldNamePrimary.setAttribute('y', (fieldY + svgEffectiveRowHeight / 2).toString());
+          fieldNamePrimary.setAttribute('fill', isDarkMode ? '#e2e8f0' : '#1e293b');
+          fieldNamePrimary.setAttribute('font-size', '12');
+          fieldNamePrimary.setAttribute('font-weight', '500');
+          fieldNamePrimary.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
+          fieldNamePrimary.textContent = (attr.displayName || attr.name).substring(0, 20);
+          svg.appendChild(fieldNamePrimary);
+
+          const fieldNameSecondary = document.createElementNS(svgNS, 'text');
+          fieldNameSecondary.setAttribute('x', (pos.x + 44).toString());
+          fieldNameSecondary.setAttribute(
+            'y',
+            (fieldY + svgEffectiveRowHeight / 2 + 14).toString()
+          );
+          fieldNameSecondary.setAttribute('fill', isDarkMode ? '#94a3b8' : '#64748b');
+          fieldNameSecondary.setAttribute('font-size', '10');
+          fieldNameSecondary.setAttribute('font-family', 'monospace');
+          fieldNameSecondary.textContent = attr.name.substring(0, 25);
+          svg.appendChild(fieldNameSecondary);
+        } else {
+          const fieldName = document.createElementNS(svgNS, 'text');
+          fieldName.setAttribute('x', (pos.x + 44).toString());
+          fieldName.setAttribute('y', (fieldY + svgEffectiveRowHeight / 2 + 4).toString());
+          fieldName.setAttribute('fill', isDarkMode ? '#e2e8f0' : '#1e293b');
+          fieldName.setAttribute('font-size', '12');
+          fieldName.setAttribute('font-weight', '500');
+          fieldName.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
+          fieldName.textContent = getFieldDisplayLabel(attr, svgFieldLabelMode).substring(0, 20);
+          svg.appendChild(fieldName);
+        }
 
         // Type label (right side)
         const typeLabel = document.createElementNS(svgNS, 'text');
         typeLabel.setAttribute('x', (pos.x + CARD_WIDTH - 12).toString());
-        typeLabel.setAttribute('y', (fieldY + FIELD_ROW_HEIGHT / 2 + 4).toString());
+        typeLabel.setAttribute('y', (fieldY + svgEffectiveRowHeight / 2 + 4).toString());
         typeLabel.setAttribute('fill', isDarkMode ? '#64748b' : '#94a3b8');
         typeLabel.setAttribute('font-size', '11');
         typeLabel.setAttribute('text-anchor', 'end');
@@ -1001,7 +1063,7 @@ export function exportToSVG(options: ExportOptions): string {
         typeLabel.textContent = typeLabelText.substring(0, 15);
         svg.appendChild(typeLabel);
 
-        fieldY += FIELD_ROW_HEIGHT;
+        fieldY += svgEffectiveRowHeight;
       });
     }
   });

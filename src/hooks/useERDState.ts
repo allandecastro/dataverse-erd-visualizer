@@ -77,6 +77,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     oneToManyColor: '#f97316',
     manyToOneColor: '#06b6d4',
     manyToManyColor: '#8b5cf6',
+    fieldLabelMode: 'displayName',
   });
 
   // Features
@@ -452,6 +453,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
         oneToManyColor: '#f97316',
         manyToOneColor: '#06b6d4',
         manyToManyColor: '#8b5cf6',
+        fieldLabelMode: 'displayName',
       };
       setColorSettings({
         ...defaultColorSettings,
