@@ -15,7 +15,7 @@ import type {
   EntityAttribute,
   AlternateKey,
 } from '@/types';
-import type { ColorSettings } from '@/types/erdTypes';
+import type { ColorSettings, FieldLabelMode } from '@/types/erdTypes';
 import { getAttributeBadge, getTypeLabel } from './badges';
 import { downloadFile } from './fileDownload';
 
@@ -36,6 +36,7 @@ const CARD_WIDTH = 300; // Increased from 200px to accommodate field information
 const HEADER_HEIGHT = 40; // Entity display name header
 const SUBHEADER_HEIGHT = 24; // Logical name row
 const FIELD_ROW_HEIGHT = 28; // Each field row
+const FIELD_ROW_HEIGHT_BOTH = 40; // Each field row in "both" label mode (two lines)
 const AK_HEADER_HEIGHT = 24; // Alternate keys section header
 const AK_ROW_HEIGHT = 24; // Each alternate key row
 const PADDING = 8; // Top/bottom padding
@@ -212,7 +213,8 @@ function calculateEntityHeight(
   entity: Entity,
   selectedFields: Set<string>,
   isCollapsed: boolean,
-  primaryKey?: EntityAttribute
+  primaryKey?: EntityAttribute,
+  fieldLabelMode: FieldLabelMode = 'displayName'
 ): number {
   if (isCollapsed) {
     // Collapsed: only header + logical name
@@ -223,11 +225,12 @@ function calculateEntityHeight(
   const fieldCount = visibleFields.length;
   const alternateKeyCount = entity.alternateKeys?.length || 0;
   const hasAlternateKeys = alternateKeyCount > 0;
+  const rowHeight = fieldLabelMode === 'both' ? FIELD_ROW_HEIGHT_BOTH : FIELD_ROW_HEIGHT;
 
   return (
     HEADER_HEIGHT +
     SUBHEADER_HEIGHT +
-    fieldCount * FIELD_ROW_HEIGHT +
+    fieldCount * rowHeight +
     (hasAlternateKeys ? AK_HEADER_HEIGHT : 0) +
     alternateKeyCount * AK_ROW_HEIGHT +
     PADDING
@@ -293,15 +296,36 @@ function generateFieldCell(
   id: string,
   parentId: string,
   field: EntityAttribute,
-  yOffset: number
+  yOffset: number,
+  fieldLabelMode: FieldLabelMode = 'displayName'
 ): string {
   const badge = getAttributeBadge(field);
   const typeLabel = getTypeLabel(field);
   const customSuffix = field.isCustomAttribute ? ' (Custom)' : '';
-  const fieldLabel = `[${badge.label}] ${field.displayName}${customSuffix} | ${typeLabel}`;
+
+  // Build field name portion based on label mode
+  let fieldNamePart: string;
+  if (fieldLabelMode === 'schemaName') {
+    fieldNamePart = `${field.name}${customSuffix}`;
+  } else if (fieldLabelMode === 'both') {
+    // Two-line: display name on first line, schema name on second
+    // Use a placeholder that won't be mangled by escapeXml
+    fieldNamePart = `${field.displayName}${customSuffix}`;
+  } else {
+    fieldNamePart = `${field.displayName}${customSuffix}`;
+  }
+  const fieldLabel = `[${badge.label}] ${fieldNamePart} | ${typeLabel}`;
 
   // Truncate if too long
   const truncatedLabel = fieldLabel.length > 60 ? fieldLabel.substring(0, 57) + '...' : fieldLabel;
+
+  // For "both" mode, append truncated schema name as second line after escaping
+  const escapedLabel = escapeXml(truncatedLabel);
+  const schemaNameForLabel = field.name.length > 27 ? field.name.substring(0, 27) : field.name;
+  const finalLabel =
+    fieldLabelMode === 'both'
+      ? `${escapedLabel}&#xa;${escapeXml(schemaNameForLabel)}`
+      : escapedLabel;
 
   // Determine background color based on field type
   let fillColor = '#ffffff'; // Standard fields
@@ -321,10 +345,12 @@ function generateFieldCell(
   }
 
   // Use cached base style with dynamic fillColor
-  const style = `${FIELD_STYLE_BASE};fillColor=${fillColor}`;
+  const rowHeight = fieldLabelMode === 'both' ? FIELD_ROW_HEIGHT_BOTH : FIELD_ROW_HEIGHT;
+  const wrapStyle = fieldLabelMode === 'both' ? ';whiteSpace=wrap' : '';
+  const style = `${FIELD_STYLE_BASE};fillColor=${fillColor}${wrapStyle}`;
 
-  return `      <mxCell id="${id}" value="${escapeXml(truncatedLabel)}" style="${style}" vertex="1" parent="${parentId}">
-        <mxGeometry y="${yOffset}" width="${CARD_WIDTH}" height="${FIELD_ROW_HEIGHT}" as="geometry" />
+  return `      <mxCell id="${id}" value="${finalLabel}" style="${style}" vertex="1" parent="${parentId}">
+        <mxGeometry y="${yOffset}" width="${CARD_WIDTH}" height="${rowHeight}" as="geometry" />
       </mxCell>`;
 }
 
@@ -377,10 +403,17 @@ function generateEntityCell(
   color: string,
   selectedFields: Set<string>,
   isCollapsed: boolean,
-  primaryKey?: EntityAttribute
+  primaryKey?: EntityAttribute,
+  fieldLabelMode: FieldLabelMode = 'displayName'
 ): string[] {
   // Calculate dynamic height
-  const height = calculateEntityHeight(entity, selectedFields, isCollapsed, primaryKey);
+  const height = calculateEntityHeight(
+    entity,
+    selectedFields,
+    isCollapsed,
+    primaryKey,
+    fieldLabelMode
+  );
 
   // Pre-allocate array with estimated size
   const visibleFieldCount = isCollapsed
@@ -408,8 +441,14 @@ function generateEntityCell(
   let currentY = HEADER_HEIGHT + SUBHEADER_HEIGHT;
 
   visibleFields.forEach((field, index) => {
-    cells[cellIndex++] = generateFieldCell(`${id}_field_${index}`, id, field, currentY);
-    currentY += FIELD_ROW_HEIGHT;
+    cells[cellIndex++] = generateFieldCell(
+      `${id}_field_${index}`,
+      id,
+      field,
+      currentY,
+      fieldLabelMode
+    );
+    currentY += fieldLabelMode === 'both' ? FIELD_ROW_HEIGHT_BOTH : FIELD_ROW_HEIGHT;
   });
 
   // Generate alternate keys section if present
@@ -492,7 +531,8 @@ function generateDrawioXml(options: DrawioExportOptions): string {
       color,
       entitySelectedFields,
       isCollapsed,
-      primaryKey
+      primaryKey,
+      colorSettings.fieldLabelMode || 'displayName'
     );
 
     // Add to main cells array

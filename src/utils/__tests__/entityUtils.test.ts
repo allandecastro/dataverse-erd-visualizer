@@ -259,6 +259,7 @@ describe('entityUtils', () => {
       lineStroke: 'solid',
       lineThickness: 1.5,
       useRelationshipTypeColors: false,
+      fieldLabelMode: 'displayName' as const,
     };
 
     const makeEntity = (logicalName: string, publisher?: string): Entity => ({

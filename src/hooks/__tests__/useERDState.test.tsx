@@ -436,6 +436,7 @@ describe('useERDState', () => {
         oneToManyColor: '#f97316',
         manyToOneColor: '#06b6d4',
         manyToManyColor: '#8b5cf6',
+        fieldLabelMode: 'displayName',
       });
     });
 
@@ -481,6 +482,7 @@ describe('useERDState', () => {
           oneToManyColor: '#aaaaaa',
           manyToOneColor: '#bbbbbb',
           manyToManyColor: '#cccccc',
+          fieldLabelMode: 'displayName' as const,
         },
         showMinimap: true,
         isSmartZoom: true,
@@ -687,6 +689,7 @@ describe('useERDState', () => {
           oneToManyColor: '#f97316',
           manyToOneColor: '#06b6d4',
           manyToManyColor: '#8b5cf6',
+          fieldLabelMode: 'displayName' as const,
         },
         showMinimap: false,
         isSmartZoom: false,

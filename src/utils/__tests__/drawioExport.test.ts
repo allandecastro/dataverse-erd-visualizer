@@ -109,6 +109,7 @@ describe('drawioExport', () => {
     oneToManyColor: '#f97316',
     manyToOneColor: '#06b6d4',
     manyToManyColor: '#8b5cf6',
+    fieldLabelMode: 'displayName' as const,
   };
 
   const baseOptions: DrawioExportOptions = {
@@ -513,6 +514,107 @@ describe('drawioExport', () => {
 
       expect(text).toContain('#ffffff');
       expect(blob).toBeInstanceOf(Blob);
+    });
+  });
+
+  describe('Field Label Mode', () => {
+    it('should use schema names when fieldLabelMode is schemaName', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        colorSettings: { ...mockColorSettings, fieldLabelMode: 'schemaName' as const },
+      });
+      const text = await blobToText(blob);
+
+      // Schema names (logical names) should appear in field cells
+      expect(text).toContain('name');
+      expect(text).toContain('fullname');
+    });
+
+    it('should include schema name on second line when fieldLabelMode is both', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        colorSettings: { ...mockColorSettings, fieldLabelMode: 'both' as const },
+      });
+      const text = await blobToText(blob);
+
+      // "both" mode uses &#xa; as newline between display name and schema name
+      expect(text).toContain('&#xa;');
+      // Schema names should appear after the newline
+      expect(text).toContain('name');
+      expect(text).toContain('fullname');
+    });
+
+    it('should use taller row height (40px) in both mode', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        colorSettings: { ...mockColorSettings, fieldLabelMode: 'both' as const },
+      });
+      const text = await blobToText(blob);
+
+      // Both mode uses FIELD_ROW_HEIGHT_BOTH = 40 instead of 28
+      expect(text).toContain('height="40"');
+    });
+
+    it('should add whiteSpace=wrap style in both mode', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        colorSettings: { ...mockColorSettings, fieldLabelMode: 'both' as const },
+      });
+      const text = await blobToText(blob);
+
+      expect(text).toContain('whiteSpace=wrap');
+    });
+
+    it('should truncate long schema names at 27 chars in both mode', async () => {
+      const longNameEntity: Entity = {
+        logicalName: 'longfields',
+        displayName: 'Long Fields',
+        objectTypeCode: 10050,
+        isCustomEntity: true,
+        primaryIdAttribute: 'longfieldsid',
+        primaryNameAttribute: 'name',
+        attributes: [
+          {
+            name: 'longfieldsid',
+            displayName: 'ID',
+            type: 'UniqueIdentifier',
+            isPrimaryKey: true,
+          },
+          {
+            name: 'very_long_schema_name_that_exceeds_limit',
+            displayName: 'Long Field',
+            type: 'String',
+            isPrimaryKey: false,
+          },
+        ],
+        publisher: 'Custom',
+        alternateKeys: [],
+      };
+
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entities: [longNameEntity],
+        entityPositions: { longfields: { x: 0, y: 0 } },
+        selectedFields: {
+          longfields: new Set(['longfieldsid', 'very_long_schema_name_that_exceeds_limit']),
+        },
+        colorSettings: { ...mockColorSettings, fieldLabelMode: 'both' as const },
+      });
+      const text = await blobToText(blob);
+
+      // Full 40-char schema name should NOT appear
+      expect(text).not.toContain('very_long_schema_name_that_exceeds_limit');
+      // Truncated 27-char version should appear
+      expect(text).toContain('very_long_schema_name_that_');
+    });
+
+    it('should use standard row height (28px) in displayName mode', async () => {
+      const blob = await exportToDrawio(baseOptions);
+      const text = await blobToText(blob);
+
+      // Default displayName mode uses FIELD_ROW_HEIGHT = 28
+      expect(text).toContain('height="28"');
+      expect(text).not.toContain('whiteSpace=wrap');
     });
   });
 

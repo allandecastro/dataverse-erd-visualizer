@@ -29,6 +29,11 @@ export const SUBHEADER_HEIGHT = 24;
 export const FIELD_ROW_HEIGHT = 28;
 
 /**
+ * Height of each field row when showing both display name and schema name (px)
+ */
+export const FIELD_ROW_HEIGHT_BOTH = 40;
+
+/**
  * Top padding for the fields section (px)
  */
 export const FIELD_PADDING_TOP = 4;

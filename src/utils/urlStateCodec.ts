@@ -5,7 +5,7 @@
 
 import * as LZString from 'lz-string';
 import type { EntityPosition } from '@/types';
-import type { LayoutMode } from '@/types/erdTypes';
+import type { LayoutMode, FieldLabelMode } from '@/types/erdTypes';
 import type { SerializableState } from '@/types/snapshotTypes';
 
 const CODEC_VERSION = '1.0.0';
@@ -31,6 +31,7 @@ export interface CompactState {
   v: string; // version
   co?: Record<string, string>; // entityColorOverrides (optional, only present when non-empty)
   gn?: Record<string, string>; // groupNames (optional, only present when non-empty)
+  flm?: FieldLabelMode; // fieldLabelMode (optional, only present when not default 'displayName')
   gf?: string; // groupFilter (optional, only present when not 'all')
 }
 
@@ -48,7 +49,8 @@ export type MinimalShareState = Parameters<typeof encodeStateToURL>[0];
 
 /**
  * Build minimal state for URL sharing.
- * Strips heavy fields (colorSettings, fields, edgeOffsets) to keep URLs small.
+ * Strips heavy fields (full colorSettings, fields, edgeOffsets) to keep URLs small.
+ * Preserves share-relevant settings like fieldLabelMode, groupFilter, and color overrides.
  * Shared between App.tsx handleGenerateShareURL and useSnapshots shareSnapshot.
  */
 export function buildMinimalShareState(state: SerializableState): MinimalShareState {
@@ -69,6 +71,10 @@ export function buildMinimalShareState(state: SerializableState): MinimalShareSt
     ...(state.groupNames &&
       Object.keys(state.groupNames).length > 0 && { groupNames: state.groupNames }),
     ...(state.groupFilter && state.groupFilter !== 'all' && { groupFilter: state.groupFilter }),
+    ...(state.colorSettings?.fieldLabelMode &&
+      state.colorSettings.fieldLabelMode !== 'displayName' && {
+        fieldLabelMode: state.colorSettings.fieldLabelMode,
+      }),
   };
 }
 
@@ -115,6 +121,7 @@ export function encodeStateToURL(state: {
   isDarkMode: boolean;
   entityColorOverrides?: Record<string, string>;
   groupNames?: Record<string, string>;
+  fieldLabelMode?: FieldLabelMode;
   groupFilter?: string;
 }): string {
   try {
@@ -145,6 +152,11 @@ export function encodeStateToURL(state: {
     // Only include group names if non-empty
     if (state.groupNames && Object.keys(state.groupNames).length > 0) {
       compactState.gn = state.groupNames;
+    }
+
+    // Only include fieldLabelMode if not default
+    if (state.fieldLabelMode && state.fieldLabelMode !== 'displayName') {
+      compactState.flm = state.fieldLabelMode;
     }
 
     // Only include group filter if not default
@@ -241,11 +253,19 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
     // - collapsedEntities
     // - selectedFields
     // - fieldOrder
-    // - colorSettings
+    // - colorSettings (except fieldLabelMode, handled below)
     // - showMinimap
     // - isSmartZoom
     // - edgeOffsets
   };
+}
+
+/**
+ * Extract fieldLabelMode from CompactState (if present)
+ * Kept separate from expandCompactState to avoid partial colorSettings override
+ */
+export function getFieldLabelModeFromCompact(compact: CompactState): FieldLabelMode | undefined {
+  return compact.flm;
 }
 
 /**
