@@ -289,6 +289,12 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         tip: 'Smooth Step is recommended for readability with complex diagrams',
       },
       {
+        title: 'Field Label Display',
+        description:
+          'Choose how field names are displayed on entity cards: Display Name only, Schema Name only, or Both (display name with schema name in parentheses below).',
+        tip: 'Use "Both" mode to see the friendly name alongside the logical name — helpful when customizing or debugging fields',
+      },
+      {
         title: 'Filter by Publisher',
         description:
           'Filter entities by their publisher prefix to focus on specific customizations.',
