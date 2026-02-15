@@ -3,6 +3,35 @@
  */
 
 import type { Entity } from '@/types';
+import type { ColorSettings } from '@/types/erdTypes';
+
+/** Standard Microsoft publishers — entities from these are NOT custom */
+export const STANDARD_PUBLISHERS = new Set([
+  'Microsoft',
+  'Microsoft Dynamics 365',
+  'Microsoft Dynamics CRM',
+]);
+
+/**
+ * Check if an entity is custom (non-Microsoft publisher)
+ */
+export function isCustomEntity(entity: Entity): boolean {
+  return entity.publisher != null && !STANDARD_PUBLISHERS.has(entity.publisher);
+}
+
+/**
+ * Determine the header color for an entity node.
+ * Checks per-entity override first, then falls back to publisher-based default.
+ */
+export function getEntityNodeColor(
+  entity: Entity,
+  colorSettings: ColorSettings,
+  entityColorOverrides?: Record<string, string>
+): string {
+  const override = entityColorOverrides?.[entity.logicalName];
+  if (override) return override;
+  return isCustomEntity(entity) ? colorSettings.customTableColor : colorSettings.standardTableColor;
+}
 
 /**
  * Get publisher name from entity

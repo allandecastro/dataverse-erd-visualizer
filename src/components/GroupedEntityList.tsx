@@ -4,9 +4,10 @@
  */
 
 import { memo, useCallback, useRef, useState, useMemo } from 'react';
-import { ChevronRight, Link2, Pencil } from 'lucide-react';
+import { ChevronRight, Pencil } from 'lucide-react';
 import type { Entity } from '@/types';
 import type { ThemeColors, ColorSettings, DerivedGroup } from '@/types/erdTypes';
+import { EntityItemContent } from './EntityItemContent';
 import styles from '@/styles/Sidebar.module.css';
 
 const GROUP_HEADER_HEIGHT = 40;
@@ -389,9 +390,6 @@ export const GroupedEntityList = memo(function GroupedEntityList({
 
           // Entity item
           const { entity, isSelected } = item;
-          const hasLookups = entity.attributes.some(
-            (a) => a.type === 'Lookup' || a.type === 'Owner'
-          );
 
           return (
             <div
@@ -428,56 +426,14 @@ export const GroupedEntityList = memo(function GroupedEntityList({
                 transition: 'all 0.15s',
               }}
             >
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={() => {}}
-                tabIndex={-1}
-                aria-hidden="true"
-                style={{ cursor: 'pointer', accentColor: customTableColor }}
+              <EntityItemContent
+                entity={entity}
+                isSelected={isSelected}
+                customTableColor={customTableColor}
+                standardTableColor={standardTableColor}
+                lookupColor={lookupColor}
+                textSecondary={textSecondary}
               />
-              <div
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '2px',
-                  background: entity.isCustomEntity ? customTableColor : standardTableColor,
-                  flexShrink: 0,
-                }}
-                aria-hidden="true"
-              />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {entity.displayName}
-                </div>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    color: textSecondary,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {entity.logicalName}
-                </div>
-              </div>
-              {hasLookups && (
-                <Link2
-                  size={14}
-                  color={lookupColor}
-                  style={{ flexShrink: 0 }}
-                  aria-label="Has lookup relationships"
-                />
-              )}
             </div>
           );
         })}

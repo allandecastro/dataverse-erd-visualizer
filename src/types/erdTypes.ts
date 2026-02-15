@@ -53,12 +53,63 @@ export interface ColorSettings {
   manyToManyColor?: string;
 }
 
+/** Valid range for lineThickness */
+export const LINE_THICKNESS_MIN = 0.5;
+export const LINE_THICKNESS_MAX = 5;
+export const LINE_THICKNESS_DEFAULT = 1.5;
+
+/** Validate a hex color string (3, 4, 6, or 8 digit formats). */
+export function isValidHexColor(value: string): boolean {
+  return /^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value);
+}
+
+/**
+ * Parse a string value into the correct type for a ColorSettings key.
+ * Handles type coercion for numeric (lineThickness) and boolean (useRelationshipTypeColors) fields.
+ */
+export function parseColorSettingValue(
+  key: keyof ColorSettings,
+  value: string
+): string | number | boolean {
+  if (key === 'lineThickness') {
+    const parsed = parseFloat(value);
+    if (Number.isNaN(parsed)) return LINE_THICKNESS_DEFAULT;
+    return Math.max(LINE_THICKNESS_MIN, Math.min(LINE_THICKNESS_MAX, parsed));
+  }
+  if (key === 'useRelationshipTypeColors') {
+    return value === 'true';
+  }
+  return value;
+}
+
 // Derived group — computed at runtime from entityColorOverrides + groupNames
 export interface DerivedGroup {
   color: string; // hex color key (lowercase)
   name: string; // user-assigned name or auto-label ("Red", "Blue", etc.)
   entityNames: string[]; // sorted logical names of entities in this group
 }
+
+// =============================================================================
+// Semantic type aliases for commonly repeated Record patterns
+// =============================================================================
+
+/** Entity logical name → selected field names */
+export type EntityFieldMap = Record<string, Set<string>>;
+
+/** Entity logical name → ordered field names array */
+export type EntityFieldOrder = Record<string, string[]>;
+
+/** Entity logical name → position on canvas */
+export type EntityPositionMap = Record<string, EntityPosition>;
+
+/** Entity logical name → hex color override */
+export type EntityColorMap = Record<string, string>;
+
+/** Hex color → user-assigned group name */
+export type GroupNameMap = Record<string, string>;
+
+/** Relationship schema name → manual edge offset */
+export type EdgeOffsetMap = Record<string, { x: number; y: number }>;
 
 // ERD State shared across components
 export interface ERDState {

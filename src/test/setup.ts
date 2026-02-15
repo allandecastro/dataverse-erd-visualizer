@@ -16,24 +16,26 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock localStorage
-const localStorageMock = {
+// Mock localStorage with proper Storage interface
+const localStorageMock: Storage = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 };
-globalThis.localStorage = localStorageMock as any;
+vi.stubGlobal('localStorage', localStorageMock);
 
 // Mock canvas (for exportUtils tests)
-HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+const canvasContextMock: Partial<CanvasRenderingContext2D> = {
   fillRect: vi.fn(),
   clearRect: vi.fn(),
   getImageData: vi.fn(),
   putImageData: vi.fn(),
-  createImageData: vi.fn(),
+  createImageData: vi.fn() as CanvasRenderingContext2D['createImageData'],
   setTransform: vi.fn(),
-  drawImage: vi.fn(),
+  drawImage: vi.fn() as CanvasRenderingContext2D['drawImage'],
   save: vi.fn(),
   fillText: vi.fn(),
   restore: vi.fn(),
@@ -47,17 +49,20 @@ HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
   rotate: vi.fn(),
   arc: vi.fn(),
   fill: vi.fn(),
-  measureText: vi.fn(() => ({ width: 0 })),
+  measureText: vi.fn(() => ({ width: 0 })) as unknown as CanvasRenderingContext2D['measureText'],
   transform: vi.fn(),
   rect: vi.fn(),
-  clip: vi.fn(),
-})) as any;
+  clip: vi.fn() as CanvasRenderingContext2D['clip'],
+};
+HTMLCanvasElement.prototype.getContext = vi.fn(
+  () => canvasContextMock
+) as unknown as typeof HTMLCanvasElement.prototype.getContext;
 
 // Mock Xrm object (for Dataverse context tests)
-(globalThis as any).Xrm = {
+vi.stubGlobal('Xrm', {
   Utility: {
     getGlobalContext: vi.fn(() => ({
       getClientUrl: vi.fn(() => 'https://org.crm.dynamics.com'),
     })),
   },
-};
+});
