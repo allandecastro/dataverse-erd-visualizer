@@ -549,7 +549,11 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
 
           ctx.fillStyle = isDarkMode ? '#94a3b8' : '#64748b';
           ctx.font = '10px monospace';
-          ctx.fillText(attr.name.substring(0, 25), x + 44, fieldY + effectiveRowHeight / 2 + 12);
+          ctx.fillText(
+            `(${attr.name})`.substring(0, 27),
+            x + 44,
+            fieldY + effectiveRowHeight / 2 + 12
+          );
         } else {
           ctx.font = '500 12px system-ui';
           ctx.textBaseline = 'middle';
@@ -1038,7 +1042,7 @@ export function exportToSVG(options: ExportOptions): string {
           fieldNameSecondary.setAttribute('fill', isDarkMode ? '#94a3b8' : '#64748b');
           fieldNameSecondary.setAttribute('font-size', '10');
           fieldNameSecondary.setAttribute('font-family', 'monospace');
-          fieldNameSecondary.textContent = attr.name.substring(0, 25);
+          fieldNameSecondary.textContent = `(${attr.name})`.substring(0, 27);
           svg.appendChild(fieldNameSecondary);
         } else {
           const fieldName = document.createElementNS(svgNS, 'text');
