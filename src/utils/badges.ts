@@ -155,3 +155,56 @@ export function filterByBadge(
 ): EntityAttribute[] {
   return attributes.filter((attr) => getAttributeBadge(attr).label === badgeLabel);
 }
+
+// --- Source Type (Computed Field) Helpers ---
+
+export interface SourceTypeBadge {
+  label: string;
+  color: string;
+}
+
+/** Power Fx Formula field (sourceType === 3) */
+export function isFormulaField(attr: EntityAttribute): boolean {
+  return attr.sourceType === 3;
+}
+
+/** Calculated field (sourceType === 1) */
+export function isCalculatedField(attr: EntityAttribute): boolean {
+  return attr.sourceType === 1;
+}
+
+/** Rollup field (sourceType === 2) */
+export function isRollupField(attr: EntityAttribute): boolean {
+  return attr.sourceType === 2;
+}
+
+/** Prompt / AI field (sourceType === 4) */
+export function isPromptField(attr: EntityAttribute): boolean {
+  return attr.sourceType === 4;
+}
+
+/** Any computed field (calculated, rollup, formula, or prompt) */
+export function isComputedField(attr: EntityAttribute): boolean {
+  return (
+    attr.sourceType === 1 || attr.sourceType === 2 || attr.sourceType === 3 || attr.sourceType === 4
+  );
+}
+
+/**
+ * Get the secondary source type badge for computed fields.
+ * Returns null for simple/regular fields (sourceType 0 or null/undefined).
+ */
+export function getSourceTypeBadge(attr: EntityAttribute): SourceTypeBadge | null {
+  switch (attr.sourceType) {
+    case 1:
+      return { label: 'CALC', color: '#fb923c' }; // orange-400
+    case 2:
+      return { label: 'ROLL', color: '#38bdf8' }; // sky-400
+    case 3:
+      return { label: 'FX', color: '#a855f7' }; // purple-400
+    case 4:
+      return { label: 'AI', color: '#f472b6' }; // pink-400
+    default:
+      return null;
+  }
+}

@@ -4,7 +4,7 @@
 
 import { CheckSquare, Square } from 'lucide-react';
 import type { EntityAttribute } from '@/types';
-import type { AttributeBadge } from '../utils/badges';
+import type { AttributeBadge, SourceTypeBadge } from '../utils/badges';
 
 export interface FieldDrawerListProps {
   filteredAttributes: EntityAttribute[];
@@ -14,6 +14,7 @@ export interface FieldDrawerListProps {
   textSecondary: string;
   hoverBg: string;
   getBadge: (attr: EntityAttribute) => AttributeBadge;
+  getSourceBadge: (attr: EntityAttribute) => SourceTypeBadge | null;
   isLookup: (attr: EntityAttribute) => boolean;
   onFieldToggle: (attr: EntityAttribute) => void;
 }
@@ -26,6 +27,7 @@ export function FieldDrawerList({
   textSecondary,
   hoverBg,
   getBadge,
+  getSourceBadge,
   isLookup,
   onFieldToggle,
 }: FieldDrawerListProps) {
@@ -39,6 +41,7 @@ export function FieldDrawerList({
     >
       {filteredAttributes.map((attr) => {
         const badge = getBadge(attr);
+        const sourceBadge = getSourceBadge(attr);
         const isSelected = selectedFields.has(attr.name) || attr.isPrimaryKey;
         const isDisabled = attr.isPrimaryKey;
         const isLookupField = isLookup(attr);
@@ -92,6 +95,33 @@ export function FieldDrawerList({
             >
               {badge.label}
             </span>
+
+            {/* Source type badge (FX, CALC, ROLL, AI) */}
+            {sourceBadge && (
+              <span
+                style={{
+                  background: sourceBadge.color,
+                  color: '#ffffff',
+                  padding: '1px 4px',
+                  borderRadius: '3px',
+                  fontSize: '8px',
+                  fontWeight: 600,
+                  minWidth: '20px',
+                  textAlign: 'center',
+                }}
+                title={
+                  sourceBadge.label === 'FX'
+                    ? 'Power Fx Formula'
+                    : sourceBadge.label === 'CALC'
+                      ? 'Calculated'
+                      : sourceBadge.label === 'ROLL'
+                        ? 'Rollup'
+                        : 'AI Prompt'
+                }
+              >
+                {sourceBadge.label}
+              </span>
+            )}
 
             {/* Field info */}
             <div style={{ flex: 1, minWidth: 0 }}>

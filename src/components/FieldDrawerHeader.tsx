@@ -3,7 +3,7 @@
  */
 
 import { memo } from 'react';
-import { X, Search, CheckCircle, Wrench } from 'lucide-react';
+import { X, Search, CheckCircle, Wrench, Sigma } from 'lucide-react';
 import type { BadgeCount } from '../utils/badges';
 import styles from '@/styles/FieldDrawerHeader.module.css';
 
@@ -14,6 +14,7 @@ export interface FieldDrawerHeaderProps {
   searchQuery: string;
   showSelectedOnly: boolean;
   showCustomOnly: boolean;
+  showComputedOnly: boolean;
   availableBadges: BadgeCount[];
   activeBadgeFilter: string | null;
   isDarkMode: boolean;
@@ -26,6 +27,7 @@ export interface FieldDrawerHeaderProps {
   onSearchChange: (value: string) => void;
   onToggleSelectedOnly: () => void;
   onToggleCustomOnly: () => void;
+  onToggleComputedOnly: () => void;
   onBadgeFilterChange: (label: string) => void;
   onClose: () => void;
 }
@@ -36,6 +38,7 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
   searchQuery,
   showSelectedOnly,
   showCustomOnly,
+  showComputedOnly,
   availableBadges,
   activeBadgeFilter,
   isDarkMode,
@@ -48,6 +51,7 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
   onSearchChange,
   onToggleSelectedOnly,
   onToggleCustomOnly,
+  onToggleComputedOnly,
   onBadgeFilterChange,
   onClose,
 }: FieldDrawerHeaderProps) {
@@ -71,6 +75,17 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
         ? '#374151'
         : '#f3f4f6',
     color: showCustomOnly ? (isDarkMode ? '#93c5fd' : '#1e40af') : textSecondary,
+  });
+
+  const getComputedButtonStyle = () => ({
+    background: showComputedOnly
+      ? isDarkMode
+        ? '#6b21a8'
+        : '#f3e8ff'
+      : isDarkMode
+        ? '#374151'
+        : '#f3f4f6',
+    color: showComputedOnly ? (isDarkMode ? '#c084fc' : '#6b21a8') : textSecondary,
   });
 
   return (
@@ -142,6 +157,17 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
         >
           <Wrench size={14} aria-hidden="true" />
           Custom
+        </button>
+        <button
+          onClick={onToggleComputedOnly}
+          aria-pressed={showComputedOnly}
+          aria-label="Show computed fields only (Formula, Calculated, Rollup)"
+          className={styles.filterButton}
+          style={getComputedButtonStyle()}
+          title="Formula / Calculated / Rollup / AI"
+        >
+          <Sigma size={14} aria-hidden="true" />
+          Computed
         </button>
       </div>
 

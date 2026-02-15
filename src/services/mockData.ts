@@ -206,6 +206,23 @@ export function generateMockEntities(): Entity[] {
         customDateTimeField('new_lastauditdate', 'Last Audit Date'),
         customPicklistField('new_accountcategory', 'Account Category'),
         customLookupField('new_accountmanagerid', 'Account Manager', 'systemuser'),
+        // Computed fields (Formula, Calculated, Rollup)
+        {
+          ...moneyField('new_totalrevenue', 'Total Revenue'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_fulladdress', 'Full Address'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...stringField('new_accountsummary', 'Account Summary'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        { ...stringField('new_aiinsight', 'AI Insight'), sourceType: 4, isCustomAttribute: true }, // Prompt (AI)
       ],
       alternateKeys: [
         {
@@ -251,6 +268,27 @@ export function generateMockEntities(): Entity[] {
         customStringField('new_linkedin', 'LinkedIn Profile'),
         customPicklistField('new_communicationpreference', 'Communication Preference'),
         customDateTimeField('new_lastnewsletteropendate', 'Last Newsletter Open'),
+        // Computed fields (one per source type)
+        {
+          ...integerField('new_activitycount', 'Activity Count'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_displaynameformatted', 'Display Name (Formatted)'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...stringField('new_contactsummary', 'Contact Summary'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_sentimentanalysis', 'Sentiment Analysis'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
       alternateKeys: [
         {
@@ -288,6 +326,27 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...moneyField('new_weightedrevenue', 'Weighted Revenue'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...moneyField('new_totallineitemvalue', 'Total Line Item Value'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_dealscorecard', 'Deal Scorecard'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_winprobabilityai', 'Win Probability (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Lead
@@ -319,6 +378,23 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        { ...integerField('new_leadscore', 'Lead Score'), sourceType: 1, isCustomAttribute: true }, // Calculated
+        {
+          ...integerField('new_touchpointcount', 'Touchpoint Count'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_qualificationstatus', 'Qualification Status'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_leadinsight', 'Lead Insight'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Case/Incident
@@ -349,6 +425,23 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...integerField('new_resolutionhours', 'Resolution Time (hrs)'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...integerField('new_escalationcount', 'Escalation Count'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        { ...stringField('new_slastatus', 'SLA Status'), sourceType: 3, isCustomAttribute: true }, // Formula (Power Fx)
+        {
+          ...stringField('new_suggestedresolution', 'Suggested Resolution'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Product
@@ -378,6 +471,23 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        { ...moneyField('new_margin', 'Profit Margin'), sourceType: 1, isCustomAttribute: true }, // Calculated
+        {
+          ...integerField('new_totalsold', 'Total Units Sold'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_stockstatus', 'Stock Status'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_productdescriptionai', 'AI Description'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
       alternateKeys: [
         {
@@ -415,6 +525,23 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        { ...moneyField('new_netamount', 'Net Amount'), sourceType: 1, isCustomAttribute: true }, // Calculated
+        {
+          ...integerField('new_lineitemcount', 'Line Item Count'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_validitystatus', 'Validity Status'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_quotesummaryai', 'Quote Summary (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Order/Sales Order
@@ -445,6 +572,27 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...moneyField('new_netordervalue', 'Net Order Value'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...integerField('new_orderlinecount', 'Order Line Count'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_fulfillmentstatus', 'Fulfillment Status'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_deliveryestimate', 'Delivery Estimate (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Invoice
@@ -475,6 +623,27 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...moneyField('new_netinvoiceamount', 'Net Invoice Amount'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...integerField('new_invoicelinecount', 'Invoice Line Count'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_paymentstatus', 'Payment Status'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_paymentreminder', 'Payment Reminder (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Campaign
@@ -506,6 +675,27 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...moneyField('new_roi', 'Return on Investment'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...integerField('new_totalresponses', 'Total Responses'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_campaignhealth', 'Campaign Health'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_campaigninsight', 'Campaign Insight (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Price List
@@ -711,6 +901,27 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...moneyField('new_budgetvariance', 'Budget Variance'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...integerField('new_totaltasks', 'Total Tasks'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_projecthealthstatus', 'Project Health'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_projectriskassessment', 'Risk Assessment (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
       alternateKeys: [
         {
@@ -754,6 +965,27 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...integerField('new_remaininghours', 'Remaining Hours'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...integerField('new_subtaskcount', 'Subtask Count'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_completionstatus', 'Completion Status'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_effortestimateai', 'Effort Estimate (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Custom Entity 3: Time Entry
@@ -782,6 +1014,27 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...moneyField('new_billableamount', 'Billable Amount'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...integerField('new_weeklyhourslogged', 'Weekly Hours Logged'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_overtimeflag', 'Overtime Flag'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_timecategorization', 'Time Categorization (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // Custom Entity 4: Expense
@@ -810,6 +1063,27 @@ export function generateMockEntities(): Entity[] {
         statusField(),
         createdOnField(),
         modifiedOnField(),
+        // Computed fields (one per source type)
+        {
+          ...moneyField('new_reimbursableamount', 'Reimbursable Amount'),
+          sourceType: 1,
+          isCustomAttribute: true,
+        }, // Calculated
+        {
+          ...moneyField('new_totalprojectexpenses', 'Total Project Expenses'),
+          sourceType: 2,
+          isCustomAttribute: true,
+        }, // Rollup
+        {
+          ...stringField('new_approvalstatus', 'Approval Status'),
+          sourceType: 3,
+          isCustomAttribute: true,
+        }, // Formula (Power Fx)
+        {
+          ...stringField('new_expensecategorization', 'Expense Categorization (AI)'),
+          sourceType: 4,
+          isCustomAttribute: true,
+        }, // Prompt (AI)
       ],
     },
     // User (System User)
