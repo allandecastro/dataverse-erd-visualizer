@@ -51,6 +51,7 @@ interface DataverseAttributeResponse {
   };
   Targets?: string[];
   IsCustomAttribute?: boolean;
+  SourceType?: number | null; // 0=Simple, 1=Calculated, 2=Rollup, 3=Formula, 4=Prompt
 }
 
 class DataverseApiService {
@@ -269,7 +270,7 @@ class DataverseApiService {
       const batchPromises = batch.map(async (entityMeta) => {
         try {
           // Fetch attributes separately to get full polymorphic metadata
-          const attributesQuery = `EntityDefinitions(LogicalName='${entityMeta.LogicalName}')/Attributes?$select=LogicalName,AttributeType,DisplayName,IsCustomAttribute`;
+          const attributesQuery = `EntityDefinitions(LogicalName='${entityMeta.LogicalName}')/Attributes?$select=LogicalName,AttributeType,DisplayName,IsCustomAttribute,SourceType`;
           const attrResponse = await fetch(`${this.baseUrl}/${attributesQuery}`, {
             method: 'GET',
             headers: {
@@ -373,6 +374,7 @@ class DataverseApiService {
         lookupTarget:
           isLookupType && attr.Targets && attr.Targets.length > 0 ? attr.Targets[0] : undefined,
         isCustomAttribute: attr.IsCustomAttribute,
+        sourceType: attr.SourceType ?? null,
       };
     });
 

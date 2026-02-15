@@ -16,7 +16,7 @@ import type {
   AlternateKey,
 } from '@/types';
 import type { ColorSettings, FieldLabelMode } from '@/types/erdTypes';
-import { getAttributeBadge, getTypeLabel } from './badges';
+import { getAttributeBadge, getTypeLabel, getSourceTypeBadge } from './badges';
 import { downloadFile } from './fileDownload';
 
 export interface DrawioExportOptions {
@@ -301,7 +301,9 @@ function generateFieldCell(
 ): string {
   const badge = getAttributeBadge(field);
   const typeLabel = getTypeLabel(field);
+  const sourceBadge = getSourceTypeBadge(field);
   const customSuffix = field.isCustomAttribute ? ' (Custom)' : '';
+  const sourceTypeSuffix = sourceBadge ? ` [${sourceBadge.label}]` : '';
 
   // Build field name portion based on label mode
   let fieldNamePart: string;
@@ -314,7 +316,7 @@ function generateFieldCell(
   } else {
     fieldNamePart = `${field.displayName}${customSuffix}`;
   }
-  const fieldLabel = `[${badge.label}] ${fieldNamePart} | ${typeLabel}`;
+  const fieldLabel = `[${badge.label}] ${fieldNamePart} | ${typeLabel}${sourceTypeSuffix}`;
 
   // Truncate if too long
   const truncatedLabel = fieldLabel.length > 60 ? fieldLabel.substring(0, 57) + '...' : fieldLabel;

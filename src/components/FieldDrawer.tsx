@@ -10,6 +10,8 @@ import {
   filterByBadge,
   isLookupType,
   isCustomAttribute,
+  isComputedField,
+  getSourceTypeBadge,
 } from '../utils/badges';
 import { useTheme } from '@/context';
 import { FieldDrawerHeader } from './FieldDrawerHeader';
@@ -36,6 +38,7 @@ export function FieldDrawer({
   const [searchQuery, setSearchQuery] = useState('');
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
   const [showCustomOnly, setShowCustomOnly] = useState(false);
+  const [showComputedOnly, setShowComputedOnly] = useState(false);
   const [activeBadgeFilter, setActiveBadgeFilter] = useState<string | null>(null);
 
   const { isDarkMode, themeColors, colors } = useTheme();
@@ -70,6 +73,11 @@ export function FieldDrawer({
       attrs = attrs.filter((attr) => isCustomAttribute(attr));
     }
 
+    // Computed only filter (Formula, Calculated, Rollup, Prompt)
+    if (showComputedOnly) {
+      attrs = attrs.filter((attr) => isComputedField(attr));
+    }
+
     // Badge type filter
     if (activeBadgeFilter) {
       attrs = filterByBadge(attrs, activeBadgeFilter);
@@ -90,6 +98,7 @@ export function FieldDrawer({
     searchQuery,
     showSelectedOnly,
     showCustomOnly,
+    showComputedOnly,
     activeBadgeFilter,
     selectedFields,
   ]);
@@ -158,6 +167,7 @@ export function FieldDrawer({
         searchQuery={searchQuery}
         showSelectedOnly={showSelectedOnly}
         showCustomOnly={showCustomOnly}
+        showComputedOnly={showComputedOnly}
         availableBadges={availableBadges}
         activeBadgeFilter={activeBadgeFilter}
         isDarkMode={isDarkMode}
@@ -170,6 +180,7 @@ export function FieldDrawer({
         onSearchChange={setSearchQuery}
         onToggleSelectedOnly={() => setShowSelectedOnly(!showSelectedOnly)}
         onToggleCustomOnly={() => setShowCustomOnly(!showCustomOnly)}
+        onToggleComputedOnly={() => setShowComputedOnly(!showComputedOnly)}
         onBadgeFilterChange={(label) =>
           setActiveBadgeFilter(activeBadgeFilter === label ? null : label)
         }
@@ -196,6 +207,7 @@ export function FieldDrawer({
         textSecondary={textSecondary}
         hoverBg={hoverBg}
         getBadge={getAttributeBadge}
+        getSourceBadge={getSourceTypeBadge}
         isLookup={isLookupType}
         onFieldToggle={handleFieldToggle}
       />

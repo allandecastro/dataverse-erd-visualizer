@@ -719,4 +719,91 @@ describe('drawioExport', () => {
       expect(text).not.toContain('fontColor=#3b82f6');
     });
   });
+
+  describe('Source Type in Export', () => {
+    it('should include source type suffix for computed fields', async () => {
+      const entitiesWithComputed: Entity[] = [
+        {
+          logicalName: 'account',
+          displayName: 'Account',
+          objectTypeCode: 1,
+          isCustomEntity: false,
+          primaryIdAttribute: 'accountid',
+          primaryNameAttribute: 'name',
+          attributes: [
+            {
+              name: 'accountid',
+              displayName: 'Account ID',
+              type: 'UniqueIdentifier',
+              isPrimaryKey: true,
+            },
+            {
+              name: 'new_formula',
+              displayName: 'Formula Field',
+              type: 'String',
+              sourceType: 3,
+              isCustomAttribute: true,
+            },
+            {
+              name: 'new_calculated',
+              displayName: 'Calculated Field',
+              type: 'String',
+              sourceType: 1,
+              isCustomAttribute: true,
+            },
+            {
+              name: 'new_rollup',
+              displayName: 'Rollup Field',
+              type: 'Money',
+              sourceType: 2,
+              isCustomAttribute: true,
+            },
+            {
+              name: 'new_prompt',
+              displayName: 'AI Prompt',
+              type: 'String',
+              sourceType: 4,
+              isCustomAttribute: true,
+            },
+          ],
+          publisher: 'Custom',
+          alternateKeys: [],
+        },
+      ];
+
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        entities: entitiesWithComputed,
+        selectedFields: {
+          account: new Set([
+            'accountid',
+            'new_formula',
+            'new_calculated',
+            'new_rollup',
+            'new_prompt',
+          ]),
+        },
+        relationships: [],
+      });
+
+      const text = await blobToText(blob);
+
+      // Source type suffixes should appear in field labels
+      expect(text).toContain('[FX]');
+      expect(text).toContain('[CALC]');
+      expect(text).toContain('[ROLL]');
+      expect(text).toContain('[AI]');
+    });
+
+    it('should not include source type suffix for simple fields', async () => {
+      const blob = await exportToDrawio(baseOptions);
+      const text = await blobToText(blob);
+
+      // No source type suffixes for regular fields
+      expect(text).not.toContain('[FX]');
+      expect(text).not.toContain('[CALC]');
+      expect(text).not.toContain('[ROLL]');
+      expect(text).not.toContain('[AI]');
+    });
+  });
 });

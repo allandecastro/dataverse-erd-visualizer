@@ -6,7 +6,7 @@ import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Plus, X, ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import type { Entity, EntityAttribute, AlternateKey } from '@/types';
-import { getAttributeBadge, getTypeLabel, isLookupType } from '../utils/badges';
+import { getAttributeBadge, getTypeLabel, isLookupType, getSourceTypeBadge } from '../utils/badges';
 import {
   HEADER_HEIGHT,
   SUBHEADER_HEIGHT,
@@ -211,6 +211,7 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
         {displayAttributes.map((attr) => {
           const badge = getAttributeBadge(attr);
           const typeLabel = getTypeLabel(attr);
+          const sourceBadge = getSourceTypeBadge(attr);
           const canRemove = !attr.isPrimaryKey && onRemoveField;
 
           return (
@@ -252,6 +253,25 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
               >
                 {typeLabel}
               </span>
+
+              {/* Source type indicator (FX, CALC, ROLL, AI) */}
+              {sourceBadge && (
+                <span
+                  className={styles.sourceTypeBadge}
+                  style={{ background: sourceBadge.color }}
+                  title={
+                    sourceBadge.label === 'FX'
+                      ? 'Power Fx Formula'
+                      : sourceBadge.label === 'CALC'
+                        ? 'Calculated'
+                        : sourceBadge.label === 'ROLL'
+                          ? 'Rollup'
+                          : 'AI Prompt'
+                  }
+                >
+                  {sourceBadge.label}
+                </span>
+              )}
 
               {/* Remove button (only for non-PK fields) */}
               {canRemove && (
