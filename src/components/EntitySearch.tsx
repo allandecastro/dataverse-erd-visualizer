@@ -169,6 +169,13 @@ export function EntitySearch({ entities, isOpen, onClose, onNavigateToEntity }: 
           </button>
         </div>
 
+        {/* Live region for screen reader result count announcements */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {searchQuery.trim()
+            ? `${filteredEntities.length} result${filteredEntities.length === 1 ? '' : 's'} found`
+            : ''}
+        </div>
+
         {/* Results List */}
         <div
           ref={listRef}

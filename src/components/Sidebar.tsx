@@ -2,7 +2,7 @@
  * Sidebar component with entity list, filters, and settings
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import type { Entity } from '@/types';
 import type { LayoutMode, ColorSettings, DerivedGroup } from '@/types/erdTypes';
 import { useTheme } from '@/context';
@@ -106,24 +106,28 @@ export function Sidebar({
     };
   }, []);
 
-  const hasGroups = Object.keys(entityColorOverrides).length > 0;
+  const hasGroups = derivedGroups.length > 0;
 
-  // Filter entities for display
-  const displayedEntities = entities.filter((entity) => {
-    const matchesSearch =
-      entity.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entity.logicalName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPublisher =
-      publisherFilter === 'all' || getEntityPublisher(entity) === publisherFilter;
-    const matchesSolution =
-      solutionFilter === 'all' || (entity.solutions?.includes(solutionFilter) ?? false);
-    const matchesGroup =
-      groupFilter === 'all' ||
-      (groupFilter === '__ungrouped__'
-        ? !entityColorOverrides[entity.logicalName]
-        : entityColorOverrides[entity.logicalName]?.toLowerCase() === groupFilter);
-    return matchesSearch && matchesPublisher && matchesSolution && matchesGroup;
-  });
+  // Filter entities for display (memoized to avoid recalculation on every render)
+  const displayedEntities = useMemo(
+    () =>
+      entities.filter((entity) => {
+        const matchesSearch =
+          entity.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          entity.logicalName.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesPublisher =
+          publisherFilter === 'all' || getEntityPublisher(entity) === publisherFilter;
+        const matchesSolution =
+          solutionFilter === 'all' || (entity.solutions?.includes(solutionFilter) ?? false);
+        const matchesGroup =
+          groupFilter === 'all' ||
+          (groupFilter === '__ungrouped__'
+            ? !entityColorOverrides[entity.logicalName]
+            : entityColorOverrides[entity.logicalName]?.toLowerCase() === groupFilter);
+        return matchesSearch && matchesPublisher && matchesSolution && matchesGroup;
+      }),
+    [entities, searchQuery, publisherFilter, solutionFilter, groupFilter, entityColorOverrides]
+  );
 
   // When filters are active, All/None should only affect the displayed (filtered) entities
   const isFiltered = displayedEntities.length !== entities.length;

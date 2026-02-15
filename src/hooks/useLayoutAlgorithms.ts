@@ -26,6 +26,8 @@ import {
   ITERATIONS,
   CENTER_FORCE,
   DAMPING,
+  FORCE_CENTER_X,
+  FORCE_CENTER_Y,
   GRID_START_X,
   GRID_START_Y,
   GRID_SPACING_X,
@@ -172,8 +174,8 @@ export function useLayoutAlgorithms({
         pos2.vy = (pos2.vy || 0) - fy;
       });
 
-      const centerX = 600;
-      const centerY = 400;
+      const centerX = FORCE_CENTER_X;
+      const centerY = FORCE_CENTER_Y;
       filteredEntities.forEach((entity) => {
         const pos = newPositions[entity.logicalName];
         const dx = centerX - pos.x;

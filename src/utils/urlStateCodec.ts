@@ -31,6 +31,7 @@ export interface CompactState {
   v: string; // version
   co?: Record<string, string>; // entityColorOverrides (optional, only present when non-empty)
   gn?: Record<string, string>; // groupNames (optional, only present when non-empty)
+  gf?: string; // groupFilter (optional, only present when not 'all')
 }
 
 /**
@@ -40,6 +41,35 @@ export interface DecodeResult {
   success: boolean;
   state?: CompactState;
   error?: string;
+}
+
+/** Minimal state shape accepted by encodeStateToURL */
+export type MinimalShareState = Parameters<typeof encodeStateToURL>[0];
+
+/**
+ * Build minimal state for URL sharing.
+ * Strips heavy fields (colorSettings, fields, edgeOffsets) to keep URLs small.
+ * Shared between App.tsx handleGenerateShareURL and useSnapshots shareSnapshot.
+ */
+export function buildMinimalShareState(state: SerializableState): MinimalShareState {
+  return {
+    selectedEntities: state.selectedEntities,
+    entityPositions: state.entityPositions,
+    zoom: state.zoom,
+    pan: state.pan,
+    layoutMode: state.layoutMode,
+    searchQuery: state.searchQuery,
+    publisherFilter: state.publisherFilter,
+    solutionFilter: state.solutionFilter,
+    isDarkMode: state.isDarkMode,
+    ...(state.entityColorOverrides &&
+      Object.keys(state.entityColorOverrides).length > 0 && {
+        entityColorOverrides: state.entityColorOverrides,
+      }),
+    ...(state.groupNames &&
+      Object.keys(state.groupNames).length > 0 && { groupNames: state.groupNames }),
+    ...(state.groupFilter && state.groupFilter !== 'all' && { groupFilter: state.groupFilter }),
+  };
 }
 
 /**
@@ -85,6 +115,7 @@ export function encodeStateToURL(state: {
   isDarkMode: boolean;
   entityColorOverrides?: Record<string, string>;
   groupNames?: Record<string, string>;
+  groupFilter?: string;
 }): string {
   try {
     // Build compact state object
@@ -114,6 +145,11 @@ export function encodeStateToURL(state: {
     // Only include group names if non-empty
     if (state.groupNames && Object.keys(state.groupNames).length > 0) {
       compactState.gn = state.groupNames;
+    }
+
+    // Only include group filter if not default
+    if (state.groupFilter && state.groupFilter !== 'all') {
+      compactState.gf = state.groupFilter;
     }
 
     // Serialize to JSON
@@ -199,6 +235,8 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
     ...(compact.co ? { entityColorOverrides: compact.co } : {}),
     // Restore group names if present
     ...(compact.gn ? { groupNames: compact.gn } : {}),
+    // Restore group filter if present (defaults to 'all' when absent)
+    ...(compact.gf ? { groupFilter: compact.gf } : {}),
     // Fields NOT restored from URL (use existing state or defaults):
     // - collapsedEntities
     // - selectedFields

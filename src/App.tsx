@@ -15,6 +15,7 @@ import { useSnapshots } from './hooks/useSnapshots';
 // Context
 import { ThemeProvider, useTheme } from './context';
 import { ERDProvider } from './contexts/ERDContext';
+import { SnapshotProvider, useSnapshot } from './contexts/SnapshotContext';
 
 // Components - eager loaded (critical path)
 import {
@@ -39,7 +40,7 @@ const FieldDrawer = lazy(() =>
 
 // Types and utilities
 import type { ColorSettings, LayoutMode, DerivedGroup } from './types/erdTypes';
-import type { ERDSnapshot } from './types/snapshotTypes';
+import { parseColorSettingValue } from './types/erdTypes';
 import { exportToMermaid } from './utils/exportUtils';
 import { exportToDrawio, downloadDrawio } from './utils/drawioExport';
 import {
@@ -48,8 +49,16 @@ import {
   expandCompactState,
   getShareBaseUrl,
   getStateHash,
+  buildMinimalShareState,
 } from './utils/urlStateCodec';
 import { validateURLState, filterInvalidURLEntries } from './utils/urlStateValidation';
+import { getEntityNodeColor } from './utils/entityUtils';
+import {
+  FEATURE_GUIDE_DELAY,
+  LAYOUT_FIT_DELAY,
+  SHARE_URL_MAX_LENGTH,
+  SHARE_URL_WARN_LENGTH,
+} from './constants';
 
 interface ERDVisualizerProps {
   entities: Entity[];
@@ -183,7 +192,7 @@ export default function ERDVisualizer({
     const hasSeenGuide = localStorage.getItem('erd-visualizer-guide-seen');
     if (!hasSeenGuide) {
       // Show guide on first visit (slight delay for better UX)
-      const timer = setTimeout(() => setShowGuide(true), 500);
+      const timer = setTimeout(() => setShowGuide(true), FEATURE_GUIDE_DELAY);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -261,13 +270,11 @@ export default function ERDVisualizer({
 
   // Show notification when new relationships are detected
   useEffect(() => {
-    console.log('[App] newRelationshipsDetected changed:', newRelationshipsDetected);
     if (newRelationshipsDetected && newRelationshipsDetected > 0) {
       const message =
         newRelationshipsDetected === 1
           ? 'New relationship detected! The diagram has been updated.'
           : `${newRelationshipsDetected} new relationships detected! The diagram has been updated.`;
-      console.log('[App] Showing toast:', message);
       showToast(message, 'success');
     }
   }, [newRelationshipsDetected, showToast]);
@@ -289,7 +296,7 @@ export default function ERDVisualizer({
         if (reactFlowRef.current) {
           reactFlowRef.current.fitView();
         }
-      }, 100);
+      }, LAYOUT_FIT_DELAY);
     },
     [setLayoutMode]
   );
@@ -334,8 +341,11 @@ export default function ERDVisualizer({
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       showToast('Diagram copied to clipboard as PNG!', 'success');
     } catch (err) {
-      console.error('Error copying PNG:', err);
-      showToast('Failed to copy to clipboard', 'error');
+      console.error('[App] PNG export error:', err);
+      showToast(
+        `Failed to copy PNG: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'error'
+      );
     }
   }, [showToast]);
 
@@ -361,8 +371,11 @@ export default function ERDVisualizer({
           showToast('Failed to copy Mermaid code', 'error');
         });
     } catch (err) {
-      console.error('Error generating Mermaid:', err);
-      showToast('Failed to generate Mermaid code', 'error');
+      console.error('[App] Mermaid export error:', err);
+      showToast(
+        `Failed to generate Mermaid: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'error'
+      );
     }
   }, [
     filteredEntities,
@@ -394,8 +407,11 @@ export default function ERDVisualizer({
       URL.revokeObjectURL(url);
       showToast('SVG diagram downloaded!', 'success');
     } catch (err) {
-      console.error('Error exporting SVG:', err);
-      showToast('Failed to export SVG', 'error');
+      console.error('[App] SVG export error:', err);
+      showToast(
+        `Failed to export SVG: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'error'
+      );
     }
   }, [showToast]);
 
@@ -423,8 +439,11 @@ export default function ERDVisualizer({
       downloadDrawio(blob);
       showToast('Draw.io diagram downloaded! Open with draw.io or import into Visio.', 'success');
     } catch (err) {
-      console.error('Error exporting Draw.io:', err);
-      showToast('Failed to export Draw.io file', 'error');
+      console.error('[App] Draw.io export error:', err);
+      showToast(
+        `Failed to export Draw.io: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'error'
+      );
     } finally {
       setIsExportingDrawio(false);
       setDrawioExportProgress(undefined);
@@ -448,21 +467,7 @@ export default function ERDVisualizer({
     | { error: string } => {
     try {
       const currentState = state.getSerializableState();
-
-      // Build minimal state for URL
-      const minimalState = {
-        selectedEntities: currentState.selectedEntities,
-        entityPositions: currentState.entityPositions,
-        zoom: currentState.zoom,
-        pan: currentState.pan,
-        layoutMode: currentState.layoutMode,
-        searchQuery: currentState.searchQuery,
-        publisherFilter: currentState.publisherFilter,
-        solutionFilter: currentState.solutionFilter,
-        isDarkMode: currentState.isDarkMode,
-        entityColorOverrides: currentState.entityColorOverrides,
-        groupNames: currentState.groupNames,
-      };
+      const minimalState = buildMinimalShareState(currentState);
 
       // Encode state
       const encoded = encodeStateToURL(minimalState);
@@ -473,12 +478,12 @@ export default function ERDVisualizer({
 
       // Check URL length
       const urlLength = shareUrl.length;
-      if (urlLength > 32000) {
+      if (urlLength > SHARE_URL_MAX_LENGTH) {
         return {
           error: 'Diagram too large to share via URL (32KB limit). Use Export Snapshot instead.',
         };
       }
-      if (urlLength > 2000) {
+      if (urlLength > SHARE_URL_WARN_LENGTH) {
         showToast(`URL is ${urlLength} characters (may not work in older browsers)`, 'warning');
         return {
           url: shareUrl,
@@ -501,18 +506,10 @@ export default function ERDVisualizer({
   // Color settings change handler
   const handleColorSettingsChange = useCallback(
     (key: keyof ColorSettings, value: string) => {
-      setColorSettings((prev) => {
-        // Handle type conversions for non-string fields
-        let parsedValue: string | number | boolean = value;
-
-        if (key === 'lineThickness') {
-          parsedValue = parseFloat(value);
-        } else if (key === 'useRelationshipTypeColors') {
-          parsedValue = value === 'true';
-        }
-
-        return { ...prev, [key]: parsedValue };
-      });
+      setColorSettings((prev) => ({
+        ...prev,
+        [key]: parseColorSettingValue(key, value),
+      }));
     },
     [setColorSettings]
   );
@@ -606,100 +603,102 @@ export default function ERDVisualizer({
 
   return (
     <ThemeProvider isDarkMode={isDarkMode} onDarkModeChange={setIsDarkMode}>
-      <ERDProvider state={state}>
-        <ERDVisualizerContent
-          entities={entities}
-          filteredEntities={filteredEntities}
-          filteredRelationships={filteredRelationships}
-          selectedEntities={selectedEntities}
-          searchQuery={searchQuery}
-          publisherFilter={publisherFilter}
-          solutionFilter={solutionFilter}
-          publishers={publishers}
-          solutions={solutions}
-          layoutMode={layoutMode}
-          showSettings={showSettings}
-          colorSettings={colorSettings}
-          showMinimap={showMinimap}
-          entityPositions={entityPositions}
-          orderedFieldsMap={orderedFieldsMap}
-          edgeOffsets={edgeOffsets}
-          zoom={zoom}
-          pan={pan}
-          toast={toast}
-          isSearchOpen={isSearchOpen}
-          showGuide={showGuide}
-          isExportingDrawio={isExportingDrawio}
-          drawioExportProgress={drawioExportProgress}
-          fieldDrawerEntity={fieldDrawerEntity}
-          fieldDrawerEntityData={fieldDrawerEntityData}
-          selectedFields={selectedFields}
-          pendingLookupField={pendingLookupField}
-          containerRef={containerRef}
-          reactFlowRef={reactFlowRef}
-          onToggleEntity={toggleEntity}
-          onSelectAll={selectAll}
-          onDeselectAll={deselectAll}
-          onExpandAll={expandAll}
-          onCollapseAll={collapseAll}
-          collapsedEntities={collapsedEntities}
-          onToggleCollapse={toggleCollapse}
-          onSearchChange={setSearchQuery}
-          onPublisherFilterChange={setPublisherFilter}
-          onSolutionFilterChange={setSolutionFilter}
-          onLayoutModeChange={handleLayoutModeChange}
-          onToggleSettings={() => setShowSettings(!showSettings)}
-          onColorSettingsChange={handleColorSettingsChange}
-          onPositionsChange={handlePositionsChange}
-          onToggleMinimap={() => setShowMinimap(!showMinimap)}
-          onOpenFieldDrawer={handleOpenFieldDrawer}
-          onRemoveField={handleRemoveField}
-          onEdgeOffsetChange={updateEdgeOffset}
-          entityColorOverrides={entityColorOverrides}
-          onOpenColorPicker={handleOpenColorPicker}
-          onColorPickerChange={setEntityColor}
-          onColorPickerReset={clearEntityColor}
-          onCloseColorPicker={handleCloseColorPicker}
-          colorPickerState={colorPickerState}
-          onResetAllEntityColors={clearAllEntityColors}
-          derivedGroups={derivedGroups}
-          groupFilter={groupFilter}
-          onGroupFilterChange={setGroupFilter}
-          onSetGroupName={setGroupName}
-          onCopyPNG={handleCopyPNG}
-          onExportMermaid={handleExportMermaid}
-          onExportSVG={handleExportSVG}
-          onExportDrawio={handleExportDrawio}
-          onGenerateShareURL={handleGenerateShareURL}
-          onOpenSearch={() => setIsSearchOpen(true)}
-          onCloseSearch={() => setIsSearchOpen(false)}
-          onOpenGuide={() => setShowGuide(true)}
-          onCloseGuide={handleCloseGuide}
-          onDontShowAgain={handleDontShowAgain}
-          onNavigateToEntity={navigateToEntity}
-          onAddField={handleAddField}
-          onCloseFieldDrawer={handleCloseFieldDrawer}
-          onLookupFieldAdd={handleLookupFieldAdd}
-          onConfirmAddRelatedTable={handleConfirmAddRelatedTable}
-          onCancelAddRelatedTable={handleCancelAddRelatedTable}
-          // Snapshots
-          showSnapshotManager={showSnapshotManager}
-          snapshots={snapshotState.snapshots}
-          lastAutoSave={snapshotState.lastAutoSave}
-          autoSaveEnabled={snapshotState.autoSaveEnabled}
-          onOpenSnapshots={() => setShowSnapshotManager(true)}
-          onCloseSnapshots={() => setShowSnapshotManager(false)}
-          onSaveSnapshot={snapshotState.saveSnapshot}
-          onLoadSnapshot={snapshotState.loadSnapshot}
-          onRenameSnapshot={snapshotState.renameSnapshot}
-          onDeleteSnapshot={snapshotState.deleteSnapshot}
-          onExportSnapshot={snapshotState.exportSnapshotToJSON}
-          onShareSnapshot={snapshotState.shareSnapshot}
-          onExportAllSnapshots={snapshotState.exportAllSnapshotsToJSON}
-          onImportSnapshot={snapshotState.importSnapshotFromJSON}
-          onToggleAutoSave={snapshotState.toggleAutoSave}
-        />
-      </ERDProvider>
+      <SnapshotProvider
+        showSnapshotManager={showSnapshotManager}
+        openSnapshots={() => setShowSnapshotManager(true)}
+        closeSnapshots={() => setShowSnapshotManager(false)}
+        snapshots={snapshotState.snapshots}
+        lastAutoSave={snapshotState.lastAutoSave}
+        autoSaveEnabled={snapshotState.autoSaveEnabled}
+        saveSnapshot={snapshotState.saveSnapshot}
+        loadSnapshot={snapshotState.loadSnapshot}
+        renameSnapshot={snapshotState.renameSnapshot}
+        deleteSnapshot={snapshotState.deleteSnapshot}
+        exportSnapshot={snapshotState.exportSnapshotToJSON}
+        shareSnapshot={snapshotState.shareSnapshot}
+        exportAllSnapshots={snapshotState.exportAllSnapshotsToJSON}
+        importSnapshot={snapshotState.importSnapshotFromJSON}
+        toggleAutoSave={snapshotState.toggleAutoSave}
+      >
+        <ERDProvider state={state}>
+          <ERDVisualizerContent
+            entities={entities}
+            filteredEntities={filteredEntities}
+            filteredRelationships={filteredRelationships}
+            selectedEntities={selectedEntities}
+            searchQuery={searchQuery}
+            publisherFilter={publisherFilter}
+            solutionFilter={solutionFilter}
+            publishers={publishers}
+            solutions={solutions}
+            layoutMode={layoutMode}
+            showSettings={showSettings}
+            colorSettings={colorSettings}
+            showMinimap={showMinimap}
+            entityPositions={entityPositions}
+            orderedFieldsMap={orderedFieldsMap}
+            edgeOffsets={edgeOffsets}
+            zoom={zoom}
+            pan={pan}
+            toast={toast}
+            isSearchOpen={isSearchOpen}
+            showGuide={showGuide}
+            isExportingDrawio={isExportingDrawio}
+            drawioExportProgress={drawioExportProgress}
+            fieldDrawerEntity={fieldDrawerEntity}
+            fieldDrawerEntityData={fieldDrawerEntityData}
+            selectedFields={selectedFields}
+            pendingLookupField={pendingLookupField}
+            containerRef={containerRef}
+            reactFlowRef={reactFlowRef}
+            onToggleEntity={toggleEntity}
+            onSelectAll={selectAll}
+            onDeselectAll={deselectAll}
+            onExpandAll={expandAll}
+            onCollapseAll={collapseAll}
+            collapsedEntities={collapsedEntities}
+            onToggleCollapse={toggleCollapse}
+            onSearchChange={setSearchQuery}
+            onPublisherFilterChange={setPublisherFilter}
+            onSolutionFilterChange={setSolutionFilter}
+            onLayoutModeChange={handleLayoutModeChange}
+            onToggleSettings={() => setShowSettings(!showSettings)}
+            onColorSettingsChange={handleColorSettingsChange}
+            onPositionsChange={handlePositionsChange}
+            onToggleMinimap={() => setShowMinimap(!showMinimap)}
+            onOpenFieldDrawer={handleOpenFieldDrawer}
+            onRemoveField={handleRemoveField}
+            onEdgeOffsetChange={updateEdgeOffset}
+            entityColorOverrides={entityColorOverrides}
+            onOpenColorPicker={handleOpenColorPicker}
+            onColorPickerChange={setEntityColor}
+            onColorPickerReset={clearEntityColor}
+            onCloseColorPicker={handleCloseColorPicker}
+            colorPickerState={colorPickerState}
+            onResetAllEntityColors={clearAllEntityColors}
+            derivedGroups={derivedGroups}
+            groupFilter={groupFilter}
+            onGroupFilterChange={setGroupFilter}
+            onSetGroupName={setGroupName}
+            onCopyPNG={handleCopyPNG}
+            onExportMermaid={handleExportMermaid}
+            onExportSVG={handleExportSVG}
+            onExportDrawio={handleExportDrawio}
+            onGenerateShareURL={handleGenerateShareURL}
+            onOpenSearch={() => setIsSearchOpen(true)}
+            onCloseSearch={() => setIsSearchOpen(false)}
+            onOpenGuide={() => setShowGuide(true)}
+            onCloseGuide={handleCloseGuide}
+            onDontShowAgain={handleDontShowAgain}
+            onNavigateToEntity={navigateToEntity}
+            onAddField={handleAddField}
+            onCloseFieldDrawer={handleCloseFieldDrawer}
+            onLookupFieldAdd={handleLookupFieldAdd}
+            onConfirmAddRelatedTable={handleConfirmAddRelatedTable}
+            onCancelAddRelatedTable={handleCancelAddRelatedTable}
+          />
+        </ERDProvider>
+      </SnapshotProvider>
     </ThemeProvider>
   );
 }
@@ -784,22 +783,6 @@ interface ERDVisualizerContentProps {
   onLookupFieldAdd: (fieldName: string, targetEntity: string) => void;
   onConfirmAddRelatedTable: () => void;
   onCancelAddRelatedTable: () => void;
-  // Snapshots
-  showSnapshotManager: boolean;
-  snapshots: ERDSnapshot[];
-  lastAutoSave: ERDSnapshot | null;
-  autoSaveEnabled: boolean;
-  onOpenSnapshots: () => void;
-  onCloseSnapshots: () => void;
-  onSaveSnapshot: (name: string) => void;
-  onLoadSnapshot: (id: string) => void;
-  onRenameSnapshot: (id: string, newName: string) => void;
-  onDeleteSnapshot: (id: string) => void;
-  onExportSnapshot: (id: string) => void;
-  onShareSnapshot: (id: string) => void;
-  onExportAllSnapshots: () => void;
-  onImportSnapshot: (file: File) => void;
-  onToggleAutoSave: (enabled: boolean) => void;
 }
 
 function ERDVisualizerContent({
@@ -877,39 +860,28 @@ function ERDVisualizerContent({
   onLookupFieldAdd,
   onConfirmAddRelatedTable,
   onCancelAddRelatedTable,
-  // Snapshots
-  showSnapshotManager,
-  snapshots,
-  lastAutoSave,
-  autoSaveEnabled,
-  onOpenSnapshots,
-  onCloseSnapshots,
-  onSaveSnapshot,
-  onLoadSnapshot,
-  onRenameSnapshot,
-  onDeleteSnapshot,
-  onExportSnapshot,
-  onShareSnapshot,
-  onExportAllSnapshots,
-  onImportSnapshot,
-  onToggleAutoSave,
 }: ERDVisualizerContentProps) {
   // Use theme from context
   const { isDarkMode, themeColors } = useTheme();
+  // Snapshot state from context
+  const {
+    showSnapshotManager,
+    snapshots,
+    lastAutoSave,
+    autoSaveEnabled,
+    openSnapshots,
+    closeSnapshots,
+    saveSnapshot: onSaveSnapshot,
+    loadSnapshot: onLoadSnapshot,
+    renameSnapshot: onRenameSnapshot,
+    deleteSnapshot: onDeleteSnapshot,
+    exportSnapshot: onExportSnapshot,
+    shareSnapshot: onShareSnapshot,
+    exportAllSnapshots: onExportAllSnapshots,
+    importSnapshot: onImportSnapshot,
+    toggleAutoSave: onToggleAutoSave,
+  } = useSnapshot();
   const { bgColor, textColor } = themeColors;
-
-  const getEntityDefaultColor = useCallback(
-    (entityName: string) => {
-      const entity = entities.find((e) => e.logicalName === entityName);
-      const isCustom =
-        entity?.publisher &&
-        !['Microsoft', 'Microsoft Dynamics 365', 'Microsoft Dynamics CRM'].includes(
-          entity.publisher
-        );
-      return isCustom ? colorSettings.customTableColor : colorSettings.standardTableColor;
-    },
-    [entities, colorSettings.customTableColor, colorSettings.standardTableColor]
-  );
 
   return (
     <div
@@ -977,7 +949,7 @@ function ERDVisualizerContent({
           onExportDrawio={onExportDrawio}
           onOpenSearch={onOpenSearch}
           onOpenGuide={onOpenGuide}
-          onOpenSnapshots={onOpenSnapshots}
+          onOpenSnapshots={openSnapshots}
           onGenerateShareURL={onGenerateShareURL}
         />
 
@@ -1027,10 +999,12 @@ function ERDVisualizerContent({
       {colorPickerState && (
         <ColorPickerPopover
           entityName={colorPickerState.entityName}
-          currentColor={
-            entityColorOverrides[colorPickerState.entityName] ||
-            getEntityDefaultColor(colorPickerState.entityName)
-          }
+          currentColor={(() => {
+            const entity = entities.find((e) => e.logicalName === colorPickerState.entityName);
+            return entity
+              ? getEntityNodeColor(entity, colorSettings, entityColorOverrides)
+              : colorSettings.standardTableColor;
+          })()}
           hasOverride={!!entityColorOverrides[colorPickerState.entityName]}
           isDarkMode={isDarkMode}
           anchorPosition={colorPickerState.anchorPosition}
@@ -1096,7 +1070,7 @@ function ERDVisualizerContent({
             snapshots={snapshots}
             lastAutoSave={lastAutoSave}
             autoSaveEnabled={autoSaveEnabled}
-            onClose={onCloseSnapshots}
+            onClose={closeSnapshots}
             onSaveSnapshot={onSaveSnapshot}
             onLoadSnapshot={onLoadSnapshot}
             onRenameSnapshot={onRenameSnapshot}
