@@ -1021,7 +1021,7 @@ export function exportToSVG(options: ExportOptions): string {
           // Two-line: display name on top, schema name below
           const fieldNamePrimary = document.createElementNS(svgNS, 'text');
           fieldNamePrimary.setAttribute('x', (pos.x + 44).toString());
-          fieldNamePrimary.setAttribute('y', (fieldY + svgEffectiveRowHeight / 2).toString());
+          fieldNamePrimary.setAttribute('y', (fieldY + svgEffectiveRowHeight / 2 - 2).toString());
           fieldNamePrimary.setAttribute('fill', isDarkMode ? '#e2e8f0' : '#1e293b');
           fieldNamePrimary.setAttribute('font-size', '12');
           fieldNamePrimary.setAttribute('font-weight', '500');

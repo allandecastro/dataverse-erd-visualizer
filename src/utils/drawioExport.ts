@@ -361,10 +361,13 @@ function generateFieldCell(
   // Truncate if too long
   const truncatedLabel = fieldLabel.length > 60 ? fieldLabel.substring(0, 57) + '...' : fieldLabel;
 
-  // For "both" mode, append schema name as second line after escaping
+  // For "both" mode, append truncated schema name as second line after escaping
   const escapedLabel = escapeXml(truncatedLabel);
+  const schemaNameForLabel = field.name.length > 27 ? field.name.substring(0, 27) : field.name;
   const finalLabel =
-    fieldLabelMode === 'both' ? `${escapedLabel}&#xa;${escapeXml(field.name)}` : escapedLabel;
+    fieldLabelMode === 'both'
+      ? `${escapedLabel}&#xa;${escapeXml(schemaNameForLabel)}`
+      : escapedLabel;
 
   // Determine background color based on field type
   let fillColor = '#ffffff'; // Standard fields

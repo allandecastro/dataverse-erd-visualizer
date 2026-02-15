@@ -323,6 +323,38 @@ describe('exportUtils', () => {
     });
   });
 
+  describe('fieldLabelMode behavior', () => {
+    it('should always use schema names in Mermaid regardless of fieldLabelMode', () => {
+      // Mermaid ERD syntax requires logical names — fieldLabelMode should not affect output
+      const schemaMode = exportToMermaid({
+        ...baseOptions,
+        colorSettings: { ...baseOptions.colorSettings, fieldLabelMode: 'schemaName' as const },
+      });
+      const bothMode = exportToMermaid({
+        ...baseOptions,
+        colorSettings: { ...baseOptions.colorSettings, fieldLabelMode: 'both' as const },
+      });
+      const displayMode = exportToMermaid(baseOptions); // default: 'displayName'
+
+      // All three modes should produce identical Mermaid output
+      expect(schemaMode).toBe(displayMode);
+      expect(bothMode).toBe(displayMode);
+    });
+
+    it('should use logical attribute names in Mermaid (never display names)', () => {
+      const mermaid = exportToMermaid(baseOptions);
+
+      // Mermaid uses logical names like "accountid", "name", "revenue"
+      expect(mermaid).toContain('accountid');
+      expect(mermaid).toContain('name');
+      expect(mermaid).toContain('revenue');
+
+      // Should NOT contain display names in attribute definitions
+      expect(mermaid).not.toMatch(/^\s+\S+\s+Account ID/m);
+      expect(mermaid).not.toMatch(/^\s+\S+\s+Revenue/m);
+    });
+  });
+
   describe('Mermaid Edge Cases', () => {
     it('should handle entity names with underscores', () => {
       const underscoreEntity: Entity = {
