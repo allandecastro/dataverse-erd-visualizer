@@ -107,7 +107,7 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         title: 'Computed Field Identification',
         description:
           'Power Fx Formula (FX), Calculated (CALC), Rollup (ROLL), and AI Prompt (AI) fields are identified with colored secondary badges on ERD cards and in the field drawer.',
-        tip: 'Use the Computed filter toggle (Sigma icon) in the field drawer to show only formula/calculated/rollup fields',
+        tip: 'Use the Computed filter toggle (Sigma icon) in the field drawer to show only formula/calculated/rollup/AI Prompt fields',
       },
       {
         title: 'Remove Fields',
