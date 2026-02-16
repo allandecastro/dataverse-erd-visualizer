@@ -15,7 +15,7 @@ import {
   FIELD_ROW_HEIGHT_BOTH,
   FIELD_PADDING_TOP,
 } from '@/constants';
-import { getAttributeBadge, getTypeLabel } from './badges';
+import { getAttributeBadge, getTypeLabel, getSourceTypeBadge } from './badges';
 
 /**
  * Get effective field row height based on label mode
@@ -516,6 +516,26 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
           ctx.fillText(displayName.substring(0, 20), x + 44, fieldY + effectiveRowHeight / 2);
         }
 
+        // Source type badge (FX, CALC, ROLL, AI) - right side, before type label
+        const sourceBadge = getSourceTypeBadge(attr);
+        let typeLabelRightEdge = x + CARD_WIDTH - 12;
+        if (sourceBadge) {
+          const badgeWidth = 26;
+          const badgeX = typeLabelRightEdge - badgeWidth;
+          ctx.fillStyle = sourceBadge.color;
+          ctx.beginPath();
+          ctx.roundRect(badgeX, fieldY + effectiveRowHeight / 2 - 7, badgeWidth, 14, 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '600 8px system-ui';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(sourceBadge.label, badgeX + badgeWidth / 2, fieldY + effectiveRowHeight / 2);
+
+          typeLabelRightEdge = badgeX - 4;
+        }
+
         // Type label (right side)
         ctx.fillStyle = isDarkMode ? '#64748b' : '#94a3b8';
         ctx.font = '11px system-ui';
@@ -523,7 +543,7 @@ export async function copyToClipboardAsPNG(options: ExportOptions): Promise<void
         ctx.textBaseline = 'middle';
         ctx.fillText(
           typeLabel.substring(0, 15),
-          x + CARD_WIDTH - 12,
+          typeLabelRightEdge,
           fieldY + effectiveRowHeight / 2
         );
 
@@ -1011,9 +1031,40 @@ export function exportToSVG(options: ExportOptions): string {
           svg.appendChild(fieldName);
         }
 
+        // Source type badge (FX, CALC, ROLL, AI) - right side, before type label
+        const svgSourceBadge = getSourceTypeBadge(attr);
+        let svgTypeLabelX = pos.x + CARD_WIDTH - 12;
+        if (svgSourceBadge) {
+          const badgeWidth = 26;
+          const badgeX = svgTypeLabelX - badgeWidth;
+          const badgeY = fieldY + svgEffectiveRowHeight / 2 - 7;
+
+          const sourceBadgeRect = document.createElementNS(svgNS, 'rect');
+          sourceBadgeRect.setAttribute('x', badgeX.toString());
+          sourceBadgeRect.setAttribute('y', badgeY.toString());
+          sourceBadgeRect.setAttribute('width', badgeWidth.toString());
+          sourceBadgeRect.setAttribute('height', '14');
+          sourceBadgeRect.setAttribute('fill', svgSourceBadge.color);
+          sourceBadgeRect.setAttribute('rx', '2');
+          svg.appendChild(sourceBadgeRect);
+
+          const sourceBadgeText = document.createElementNS(svgNS, 'text');
+          sourceBadgeText.setAttribute('x', (badgeX + badgeWidth / 2).toString());
+          sourceBadgeText.setAttribute('y', (fieldY + svgEffectiveRowHeight / 2 + 3).toString());
+          sourceBadgeText.setAttribute('fill', '#ffffff');
+          sourceBadgeText.setAttribute('font-size', '8');
+          sourceBadgeText.setAttribute('font-weight', '600');
+          sourceBadgeText.setAttribute('text-anchor', 'middle');
+          sourceBadgeText.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
+          sourceBadgeText.textContent = svgSourceBadge.label;
+          svg.appendChild(sourceBadgeText);
+
+          svgTypeLabelX = badgeX - 4;
+        }
+
         // Type label (right side)
         const typeLabel = document.createElementNS(svgNS, 'text');
-        typeLabel.setAttribute('x', (pos.x + CARD_WIDTH - 12).toString());
+        typeLabel.setAttribute('x', svgTypeLabelX.toString());
         typeLabel.setAttribute('y', (fieldY + svgEffectiveRowHeight / 2 + 4).toString());
         typeLabel.setAttribute('fill', isDarkMode ? '#64748b' : '#94a3b8');
         typeLabel.setAttribute('font-size', '11');
