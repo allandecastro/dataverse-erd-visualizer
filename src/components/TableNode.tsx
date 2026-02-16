@@ -4,7 +4,7 @@
 
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Plus, X, ChevronDown, ChevronUp, Palette } from 'lucide-react';
+import { Plus, X, ChevronDown, ChevronUp, Palette, GitBranch } from 'lucide-react';
 import type { Entity, EntityAttribute, AlternateKey } from '@/types';
 import {
   getAttributeBadge,
@@ -34,6 +34,7 @@ export interface TableNodeData extends Record<string, unknown> {
   onToggleCollapse?: (entityName: string) => void;
   hasColorOverride?: boolean;
   onOpenColorPicker?: (entityName: string, anchorRect: DOMRect) => void;
+  onOpenRelationshipExplorer?: (entityName: string) => void;
   fieldLabelMode?: FieldLabelMode;
 }
 
@@ -62,6 +63,7 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
     onToggleCollapse,
     hasColorOverride,
     onOpenColorPicker,
+    onOpenRelationshipExplorer,
     fieldLabelMode = 'displayName',
   } = data;
 
@@ -187,6 +189,19 @@ export const TableNode = memo(function TableNode({ data, selected }: TableNodePr
               aria-label="Change table color"
             >
               <Palette size={14} />
+            </button>
+          )}
+          {onOpenRelationshipExplorer && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenRelationshipExplorer(entity.logicalName);
+              }}
+              className={styles.exploreButton}
+              title="Explore relationships"
+              aria-label="Explore relationships"
+            >
+              <GitBranch size={14} />
             </button>
           )}
           {onOpenFieldDrawer && (

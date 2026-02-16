@@ -72,16 +72,17 @@
 
 ### User Experience
 
-| Feature                | Description                                                                                                                               |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Search & Filter**    | Quick search by table name, filter by publisher/solution, filter-aware Select All/None                                                    |
-| **Field Selector**     | Choose which fields to display per table with badge-type filtering                                                                        |
-| **Computed Fields**    | Identify Formula (FX), Calculated (CALC), Rollup (ROLL), and AI Prompt fields with colored badges and dedicated filter toggle             |
-| **Primary Name Badge** | Cyan "PN" badge identifies each entity's primary name column ([#48](https://github.com/allandecastro/dataverse-erd-visualizer/issues/48)) |
-| **Snapshots**          | Save/restore complete diagram states with auto-save, export/import                                                                        |
-| **Share URL**          | Generate shareable URLs with one-click clipboard copy, automatic state restoration                                                        |
-| **Keyboard Shortcuts** | Ctrl+S (save), Ctrl+Shift+S (snapshots), Ctrl+Shift+C (share), / (search), Esc (deselect)                                                 |
-| **Feature Guide**      | Interactive onboarding for new users                                                                                                      |
+| Feature                   | Description                                                                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Search & Filter**       | Quick search by table name, filter by publisher/solution, filter-aware Select All/None                                                                        |
+| **Field Selector**        | Choose which fields to display per table with badge-type filtering                                                                                            |
+| **Computed Fields**       | Identify Formula (FX), Calculated (CALC), Rollup (ROLL), and AI Prompt fields with colored badges and dedicated filter toggle                                 |
+| **Primary Name Badge**    | Cyan "PN" badge identifies each entity's primary name column ([#48](https://github.com/allandecastro/dataverse-erd-visualizer/issues/48))                     |
+| **Snapshots**             | Save/restore complete diagram states with auto-save, export/import                                                                                            |
+| **Relationship Explorer** | Discover connected tables from any entity — browse outgoing, incoming, and N:N relationships with auto-add lookup fields and system/activity entity filtering |
+| **Share URL**             | Generate shareable URLs with one-click clipboard copy, automatic state restoration                                                                            |
+| **Keyboard Shortcuts**    | Ctrl+S (save), Ctrl+Shift+S (snapshots), Ctrl+Shift+C (share), / (search), Esc (deselect)                                                                     |
+| **Feature Guide**         | Interactive onboarding for new users                                                                                                                          |
 
 ### Export & Customization
 
@@ -617,4 +618,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <p align="center">
   Made with ❤️ for the Power Platform Community
 </p>
-
