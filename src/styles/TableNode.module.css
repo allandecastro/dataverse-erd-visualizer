@@ -77,6 +77,10 @@
   composes: headerButton;
 }
 
+.exploreButton {
+  composes: headerButton;
+}
+
 .collapseButton {
   composes: headerButton;
 }

@@ -345,6 +345,12 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         description:
           'Entities that reference themselves (like parent-child hierarchies) show a loop on the right side.',
       },
+      {
+        title: 'Relationship Explorer',
+        description:
+          'Click the branch icon on any entity header or the Explore button in the toolbar to discover all connected tables. Browse outgoing (N:1), incoming (1:N), and many-to-many relationships, then selectively add tables to the canvas. Lookup fields are automatically added so relationship lines connect at field level.',
+        tip: 'Toggle "Hide System" and "Hide Activity" filters to control noise. Entities in multiple sections have independent checkboxes per direction.',
+      },
     ],
   },
 ];

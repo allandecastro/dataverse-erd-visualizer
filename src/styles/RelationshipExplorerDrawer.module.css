@@ -1,0 +1,238 @@
+/**
+ * Relationship Explorer Drawer styles
+ */
+
+/* ---- Header ---- */
+
+.headerContainer {
+  padding: 16px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchContainer {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.filterGroup {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+/* ---- List ---- */
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+}
+
+.sectionChevron {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.sectionChevronCollapsed {
+  transform: rotate(-90deg);
+}
+
+.sectionCount {
+  font-weight: 400;
+  opacity: 0.6;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.entityRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px 6px 24px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  min-height: 36px;
+  background: var(--row-bg, transparent);
+}
+
+.entityRow:hover {
+  background: var(--row-hover-bg, var(--row-bg, transparent));
+}
+
+.entityRowOnCanvas {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.entityCheckbox {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.entityInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.entityDisplayName {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entityLogicalName {
+  font-size: 10px;
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entityBadges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.relCountBadge {
+  font-size: 9px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.customBadge {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.onCanvasIcon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.emptyState {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* ---- Footer ---- */
+
+.footerContainer {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.footerButton {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.footerButtonPrimary {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  width: 100%;
+}
+
+.footerButtonPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.countSummary {
+  padding: 8px 16px;
+  font-size: 11px;
+}

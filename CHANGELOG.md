@@ -5,6 +5,23 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Relationship Explorer** — Discover and expand connected tables from any entity on the canvas:
+  - **Explore Button**: Click the branch icon on any entity header to explore its relationships, or use the toolbar "Explore" button to explore from all visible tables
+  - **Grouped View**: Related entities are organized into three collapsible sections: "This table looks up to" (N:1), "Tables looking up to this" (1:N), and "Many-to-Many (N:N)"
+  - **Independent Per-Section Checkboxes**: An entity appearing in multiple sections (e.g. both N:1 and N:N) has independent checkboxes — selecting one does not auto-select others
+  - **Auto-Add Lookup Fields**: When adding related entities, the connecting lookup fields are automatically added to the field selection so relationship lines connect at field level
+  - **Explosion Prevention**: System entities (systemuser, team, etc.) and activity entities (email, task, etc.) are hidden by default to prevent diagram overload
+  - **Selective Addition**: Check individual entities or "Select All Visible", then click "Add to Canvas" to add them to the diagram
+  - **On-Canvas Awareness**: Entities already on the diagram are marked with a green indicator and sorted to the bottom
+  - **Search & Filter**: Search within the explorer panel, filter by custom-only, toggle system/activity entity visibility
+  - **Mutual Exclusion**: Opening the Relationship Explorer closes the Field Drawer (and vice versa) for a clean UI
+
+---
+
 ## [0.1.11.0] - 2026-02-16
 
 ### Added

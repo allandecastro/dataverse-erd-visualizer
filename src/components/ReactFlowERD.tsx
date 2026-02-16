@@ -146,6 +146,8 @@ export interface ReactFlowERDProps {
   // Per-entity color overrides
   entityColorOverrides?: Record<string, string>;
   onOpenColorPicker?: (entityName: string, anchorRect: DOMRect) => void;
+  // Relationship explorer
+  onOpenRelationshipExplorer?: (entityName: string) => void;
 }
 
 export interface ReactFlowERDRef {
@@ -180,6 +182,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     onToggleCollapse,
     entityColorOverrides,
     onOpenColorPicker,
+    onOpenRelationshipExplorer,
   },
   ref
 ) {
@@ -344,6 +347,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
           onToggleCollapse,
           hasColorOverride: !!entityColorOverrides?.[entity.logicalName],
           onOpenColorPicker,
+          onOpenRelationshipExplorer,
           fieldLabelMode: colorSettings.fieldLabelMode,
         } as TableNodeData,
       };
@@ -452,6 +456,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     collapsedEntities,
     onToggleCollapse,
     onOpenColorPicker,
+    onOpenRelationshipExplorer,
     setNodes,
     setEdges,
   ]);

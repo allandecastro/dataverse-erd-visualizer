@@ -74,6 +74,11 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
   const [fieldDrawerEntity, setFieldDrawerEntity] = useState<string | null>(null);
   const [fieldOrder, setFieldOrder] = useState<EntityFieldOrder>({});
 
+  // Relationship explorer (transient UI state, not serialized)
+  const [relationshipExplorerSources, setRelationshipExplorerSources] = useState<string[] | null>(
+    null
+  );
+
   // Add related table dialog
   const [pendingLookupField, setPendingLookupField] = useState<{
     entityName: string;
@@ -465,6 +470,10 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     addField,
     removeField,
     getOrderedFields,
+
+    // Relationship explorer
+    relationshipExplorerSources,
+    setRelationshipExplorerSources,
 
     // Pending lookup dialog
     pendingLookupField,
