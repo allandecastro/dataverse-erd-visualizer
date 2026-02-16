@@ -35,6 +35,7 @@ export interface EntityAttribute {
   isLookup?: boolean;
   lookupTarget?: string; // Target entity logical name for lookup fields
   isCustomAttribute?: boolean; // Whether this is a custom attribute (vs. standard OOB attribute)
+  sourceType?: number | null; // 0=Simple, 1=Calculated, 2=Rollup, 3=Formula(PowerFx), 4=Prompt(AI)
 }
 
 export interface AlternateKey {

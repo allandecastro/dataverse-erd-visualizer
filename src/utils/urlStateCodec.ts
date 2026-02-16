@@ -33,6 +33,8 @@ export interface CompactState {
   gn?: Record<string, string>; // groupNames (optional, only present when non-empty)
   flm?: FieldLabelMode; // fieldLabelMode (optional, only present when not default 'displayName')
   gf?: string; // groupFilter (optional, only present when not 'all')
+  sf?: Record<string, string[]>; // selectedFields (optional, only present when non-empty)
+  fo?: Record<string, string[]>; // fieldOrder (optional, only present when non-empty)
 }
 
 /**
@@ -54,6 +56,23 @@ export type MinimalShareState = Parameters<typeof encodeStateToURL>[0];
  * Shared between App.tsx handleGenerateShareURL and useSnapshots shareSnapshot.
  */
 export function buildMinimalShareState(state: SerializableState): MinimalShareState {
+  // Filter selectedFields/fieldOrder to only include selected entities with non-empty arrays
+  const selectedSet = new Set(state.selectedEntities);
+  const filteredFields = state.selectedFields
+    ? Object.fromEntries(
+        Object.entries(state.selectedFields).filter(
+          ([entity, fields]) => selectedSet.has(entity) && fields.length > 0
+        )
+      )
+    : undefined;
+  const filteredOrder = state.fieldOrder
+    ? Object.fromEntries(
+        Object.entries(state.fieldOrder).filter(
+          ([entity, order]) => selectedSet.has(entity) && order.length > 0
+        )
+      )
+    : undefined;
+
   return {
     selectedEntities: state.selectedEntities,
     entityPositions: state.entityPositions,
@@ -74,6 +93,14 @@ export function buildMinimalShareState(state: SerializableState): MinimalShareSt
     ...(state.colorSettings?.fieldLabelMode &&
       state.colorSettings.fieldLabelMode !== 'displayName' && {
         fieldLabelMode: state.colorSettings.fieldLabelMode,
+      }),
+    ...(filteredFields &&
+      Object.keys(filteredFields).length > 0 && {
+        selectedFields: filteredFields,
+      }),
+    ...(filteredOrder &&
+      Object.keys(filteredOrder).length > 0 && {
+        fieldOrder: filteredOrder,
       }),
   };
 }
@@ -123,6 +150,8 @@ export function encodeStateToURL(state: {
   groupNames?: Record<string, string>;
   fieldLabelMode?: FieldLabelMode;
   groupFilter?: string;
+  selectedFields?: Record<string, string[]>;
+  fieldOrder?: Record<string, string[]>;
 }): string {
   try {
     // Build compact state object
@@ -162,6 +191,16 @@ export function encodeStateToURL(state: {
     // Only include group filter if not default
     if (state.groupFilter && state.groupFilter !== 'all') {
       compactState.gf = state.groupFilter;
+    }
+
+    // Only include selectedFields if non-empty
+    if (state.selectedFields && Object.keys(state.selectedFields).length > 0) {
+      compactState.sf = state.selectedFields;
+    }
+
+    // Only include fieldOrder if non-empty
+    if (state.fieldOrder && Object.keys(state.fieldOrder).length > 0) {
+      compactState.fo = state.fieldOrder;
     }
 
     // Serialize to JSON
@@ -249,10 +288,12 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
     ...(compact.gn ? { groupNames: compact.gn } : {}),
     // Restore group filter if present (defaults to 'all' when absent)
     ...(compact.gf ? { groupFilter: compact.gf } : {}),
+    // Restore selectedFields if present
+    ...(compact.sf ? { selectedFields: compact.sf } : {}),
+    // Restore fieldOrder if present
+    ...(compact.fo ? { fieldOrder: compact.fo } : {}),
     // Fields NOT restored from URL (use existing state or defaults):
     // - collapsedEntities
-    // - selectedFields
-    // - fieldOrder
     // - colorSettings (except fieldLabelMode, handled below)
     // - showMinimap
     // - isSmartZoom

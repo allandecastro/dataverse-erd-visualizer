@@ -9,6 +9,12 @@ import {
   isCustomAttribute,
   getAvailableBadges,
   filterByBadge,
+  isFormulaField,
+  isCalculatedField,
+  isRollupField,
+  isPromptField,
+  isComputedField,
+  getSourceTypeBadge,
 } from '../badges';
 import type { EntityAttribute } from '@/types';
 
@@ -592,6 +598,151 @@ describe('badges', () => {
 
     it('should return empty array for empty attributes', () => {
       expect(filterByBadge([], 'TXT')).toEqual([]);
+    });
+  });
+
+  describe('Source Type Helpers', () => {
+    const formulaField: EntityAttribute = {
+      name: 'new_summary',
+      displayName: 'Summary',
+      type: 'String',
+      sourceType: 3,
+    };
+    const calculatedField: EntityAttribute = {
+      name: 'new_fulladdress',
+      displayName: 'Full Address',
+      type: 'String',
+      sourceType: 1,
+    };
+    const rollupField: EntityAttribute = {
+      name: 'new_total',
+      displayName: 'Total Revenue',
+      type: 'Money',
+      sourceType: 2,
+    };
+    const promptField: EntityAttribute = {
+      name: 'new_aiinsight',
+      displayName: 'AI Insight',
+      type: 'String',
+      sourceType: 4,
+    };
+    const simpleField: EntityAttribute = {
+      name: 'name',
+      displayName: 'Name',
+      type: 'String',
+      sourceType: 0,
+    };
+    const nullSourceField: EntityAttribute = {
+      name: 'description',
+      displayName: 'Description',
+      type: 'Memo',
+      sourceType: null,
+    };
+    const undefinedSourceField: EntityAttribute = {
+      name: 'accountid',
+      displayName: 'Account ID',
+      type: 'UniqueIdentifier',
+      isPrimaryKey: true,
+    };
+
+    describe('isFormulaField', () => {
+      it('should return true for sourceType 3 (Power Fx)', () => {
+        expect(isFormulaField(formulaField)).toBe(true);
+      });
+
+      it('should return false for other source types', () => {
+        expect(isFormulaField(calculatedField)).toBe(false);
+        expect(isFormulaField(rollupField)).toBe(false);
+        expect(isFormulaField(simpleField)).toBe(false);
+      });
+    });
+
+    describe('isCalculatedField', () => {
+      it('should return true for sourceType 1', () => {
+        expect(isCalculatedField(calculatedField)).toBe(true);
+      });
+
+      it('should return false for other source types', () => {
+        expect(isCalculatedField(formulaField)).toBe(false);
+        expect(isCalculatedField(rollupField)).toBe(false);
+      });
+    });
+
+    describe('isRollupField', () => {
+      it('should return true for sourceType 2', () => {
+        expect(isRollupField(rollupField)).toBe(true);
+      });
+
+      it('should return false for other source types', () => {
+        expect(isRollupField(formulaField)).toBe(false);
+        expect(isRollupField(calculatedField)).toBe(false);
+      });
+    });
+
+    describe('isPromptField', () => {
+      it('should return true for sourceType 4 (AI)', () => {
+        expect(isPromptField(promptField)).toBe(true);
+      });
+
+      it('should return false for other source types', () => {
+        expect(isPromptField(formulaField)).toBe(false);
+        expect(isPromptField(simpleField)).toBe(false);
+      });
+    });
+
+    describe('isComputedField', () => {
+      it('should return true for all computed source types (1, 2, 3, 4)', () => {
+        expect(isComputedField(calculatedField)).toBe(true);
+        expect(isComputedField(rollupField)).toBe(true);
+        expect(isComputedField(formulaField)).toBe(true);
+        expect(isComputedField(promptField)).toBe(true);
+      });
+
+      it('should return false for simple fields (sourceType 0)', () => {
+        expect(isComputedField(simpleField)).toBe(false);
+      });
+
+      it('should return false for null sourceType', () => {
+        expect(isComputedField(nullSourceField)).toBe(false);
+      });
+
+      it('should return false for undefined sourceType', () => {
+        expect(isComputedField(undefinedSourceField)).toBe(false);
+      });
+    });
+
+    describe('getSourceTypeBadge', () => {
+      it('should return CALC badge for calculated fields', () => {
+        const badge = getSourceTypeBadge(calculatedField);
+        expect(badge).toEqual({ label: 'CALC', color: '#fb923c' });
+      });
+
+      it('should return ROLL badge for rollup fields', () => {
+        const badge = getSourceTypeBadge(rollupField);
+        expect(badge).toEqual({ label: 'ROLL', color: '#38bdf8' });
+      });
+
+      it('should return FX badge for formula fields', () => {
+        const badge = getSourceTypeBadge(formulaField);
+        expect(badge).toEqual({ label: 'FX', color: '#a855f7' });
+      });
+
+      it('should return AI badge for prompt fields', () => {
+        const badge = getSourceTypeBadge(promptField);
+        expect(badge).toEqual({ label: 'AI', color: '#f472b6' });
+      });
+
+      it('should return null for simple fields (sourceType 0)', () => {
+        expect(getSourceTypeBadge(simpleField)).toBeNull();
+      });
+
+      it('should return null for null sourceType', () => {
+        expect(getSourceTypeBadge(nullSourceField)).toBeNull();
+      });
+
+      it('should return null for undefined sourceType', () => {
+        expect(getSourceTypeBadge(undefinedSourceField)).toBeNull();
+      });
     });
   });
 });

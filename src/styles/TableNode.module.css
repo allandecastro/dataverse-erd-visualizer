@@ -186,6 +186,17 @@
   color: #6b7280;
 }
 
+/* Source Type Badge (FX, CALC, ROLL, AI) */
+.sourceTypeBadge {
+  color: #ffffff;
+  padding: 0px 3px;
+  border-radius: 2px;
+  font-size: 8px;
+  font-weight: 600;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 /* Field Type */
 .fieldType {
   font-size: 10px;

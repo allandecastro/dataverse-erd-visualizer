@@ -104,6 +104,12 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         tip: 'Click a badge chip to filter, click again to clear. Combine with Selected or Custom filters',
       },
       {
+        title: 'Computed Field Identification',
+        description:
+          'Power Fx Formula (FX), Calculated (CALC), Rollup (ROLL), and AI Prompt (AI) fields are identified with colored secondary badges on ERD cards and in the field drawer.',
+        tip: 'Use the Computed filter toggle (Sigma icon) in the field drawer to show only formula/calculated/rollup/AI Prompt fields',
+      },
+      {
         title: 'Remove Fields',
         description:
           'Click the X button next to any field (except Primary Key) to remove it from display.',
@@ -217,7 +223,7 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       {
         title: 'Generate Shareable URL',
         description:
-          'Create a shareable URL that encodes your current diagram state (entities, positions, zoom, layout, filters).',
+          'Create a shareable URL that encodes your current diagram state (entities, field selections, positions, zoom, layout, filters).',
         shortcut: 'Ctrl+Shift+C',
         tip: 'Click the Share button in the toolbar to copy URL to clipboard',
       },
@@ -248,7 +254,7 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       {
         title: 'URL vs Snapshots',
         description:
-          'Share URLs for quick collaboration (minimal state). Use Snapshots for complete archival (includes fields, colors, all settings).',
+          'Share URLs for quick collaboration (entities, fields, positions, layout). Use Snapshots for complete archival (includes all settings, edge offsets, minimap state).',
         tip: 'Both features complement each other perfectly',
       },
     ],

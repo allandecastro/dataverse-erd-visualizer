@@ -16,7 +16,7 @@ import type {
   AlternateKey,
 } from '@/types';
 import type { ColorSettings, FieldLabelMode } from '@/types/erdTypes';
-import { getAttributeBadge, getTypeLabel } from './badges';
+import { getAttributeBadge, getTypeLabel, getSourceTypeBadge } from './badges';
 import { downloadFile } from './fileDownload';
 
 export interface DrawioExportOptions {
@@ -301,7 +301,9 @@ function generateFieldCell(
 ): string {
   const badge = getAttributeBadge(field);
   const typeLabel = getTypeLabel(field);
+  const sourceBadge = getSourceTypeBadge(field);
   const customSuffix = field.isCustomAttribute ? ' (Custom)' : '';
+  const sourceTypeSuffix = sourceBadge ? ` [${sourceBadge.label}]` : '';
 
   // Build field name portion based on label mode
   let fieldNamePart: string;
@@ -314,10 +316,15 @@ function generateFieldCell(
   } else {
     fieldNamePart = `${field.displayName}${customSuffix}`;
   }
-  const fieldLabel = `[${badge.label}] ${fieldNamePart} | ${typeLabel}`;
+  const fieldLabelBase = `[${badge.label}] ${fieldNamePart} | ${typeLabel}`;
 
-  // Truncate if too long
-  const truncatedLabel = fieldLabel.length > 60 ? fieldLabel.substring(0, 57) + '...' : fieldLabel;
+  // Truncate the base label if too long, then always append source type suffix
+  const maxBaseLength = 60 - sourceTypeSuffix.length;
+  const truncatedBase =
+    fieldLabelBase.length > maxBaseLength
+      ? fieldLabelBase.substring(0, maxBaseLength - 3) + '...'
+      : fieldLabelBase;
+  const truncatedLabel = `${truncatedBase}${sourceTypeSuffix}`;
 
   // For "both" mode, append truncated schema name as second line after escaping
   const escapedLabel = escapeXml(truncatedLabel);

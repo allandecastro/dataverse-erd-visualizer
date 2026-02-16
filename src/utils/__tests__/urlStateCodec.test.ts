@@ -835,16 +835,17 @@ describe('urlStateCodec', () => {
       expect(minimal.isDarkMode).toBe(true);
     });
 
-    it('should strip heavy fields (colorSettings, fields, edgeOffsets)', () => {
+    it('should strip heavy fields (colorSettings, edgeOffsets, etc.) but keep fields', () => {
       const minimal = buildMinimalShareState(fullState);
 
       expect(minimal).not.toHaveProperty('colorSettings');
-      expect(minimal).not.toHaveProperty('selectedFields');
-      expect(minimal).not.toHaveProperty('fieldOrder');
       expect(minimal).not.toHaveProperty('edgeOffsets');
       expect(minimal).not.toHaveProperty('collapsedEntities');
       expect(minimal).not.toHaveProperty('showMinimap');
       expect(minimal).not.toHaveProperty('isSmartZoom');
+      // selectedFields and fieldOrder ARE preserved for diagram fidelity
+      expect(minimal.selectedFields).toEqual({ account: ['name', 'accountid'] });
+      expect(minimal.fieldOrder).toEqual({ account: ['accountid', 'name'] });
     });
 
     it('should include entityColorOverrides when non-empty', () => {
@@ -909,6 +910,68 @@ describe('urlStateCodec', () => {
       const encoded = encodeStateToURL(minimal);
       expect(typeof encoded).toBe('string');
       expect(encoded.length).toBeGreaterThan(0);
+    });
+
+    it('should omit selectedFields when empty', () => {
+      const stateWithoutFields = { ...fullState, selectedFields: {} };
+      const minimal = buildMinimalShareState(stateWithoutFields);
+
+      expect(minimal).not.toHaveProperty('selectedFields');
+    });
+
+    it('should omit fieldOrder when empty', () => {
+      const stateWithoutOrder = { ...fullState, fieldOrder: {} };
+      const minimal = buildMinimalShareState(stateWithoutOrder);
+
+      expect(minimal).not.toHaveProperty('fieldOrder');
+    });
+  });
+
+  describe('selectedFields and fieldOrder URL round-trip', () => {
+    it('should round-trip selectedFields through URL encoding', () => {
+      const stateWithFields = {
+        ...mockState,
+        selectedFields: {
+          account: ['name', 'accountid', 'new_weightedrevenue'],
+          contact: ['fullname', 'emailaddress1'],
+        },
+        fieldOrder: {
+          account: ['accountid', 'name', 'new_weightedrevenue'],
+          contact: ['fullname', 'emailaddress1'],
+        },
+      };
+
+      const encoded = encodeStateToURL(stateWithFields);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.sf).toEqual(stateWithFields.selectedFields);
+      expect(decoded.state?.fo).toEqual(stateWithFields.fieldOrder);
+
+      const expanded = expandCompactState(decoded.state!);
+      expect(expanded.selectedFields).toEqual(stateWithFields.selectedFields);
+      expect(expanded.fieldOrder).toEqual(stateWithFields.fieldOrder);
+    });
+
+    it('should not include sf/fo when selectedFields is empty', () => {
+      const encoded = encodeStateToURL(mockState);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.sf).toBeUndefined();
+      expect(decoded.state?.fo).toBeUndefined();
+    });
+
+    it('should handle backward-compatible hashes without sf/fo', () => {
+      // Simulate an old URL that doesn't have sf/fo
+      const encoded = encodeStateToURL(mockState);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      const expanded = expandCompactState(decoded.state!);
+      // Should not have selectedFields or fieldOrder
+      expect(expanded.selectedFields).toBeUndefined();
+      expect(expanded.fieldOrder).toBeUndefined();
     });
   });
 
