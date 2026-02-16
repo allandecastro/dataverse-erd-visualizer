@@ -128,6 +128,11 @@
   background: var(--row-hover-bg, var(--row-bg, transparent));
 }
 
+.entityRowOnCanvas {
+  opacity: 0.7;
+  cursor: default;
+}
+
 .entityCheckbox {
   flex-shrink: 0;
   cursor: pointer;
