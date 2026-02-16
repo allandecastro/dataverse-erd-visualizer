@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Computed Filter Toggle**: New "Computed" button (Sigma icon) in the field drawer to show only formula/calculated/rollup/AI fields
   - **Export Support**: Source type indicators included in PNG, SVG, and Draw.io exports
   - **Share URL Field Preservation**: Shared URLs now encode selected fields and field order, ensuring the shared diagram looks identical to the original (backward compatible with old URLs)
-  - **Snapshot Compatible**: `sourceType` property automatically preserved in snapshots via JSON serialization
+  - **Snapshot Compatible**: Computed field metadata (`sourceType`) is rehydrated from Dataverse (or mock) metadata when snapshots are loaded
 
 - **Field Label Display Mode** ([#56](https://github.com/allandecastro/dataverse-erd-visualizer/issues/56)) - Choose how field names are shown on entity cards:
   - **Display Name** (default) — friendly name only (e.g., "Account Name")

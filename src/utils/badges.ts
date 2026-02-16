@@ -208,3 +208,22 @@ export function getSourceTypeBadge(attr: EntityAttribute): SourceTypeBadge | nul
       return null;
   }
 }
+
+/**
+ * Get tooltip text for a source type badge label.
+ * Centralized to avoid duplicating the mapping across components.
+ */
+export function getSourceTypeTooltip(label: string): string {
+  switch (label) {
+    case 'FX':
+      return 'Power Fx Formula';
+    case 'CALC':
+      return 'Calculated';
+    case 'ROLL':
+      return 'Rollup';
+    case 'AI':
+      return 'AI Prompt';
+    default:
+      return label;
+  }
+}

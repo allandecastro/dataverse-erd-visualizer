@@ -5,6 +5,7 @@
 import { CheckSquare, Square } from 'lucide-react';
 import type { EntityAttribute } from '@/types';
 import type { AttributeBadge, SourceTypeBadge } from '../utils/badges';
+import { getSourceTypeTooltip } from '../utils/badges';
 
 export interface FieldDrawerListProps {
   filteredAttributes: EntityAttribute[];
@@ -109,15 +110,7 @@ export function FieldDrawerList({
                   minWidth: '20px',
                   textAlign: 'center',
                 }}
-                title={
-                  sourceBadge.label === 'FX'
-                    ? 'Power Fx Formula'
-                    : sourceBadge.label === 'CALC'
-                      ? 'Calculated'
-                      : sourceBadge.label === 'ROLL'
-                        ? 'Rollup'
-                        : 'AI Prompt'
-                }
+                title={getSourceTypeTooltip(sourceBadge.label)}
               >
                 {sourceBadge.label}
               </span>

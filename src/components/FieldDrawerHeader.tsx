@@ -161,7 +161,7 @@ export const FieldDrawerHeader = memo(function FieldDrawerHeader({
         <button
           onClick={onToggleComputedOnly}
           aria-pressed={showComputedOnly}
-          aria-label="Show computed fields only (Formula, Calculated, Rollup)"
+          aria-label="Show computed fields only (Formula, Calculated, Rollup, AI Prompt)"
           className={styles.filterButton}
           style={getComputedButtonStyle()}
           title="Formula / Calculated / Rollup / AI"

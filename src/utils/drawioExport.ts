@@ -316,10 +316,15 @@ function generateFieldCell(
   } else {
     fieldNamePart = `${field.displayName}${customSuffix}`;
   }
-  const fieldLabel = `[${badge.label}] ${fieldNamePart} | ${typeLabel}${sourceTypeSuffix}`;
+  const fieldLabelBase = `[${badge.label}] ${fieldNamePart} | ${typeLabel}`;
 
-  // Truncate if too long
-  const truncatedLabel = fieldLabel.length > 60 ? fieldLabel.substring(0, 57) + '...' : fieldLabel;
+  // Truncate the base label if too long, then always append source type suffix
+  const maxBaseLength = 60 - sourceTypeSuffix.length;
+  const truncatedBase =
+    fieldLabelBase.length > maxBaseLength
+      ? fieldLabelBase.substring(0, maxBaseLength - 3) + '...'
+      : fieldLabelBase;
+  const truncatedLabel = `${truncatedBase}${sourceTypeSuffix}`;
 
   // For "both" mode, append truncated schema name as second line after escaping
   const escapedLabel = escapeXml(truncatedLabel);

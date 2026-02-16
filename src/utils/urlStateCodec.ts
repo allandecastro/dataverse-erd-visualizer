@@ -56,6 +56,23 @@ export type MinimalShareState = Parameters<typeof encodeStateToURL>[0];
  * Shared between App.tsx handleGenerateShareURL and useSnapshots shareSnapshot.
  */
 export function buildMinimalShareState(state: SerializableState): MinimalShareState {
+  // Filter selectedFields/fieldOrder to only include selected entities with non-empty arrays
+  const selectedSet = new Set(state.selectedEntities);
+  const filteredFields = state.selectedFields
+    ? Object.fromEntries(
+        Object.entries(state.selectedFields).filter(
+          ([entity, fields]) => selectedSet.has(entity) && fields.length > 0
+        )
+      )
+    : undefined;
+  const filteredOrder = state.fieldOrder
+    ? Object.fromEntries(
+        Object.entries(state.fieldOrder).filter(
+          ([entity, order]) => selectedSet.has(entity) && order.length > 0
+        )
+      )
+    : undefined;
+
   return {
     selectedEntities: state.selectedEntities,
     entityPositions: state.entityPositions,
@@ -77,13 +94,13 @@ export function buildMinimalShareState(state: SerializableState): MinimalShareSt
       state.colorSettings.fieldLabelMode !== 'displayName' && {
         fieldLabelMode: state.colorSettings.fieldLabelMode,
       }),
-    ...(state.selectedFields &&
-      Object.keys(state.selectedFields).length > 0 && {
-        selectedFields: state.selectedFields,
+    ...(filteredFields &&
+      Object.keys(filteredFields).length > 0 && {
+        selectedFields: filteredFields,
       }),
-    ...(state.fieldOrder &&
-      Object.keys(state.fieldOrder).length > 0 && {
-        fieldOrder: state.fieldOrder,
+    ...(filteredOrder &&
+      Object.keys(filteredOrder).length > 0 && {
+        fieldOrder: filteredOrder,
       }),
   };
 }
