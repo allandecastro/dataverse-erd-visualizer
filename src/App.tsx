@@ -37,6 +37,11 @@ const FeatureGuide = lazy(() =>
 const FieldDrawer = lazy(() =>
   import('./components/FieldDrawer').then((m) => ({ default: m.FieldDrawer }))
 );
+const RelationshipExplorerDrawer = lazy(() =>
+  import('./components/RelationshipExplorerDrawer').then((m) => ({
+    default: m.RelationshipExplorerDrawer,
+  }))
+);
 
 // Types and utilities
 import type { ColorSettings, LayoutMode, DerivedGroup } from './types/erdTypes';
@@ -136,6 +141,9 @@ export default function ERDVisualizer({
     derivedGroups,
     groupFilter,
     setGroupFilter,
+    // Relationship explorer
+    relationshipExplorerSources,
+    setRelationshipExplorerSources,
   } = state;
 
   // Layout algorithms
@@ -550,8 +558,10 @@ export default function ERDVisualizer({
     (entityName: string) => {
       // Toggle: close if clicking the same table, otherwise switch to the new one
       setFieldDrawerEntity((current) => (current === entityName ? null : entityName));
+      // Mutual exclusion: close relationship explorer when opening field drawer
+      setRelationshipExplorerSources(null);
     },
-    [setFieldDrawerEntity]
+    [setFieldDrawerEntity, setRelationshipExplorerSources]
   );
 
   const handleCloseFieldDrawer = useCallback(() => {
@@ -614,6 +624,45 @@ export default function ERDVisualizer({
       setPendingLookupField(null);
     }
   }, [pendingLookupField, addField, setPendingLookupField]);
+
+  // Relationship explorer handlers
+  const handleOpenRelationshipExplorer = useCallback(
+    (entityName: string) => {
+      setRelationshipExplorerSources([entityName]);
+      // Mutual exclusion: close field drawer when opening explorer
+      setFieldDrawerEntity(null);
+    },
+    [setRelationshipExplorerSources, setFieldDrawerEntity]
+  );
+
+  const handleOpenRelationshipExplorerFromToolbar = useCallback(() => {
+    const sources = Array.from(selectedEntities);
+    if (sources.length === 0) return;
+    setRelationshipExplorerSources(sources);
+    // Mutual exclusion: close field drawer when opening explorer
+    setFieldDrawerEntity(null);
+  }, [selectedEntities, setRelationshipExplorerSources, setFieldDrawerEntity]);
+
+  const handleAddRelatedEntities = useCallback(
+    (entityNames: string[], fieldsToAdd: { entityName: string; fieldName: string }[]) => {
+      selectAll(entityNames);
+      // Auto-add lookup fields to make field-level connections visible
+      for (const { entityName, fieldName } of fieldsToAdd) {
+        addField(entityName, fieldName);
+      }
+      showToast(
+        entityNames.length === 1
+          ? '1 table added to canvas'
+          : `${entityNames.length} tables added to canvas`,
+        'success'
+      );
+    },
+    [selectAll, addField, showToast]
+  );
+
+  const handleCloseRelationshipExplorer = useCallback(() => {
+    setRelationshipExplorerSources(null);
+  }, [setRelationshipExplorerSources]);
 
   // Get the entity for field drawer
   const fieldDrawerEntityData = fieldDrawerEntity
@@ -699,6 +748,12 @@ export default function ERDVisualizer({
             groupFilter={groupFilter}
             onGroupFilterChange={setGroupFilter}
             onSetGroupName={setGroupName}
+            relationships={relationships}
+            relationshipExplorerSources={relationshipExplorerSources}
+            onOpenRelationshipExplorer={handleOpenRelationshipExplorer}
+            onOpenRelationshipExplorerFromToolbar={handleOpenRelationshipExplorerFromToolbar}
+            onAddRelatedEntities={handleAddRelatedEntities}
+            onCloseRelationshipExplorer={handleCloseRelationshipExplorer}
             onCopyPNG={handleCopyPNG}
             onExportMermaid={handleExportMermaid}
             onExportSVG={handleExportSVG}
@@ -786,6 +841,16 @@ interface ERDVisualizerContentProps {
   groupFilter: string;
   onGroupFilterChange: (value: string) => void;
   onSetGroupName: (color: string, name: string) => void;
+  // Relationship explorer
+  relationships: EntityRelationship[];
+  relationshipExplorerSources: string[] | null;
+  onOpenRelationshipExplorer: (entityName: string) => void;
+  onOpenRelationshipExplorerFromToolbar: () => void;
+  onAddRelatedEntities: (
+    entityNames: string[],
+    fieldsToAdd: { entityName: string; fieldName: string }[]
+  ) => void;
+  onCloseRelationshipExplorer: () => void;
   onCopyPNG: () => void;
   onExportMermaid: () => void;
   onExportSVG: () => void;
@@ -863,6 +928,12 @@ function ERDVisualizerContent({
   groupFilter,
   onGroupFilterChange,
   onSetGroupName,
+  relationships,
+  relationshipExplorerSources,
+  onOpenRelationshipExplorer,
+  onOpenRelationshipExplorerFromToolbar,
+  onAddRelatedEntities,
+  onCloseRelationshipExplorer,
   onCopyPNG,
   onExportMermaid,
   onExportSVG,
@@ -970,6 +1041,7 @@ function ERDVisualizerContent({
           onOpenGuide={onOpenGuide}
           onOpenSnapshots={openSnapshots}
           onGenerateShareURL={onGenerateShareURL}
+          onOpenRelationshipExplorer={onOpenRelationshipExplorerFromToolbar}
         />
 
         {/* React Flow Canvas */}
@@ -1007,6 +1079,7 @@ function ERDVisualizerContent({
             onToggleCollapse={onToggleCollapse}
             entityColorOverrides={entityColorOverrides}
             onOpenColorPicker={onOpenColorPicker}
+            onOpenRelationshipExplorer={onOpenRelationshipExplorer}
           />
         </main>
       </div>
@@ -1066,6 +1139,23 @@ function ERDVisualizerContent({
               onRemoveField={(fieldName) => onRemoveField(fieldDrawerEntity!, fieldName)}
               onClose={onCloseFieldDrawer}
               onLookupFieldAdd={onLookupFieldAdd}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+
+      {/* Relationship Explorer Drawer - lazy loaded */}
+      {relationshipExplorerSources && (
+        <ErrorBoundary sectionName="Relationship Explorer" isDarkMode={isDarkMode}>
+          <Suspense fallback={null}>
+            <RelationshipExplorerDrawer
+              key={relationshipExplorerSources.join(',')}
+              sourceEntityNames={relationshipExplorerSources}
+              entities={entities}
+              relationships={relationships}
+              selectedEntities={selectedEntities}
+              onAddEntities={onAddRelatedEntities}
+              onClose={onCloseRelationshipExplorer}
             />
           </Suspense>
         </ErrorBoundary>

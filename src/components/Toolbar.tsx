@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Search, HelpCircle, Bookmark } from 'lucide-react';
+import { Search, HelpCircle, Bookmark, GitBranch } from 'lucide-react';
 import { useTheme } from '@/context';
 import { getKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { ToolbarStats } from './ToolbarStats';
@@ -25,6 +25,7 @@ export interface ToolbarProps {
   onOpenGuide: () => void;
   onOpenSnapshots: () => void;
   onGenerateShareURL: () => { url: string; warning?: string } | { error: string };
+  onOpenRelationshipExplorer?: () => void;
 }
 
 export function Toolbar({
@@ -40,6 +41,7 @@ export function Toolbar({
   onOpenGuide,
   onOpenSnapshots,
   onGenerateShareURL,
+  onOpenRelationshipExplorer,
 }: ToolbarProps) {
   const { isDarkMode, themeColors } = useTheme();
   const { panelBg, borderColor, textColor, textSecondary } = themeColors;
@@ -101,6 +103,23 @@ export function Toolbar({
         <ShareButton onGenerateShareURL={onGenerateShareURL} />
 
         <div className={styles.divider} style={{ background: borderColor }} />
+
+        {/* Explore Relationships */}
+        {onOpenRelationshipExplorer && (
+          <button
+            onClick={onOpenRelationshipExplorer}
+            title="Explore relationships from visible tables"
+            className={styles.searchButton}
+            style={{
+              background: buttonBg,
+              border: `1px solid ${borderColor}`,
+              color: textColor,
+            }}
+          >
+            <GitBranch size={16} />
+            Explore
+          </button>
+        )}
 
         {/* Search */}
         <button
