@@ -57,6 +57,9 @@ export interface ColorSettings {
 
   // Field label display mode
   fieldLabelMode: FieldLabelMode;
+
+  // Relationship label display
+  showRelationshipLookupIds?: boolean;
 }
 
 /** Valid range for lineThickness */

@@ -425,11 +425,13 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         },
         // Show different labels based on relationship type
         // N:N: Show intersection table name and cardinality badge
-        // 1:N/N:1: Show referencing attribute name
+        // 1:N/N:1: Show referencing attribute name (if showRelationshipLookupIds is enabled)
         label:
           rel.type === 'N:N'
             ? `[N:N] ${rel.intersectEntityName || rel.schemaName}`
-            : rel.referencingAttribute || '',
+            : colorSettings.showRelationshipLookupIds ?? true
+              ? rel.referencingAttribute || ''
+              : '',
         // Pass offset data for draggable edges
         data: {
           offset: edgeOffsets?.[rel.schemaName] ?? { x: 0, y: 0 },

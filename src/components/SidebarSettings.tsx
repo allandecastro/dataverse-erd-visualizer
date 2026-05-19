@@ -240,6 +240,29 @@ export const SidebarSettings = memo(function SidebarSettings({
           </label>
         </div>
 
+        {/* Show Relationship Lookup IDs Checkbox */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <label
+            className={styles.settingsLabel}
+            style={{
+              color: textSecondary,
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={colorSettings.showRelationshipLookupIds ?? true}
+              onChange={(e) =>
+                onColorSettingsChange('showRelationshipLookupIds', e.target.checked.toString())
+              }
+              style={{ marginRight: '8px', cursor: 'pointer' }}
+            />
+            Show Lookup IDs on Relationship Lines
+          </label>
+        </div>
+
         {/* Conditional Type Color Pickers */}
         {useRelationshipTypeColors && (
           <>
