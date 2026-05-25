@@ -228,6 +228,9 @@ export function useDataverseData(options?: UseDataverseDataOptions): UseDatavers
   );
 
   useEffect(() => {
+    // Fetch initial data on mount. This is intentionally done here to
+    // initialize hook state once and avoid duplicating the fetching logic.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 
