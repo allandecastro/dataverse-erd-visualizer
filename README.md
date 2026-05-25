@@ -295,6 +295,7 @@ Visualize relationships with professional database notation styles:
 2. Scroll to **Color Settings** section
 3. Adjust **Line Notation Style**, **Line Stroke Style**, and **Line Thickness**
 4. Enable **Color by Relationship Type** for type-specific colors
+5. Toggle **Show Lookup IDs on Relationship Lines** to hide or show lookup field information
 
 All settings are automatically saved in snapshots and shareable URLs.
 
@@ -618,5 +619,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <p align="center">
   Made with ❤️ for the Power Platform Community
 </p>
-
-

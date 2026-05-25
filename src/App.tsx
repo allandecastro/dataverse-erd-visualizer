@@ -53,6 +53,7 @@ import {
   decodeStateFromURL,
   expandCompactState,
   getFieldLabelModeFromCompact,
+  getShowRelationshipLookupIdsFromCompact,
   getShareBaseUrl,
   getStateHash,
   buildMinimalShareState,
@@ -253,12 +254,16 @@ export default function ERDVisualizer({
         const expandedState = expandCompactState(filteredState);
         const currentState = state.getSerializableState();
         const urlFieldLabelMode = getFieldLabelModeFromCompact(filteredState) ?? 'displayName';
+        const urlShowRelationshipLookupIds = getShowRelationshipLookupIdsFromCompact(filteredState);
         const mergedState = {
           ...currentState,
           ...expandedState,
           colorSettings: {
             ...currentState.colorSettings,
             fieldLabelMode: urlFieldLabelMode,
+            ...(urlShowRelationshipLookupIds !== undefined && {
+              showRelationshipLookupIds: urlShowRelationshipLookupIds,
+            }),
           },
         };
         state.restoreState(mergedState);
@@ -273,12 +278,16 @@ export default function ERDVisualizer({
         const expandedState = expandCompactState(decoded.state);
         const currentState = state.getSerializableState();
         const urlFieldLabelMode = getFieldLabelModeFromCompact(decoded.state) ?? 'displayName';
+        const urlShowRelationshipLookupIds = getShowRelationshipLookupIdsFromCompact(decoded.state);
         const mergedState = {
           ...currentState,
           ...expandedState,
           colorSettings: {
             ...currentState.colorSettings,
             fieldLabelMode: urlFieldLabelMode,
+            ...(urlShowRelationshipLookupIds !== undefined && {
+              showRelationshipLookupIds: urlShowRelationshipLookupIds,
+            }),
           },
         };
         state.restoreState(mergedState);

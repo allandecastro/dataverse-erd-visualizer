@@ -85,7 +85,7 @@ export function parseColorSettingValue(
     if (Number.isNaN(parsed)) return LINE_THICKNESS_DEFAULT;
     return Math.max(LINE_THICKNESS_MIN, Math.min(LINE_THICKNESS_MAX, parsed));
   }
-  if (key === 'useRelationshipTypeColors') {
+  if (key === 'useRelationshipTypeColors' || key === 'showRelationshipLookupIds') {
     return value === 'true';
   }
   return value;

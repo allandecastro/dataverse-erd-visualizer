@@ -437,6 +437,7 @@ describe('useERDState', () => {
         manyToOneColor: '#06b6d4',
         manyToManyColor: '#8b5cf6',
         fieldLabelMode: 'displayName',
+        showRelationshipLookupIds: true,
       });
     });
 
