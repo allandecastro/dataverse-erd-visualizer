@@ -5,7 +5,7 @@
 
 import * as LZString from 'lz-string';
 import type { EntityPosition } from '@/types';
-import type { LayoutMode, FieldLabelMode } from '@/types/erdTypes';
+import type { LayoutMode, FieldLabelMode, ColorSettings } from '@/types/erdTypes';
 import type { SerializableState } from '@/types/snapshotTypes';
 
 const CODEC_VERSION = '1.0.0';
@@ -281,7 +281,11 @@ export function decodeStateFromURL(hash: string): DecodeResult {
  * @param compact Compact state from URL
  * @returns Partial serializable state for restoreState()
  */
-export function expandCompactState(compact: CompactState): Partial<SerializableState> {
+type ExpandedURLState = Omit<Partial<SerializableState>, 'colorSettings'> & {
+  colorSettings?: Partial<ColorSettings>;
+};
+
+export function expandCompactState(compact: CompactState): ExpandedURLState {
   return {
     selectedEntities: compact.e,
     entityPositions: expandPositions(compact.p),
