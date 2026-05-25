@@ -109,6 +109,17 @@ function buildEdgeAppearance(
   };
 }
 
+export function getRelationshipEdgeLabel(
+  rel: EntityRelationship,
+  showRelationshipLookupIds?: boolean
+) {
+  return rel.type === 'N:N'
+    ? `[N:N] ${rel.intersectEntityName || rel.schemaName}`
+    : showRelationshipLookupIds !== false
+      ? rel.referencingAttribute || ''
+      : '';
+}
+
 // Register custom node types
 const nodeTypes = {
   table: TableNode,
@@ -423,15 +434,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         labelBgStyle: {
           fill: 'transparent',
         },
-        // Show different labels based on relationship type
-        // N:N: Show intersection table name and cardinality badge
-        // 1:N/N:1: Show referencing attribute name (if showRelationshipLookupIds is enabled)
-        label:
-          rel.type === 'N:N'
-            ? `[N:N] ${rel.intersectEntityName || rel.schemaName}`
-            : (colorSettings.showRelationshipLookupIds ?? true)
-              ? rel.referencingAttribute || ''
-              : '',
+        label: getRelationshipEdgeLabel(rel, colorSettings.showRelationshipLookupIds),
         // Pass offset data for draggable edges
         data: {
           offset: edgeOffsets?.[rel.schemaName] ?? { x: 0, y: 0 },
@@ -503,7 +506,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     setNodes,
   ]);
 
-  // Separate effect for edge color and style updates
+  // Separate effect for edge color, style, and label updates
   useEffect(() => {
     setEdges((currentEdges) =>
       currentEdges.map((edge) => {
@@ -511,11 +514,13 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         if (!rel) return edge;
 
         const { markerEnd, style: edgeStyle } = buildEdgeAppearance(rel, colorSettings, edge.style);
+        const label = getRelationshipEdgeLabel(rel, colorSettings.showRelationshipLookupIds);
 
         return {
           ...edge,
           style: edgeStyle,
           markerEnd,
+          label,
           data: {
             ...edge.data,
             edgeStyle: colorSettings.edgeStyle,
@@ -533,6 +538,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
     colorSettings.oneToManyColor,
     colorSettings.manyToOneColor,
     colorSettings.manyToManyColor,
+    colorSettings.showRelationshipLookupIds,
     relationships,
     setEdges,
   ]);
