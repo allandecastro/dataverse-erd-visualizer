@@ -104,6 +104,7 @@ export function useERDState({ entities, relationships }: UseERDStateProps) {
     manyToOneColor: '#06b6d4',
     manyToManyColor: '#8b5cf6',
     fieldLabelMode: 'displayName',
+    showRelationshipLookupIds: true,
   });
 
   // Features

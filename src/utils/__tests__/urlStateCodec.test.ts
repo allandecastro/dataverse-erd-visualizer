@@ -118,6 +118,19 @@ describe('urlStateCodec', () => {
       expect(decoded.state?.d).toBe(true);
     });
 
+    it('should preserve showRelationshipLookupIds when false', () => {
+      const stateWithLookupIdsHidden = {
+        ...mockState,
+        showRelationshipLookupIds: false,
+      };
+
+      const encoded = encodeStateToURL(stateWithLookupIdsHidden);
+      const decoded = decodeStateFromURL(encoded);
+
+      expect(decoded.success).toBe(true);
+      expect(decoded.state?.sl).toBe(false);
+    });
+
     it('should return error for invalid/corrupted URLs', () => {
       expect(decodeStateFromURL('invalid-base64').success).toBe(false);
       expect(decodeStateFromURL('').success).toBe(false);
@@ -189,6 +202,16 @@ describe('urlStateCodec', () => {
       expect(expanded.publisherFilter).toBe('Microsoft');
       expect(expanded.solutionFilter).toBe('CRM');
       expect(expanded.isDarkMode).toBe(true);
+    });
+
+    it('should restore showRelationshipLookupIds from compact state', () => {
+      const compactWithLookupHidden: CompactState = {
+        ...compactState,
+        sl: false,
+      };
+
+      const expanded = expandCompactState(compactWithLookupHidden);
+      expect(expanded.colorSettings).toEqual({ showRelationshipLookupIds: false });
     });
 
     it('should handle multiple entities', () => {
@@ -901,6 +924,24 @@ describe('urlStateCodec', () => {
       const minimal = buildMinimalShareState(fullState);
 
       expect(minimal).not.toHaveProperty('fieldLabelMode');
+    });
+
+    it('should omit showRelationshipLookupIds when true (default)', () => {
+      const minimal = buildMinimalShareState(fullState);
+      expect(minimal).not.toHaveProperty('showRelationshipLookupIds');
+    });
+
+    it('should include showRelationshipLookupIds when false', () => {
+      const stateWithHiddenIds = {
+        ...fullState,
+        colorSettings: {
+          ...fullState.colorSettings,
+          showRelationshipLookupIds: false,
+        },
+      };
+      const minimal = buildMinimalShareState(stateWithHiddenIds);
+
+      expect(minimal.showRelationshipLookupIds).toBe(false);
     });
 
     it('should produce a valid state for encodeStateToURL', () => {

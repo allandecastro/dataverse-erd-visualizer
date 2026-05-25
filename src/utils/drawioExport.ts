@@ -241,7 +241,10 @@ function calculateEntityHeight(
  * Format multi-line relationship label for connector
  * Escapes each component to prevent XML injection
  */
-function formatRelationshipLabel(relationship: EntityRelationship): string {
+function formatRelationshipLabel(
+  relationship: EntityRelationship,
+  showLookupIds: boolean = true
+): string {
   const lines: string[] = [];
 
   // Line 1: Cardinality (escaped)
@@ -250,8 +253,8 @@ function formatRelationshipLabel(relationship: EntityRelationship): string {
   // Line 2: Schema name (escaped)
   lines.push(escapeXml(relationship.schemaName));
 
-  // Line 3: Field mapping (if available, escape each part)
-  if (relationship.referencingAttribute && relationship.referencedAttribute) {
+  // Line 3: Field mapping (if available and enabled, escape each part)
+  if (showLookupIds && relationship.referencingAttribute && relationship.referencedAttribute) {
     lines.push(
       `${escapeXml(relationship.referencingAttribute)} → ${escapeXml(relationship.referencedAttribute)}`
     );
@@ -476,9 +479,10 @@ function generateConnectorCell(
   id: string,
   sourceId: string,
   targetId: string,
-  relationship: EntityRelationship
+  relationship: EntityRelationship,
+  showLookupIds: boolean = true
 ): string {
-  const label = formatRelationshipLabel(relationship);
+  const label = formatRelationshipLabel(relationship, showLookupIds);
 
   return `      <mxCell id="${id}" value="${label}" style="${CONNECTOR_STYLE}" edge="1" parent="1" source="${sourceId}" target="${targetId}">
         <mxGeometry relative="1" as="geometry" />
@@ -600,7 +604,13 @@ function generateDrawioXml(options: DrawioExportOptions): string {
 
     if (sourceId && targetId) {
       const id = generateId('connector', index);
-      cells[cellIndex++] = generateConnectorCell(id, sourceId, targetId, rel);
+      cells[cellIndex++] = generateConnectorCell(
+        id,
+        sourceId,
+        targetId,
+        rel,
+        colorSettings.showRelationshipLookupIds ?? true
+      );
     }
 
     // Report progress for relationships (80-95% range)

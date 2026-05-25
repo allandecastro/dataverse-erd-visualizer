@@ -152,6 +152,21 @@ describe('drawioExport', () => {
       expect(text).toContain('N:1'); // Cardinality
     });
 
+    it('should omit lookup IDs in relationship labels when disabled', async () => {
+      const blob = await exportToDrawio({
+        ...baseOptions,
+        colorSettings: {
+          ...mockColorSettings,
+          showRelationshipLookupIds: false,
+        },
+      });
+      const text = await blobToText(blob);
+
+      expect(text).toContain('contact_account');
+      expect(text).not.toContain('parentcustomerid');
+      expect(text).not.toContain('→');
+    });
+
     it('should call progress callback during export', async () => {
       const progressCalls: Array<{ progress: number; message: string }> = [];
 

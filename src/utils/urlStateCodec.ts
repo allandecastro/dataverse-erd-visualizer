@@ -5,7 +5,7 @@
 
 import * as LZString from 'lz-string';
 import type { EntityPosition } from '@/types';
-import type { LayoutMode, FieldLabelMode } from '@/types/erdTypes';
+import type { LayoutMode, FieldLabelMode, ColorSettings } from '@/types/erdTypes';
 import type { SerializableState } from '@/types/snapshotTypes';
 
 const CODEC_VERSION = '1.0.0';
@@ -35,6 +35,7 @@ export interface CompactState {
   gf?: string; // groupFilter (optional, only present when not 'all')
   sf?: Record<string, string[]>; // selectedFields (optional, only present when non-empty)
   fo?: Record<string, string[]>; // fieldOrder (optional, only present when non-empty)
+  sl?: boolean; // showRelationshipLookupIds (optional, only present when false)
 }
 
 /**
@@ -94,6 +95,9 @@ export function buildMinimalShareState(state: SerializableState): MinimalShareSt
       state.colorSettings.fieldLabelMode !== 'displayName' && {
         fieldLabelMode: state.colorSettings.fieldLabelMode,
       }),
+    ...(state.colorSettings?.showRelationshipLookupIds === false && {
+      showRelationshipLookupIds: state.colorSettings.showRelationshipLookupIds,
+    }),
     ...(filteredFields &&
       Object.keys(filteredFields).length > 0 && {
         selectedFields: filteredFields,
@@ -149,6 +153,7 @@ export function encodeStateToURL(state: {
   entityColorOverrides?: Record<string, string>;
   groupNames?: Record<string, string>;
   fieldLabelMode?: FieldLabelMode;
+  showRelationshipLookupIds?: boolean;
   groupFilter?: string;
   selectedFields?: Record<string, string[]>;
   fieldOrder?: Record<string, string[]>;
@@ -201,6 +206,11 @@ export function encodeStateToURL(state: {
     // Only include fieldOrder if non-empty
     if (state.fieldOrder && Object.keys(state.fieldOrder).length > 0) {
       compactState.fo = state.fieldOrder;
+    }
+
+    // Only include showRelationshipLookupIds if false (default is true)
+    if (state.showRelationshipLookupIds === false) {
+      compactState.sl = false;
     }
 
     // Serialize to JSON
@@ -271,7 +281,11 @@ export function decodeStateFromURL(hash: string): DecodeResult {
  * @param compact Compact state from URL
  * @returns Partial serializable state for restoreState()
  */
-export function expandCompactState(compact: CompactState): Partial<SerializableState> {
+type ExpandedURLState = Omit<Partial<SerializableState>, 'colorSettings'> & {
+  colorSettings?: Partial<ColorSettings>;
+};
+
+export function expandCompactState(compact: CompactState): ExpandedURLState {
   return {
     selectedEntities: compact.e,
     entityPositions: expandPositions(compact.p),
@@ -292,9 +306,13 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
     ...(compact.sf ? { selectedFields: compact.sf } : {}),
     // Restore fieldOrder if present
     ...(compact.fo ? { fieldOrder: compact.fo } : {}),
+    // Restore showRelationshipLookupIds if present
+    ...(compact.sl !== undefined
+      ? { colorSettings: { showRelationshipLookupIds: compact.sl } }
+      : {}),
     // Fields NOT restored from URL (use existing state or defaults):
     // - collapsedEntities
-    // - colorSettings (except fieldLabelMode, handled below)
+    // - colorSettings (except fieldLabelMode and showRelationshipLookupIds, handled below)
     // - showMinimap
     // - isSmartZoom
     // - edgeOffsets
@@ -307,6 +325,15 @@ export function expandCompactState(compact: CompactState): Partial<SerializableS
  */
 export function getFieldLabelModeFromCompact(compact: CompactState): FieldLabelMode | undefined {
   return compact.flm;
+}
+
+/**
+ * Extract showRelationshipLookupIds from CompactState (if present)
+ */
+export function getShowRelationshipLookupIdsFromCompact(
+  compact: CompactState
+): boolean | undefined {
+  return compact.sl;
 }
 
 /**
