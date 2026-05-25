@@ -172,7 +172,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git stash push --include-untracked --message "release version updates"
           git checkout main
+          git stash pop
           git add README.md package.json
           git diff --staged --quiet || git commit --no-verify -m "chore: update version to ${{ steps.version.outputs.VERSION }} [skip ci]"
           git push origin main
