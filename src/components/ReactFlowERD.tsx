@@ -429,7 +429,7 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
         label:
           rel.type === 'N:N'
             ? `[N:N] ${rel.intersectEntityName || rel.schemaName}`
-            : colorSettings.showRelationshipLookupIds ?? true
+            : (colorSettings.showRelationshipLookupIds ?? true)
               ? rel.referencingAttribute || ''
               : '',
         // Pass offset data for draggable edges
