@@ -499,8 +499,7 @@ export default function ERDVisualizer({
 
   // Generate shareable URL
   const handleGenerateShareURL = useCallback(():
-    | { url: string; warning?: string }
-    | { error: string } => {
+    { url: string; warning?: string } | { error: string } => {
     try {
       const currentState = state.getSerializableState();
       const minimalState = buildMinimalShareState(currentState);
