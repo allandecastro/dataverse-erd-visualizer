@@ -151,12 +151,13 @@ npm run build:webresource
 ```
 
 Output files in `dist/webresource/`:
-| File | Description |
-|------|-------------|
-| `adc_dataverseerdvisualizer.html` | HTML entry point |
-| `adc_dataverseerdvisualizer.js` | Main bundle (~274 KB, gzipped: ~77 KB) |
-| `adc_dataverseerdvisualizer.css` | Stylesheet |
-| `adc_dataverseerdvisualizerlogo.svg` | Application logo |
+
+| File                                 | Description                            |
+| ------------------------------------ | -------------------------------------- |
+| `adc_dataverseerdvisualizer.html`    | HTML entry point                       |
+| `adc_dataverseerdvisualizer.js`      | Main bundle (~274 KB, gzipped: ~77 KB) |
+| `adc_dataverseerdvisualizer.css`     | Stylesheet                             |
+| `adc_dataverseerdvisualizerlogo.svg` | Application logo                       |
 
 #### Manual Deployment
 
@@ -521,6 +522,7 @@ dataverse-erd-visualizer/
 - Check Dataverse URL is correct
 - Ensure you have read permissions on Entity Metadata
 - Verify CORS settings if testing locally
+
 </details>
 
 <details>
@@ -528,6 +530,7 @@ dataverse-erd-visualizer/
 
 - Ensure the web resource is loaded within Dataverse context
 - Check that it's not being loaded in a standalone browser
+
 </details>
 
 <details>
@@ -576,6 +579,25 @@ npm install
 
 ---
 
+## Changelog
+
+### v0.1.12.4 — 2026-09-03
+
+**Fixed**
+
+- **Solution filter dropped tables belonging to the solution** ([#94](https://github.com/allandecastro/dataverse-erd-visualizer/issues/94), [#95](https://github.com/allandecastro/dataverse-erd-visualizer/pull/95)). The `solutioncomponent` query only read the first page of results, so any component beyond it — the `Product` table, for example — was silently missing from the ERD. The query now follows `@odata.nextLink` until every component mapping has been retrieved.
+- Typed `onNodeDragStop` with `OnNodeDrag<Node>` to match `@xyflow/react` 12.11, where the event parameter changed from `React.MouseEvent` to the native `MouseEvent | TouchEvent`.
+
+**Changed**
+
+- Upgraded ESLint from 9.39.2 to 10.9.1 ([#82](https://github.com/allandecastro/dataverse-erd-visualizer/pull/82)).
+- Updated 17 dependencies ([#93](https://github.com/allandecastro/dataverse-erd-visualizer/pull/93)), including React 19.2.8, `@xyflow/react` 12.11.5, Prettier 3.9.6, `typescript-eslint` 8.68.0, `lint-staged` 17.4.1 and Terser 5.51.2.
+- Updated the `actions/setup-node` ([#89](https://github.com/allandecastro/dataverse-erd-visualizer/pull/89)) and `actions/stale` ([#90](https://github.com/allandecastro/dataverse-erd-visualizer/pull/90)) workflow actions.
+
+> Earlier versions are documented on the [Releases page](https://github.com/allandecastro/dataverse-erd-visualizer/releases).
+
+---
+
 ## Contributing
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
@@ -619,6 +641,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <p align="center">
   Made with ❤️ for the Power Platform Community
 </p>
-
-
-
