@@ -523,25 +523,7 @@ class DataverseApiService {
 
     try {
       // Fetch solution components where componenttype = 1 (Entity)
-      const url = `${this.baseUrl}/solutioncomponents?$select=objectid,_solutionid_value&$filter=componenttype eq 1`;
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'OData-MaxVersion': '4.0',
-          'OData-Version': '4.0',
-          'Content-Type': 'application/json',
-          Prefer: 'odata.maxpagesize=5000',
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(`Failed to fetch solution components: ${response.statusText}`);
-        return entitySolutionMap;
-      }
-
-      const data: { value: DataverseSolutionComponentResponse[] } = await response.json();
+      let url = `${this.baseUrl}/solutioncomponents?$select=objectid,_solutionid_value&$filter=componenttype eq 1`;
 
       // Create a lookup map for solution IDs to names
       const solutionIdToName: Record<string, string> = {};
@@ -549,21 +531,46 @@ class DataverseApiService {
         solutionIdToName[sol.solutionId] = sol.uniqueName;
       });
 
-      // Map entity metadata IDs to solution names
-      data.value.forEach((component) => {
-        const entityMetadataId = component.objectid;
-        const solutionId = component._solutionid_value;
-        const solutionName = solutionIdToName[solutionId];
+      while (url) {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'OData-MaxVersion': '4.0',
+            'OData-Version': '4.0',
+            'Content-Type': 'application/json',
+            Prefer: 'odata.maxpagesize=5000',
+          },
+        });
 
-        if (entityMetadataId && solutionName) {
-          if (!entitySolutionMap[entityMetadataId]) {
-            entitySolutionMap[entityMetadataId] = [];
-          }
-          if (!entitySolutionMap[entityMetadataId].includes(solutionName)) {
-            entitySolutionMap[entityMetadataId].push(solutionName);
-          }
+        if (!response.ok) {
+          console.warn(`Failed to fetch solution components: ${response.statusText}`);
+          return entitySolutionMap;
         }
-      });
+
+        const data: {
+          value: DataverseSolutionComponentResponse[];
+          '@odata.nextLink'?: string;
+        } = await response.json();
+
+        // Map entity metadata IDs to solution names
+        data.value.forEach((component) => {
+          const entityMetadataId = component.objectid;
+          const solutionId = component._solutionid_value;
+          const solutionName = solutionIdToName[solutionId];
+
+          if (entityMetadataId && solutionName) {
+            if (!entitySolutionMap[entityMetadataId]) {
+              entitySolutionMap[entityMetadataId] = [];
+            }
+            if (!entitySolutionMap[entityMetadataId].includes(solutionName)) {
+              entitySolutionMap[entityMetadataId].push(solutionName);
+            }
+          }
+        });
+
+        url = data['@odata.nextLink'] || '';
+      }
 
       return entitySolutionMap;
     } catch (error) {
