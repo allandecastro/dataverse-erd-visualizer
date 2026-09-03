@@ -27,6 +27,7 @@ import {
   getViewportForBounds,
   type Node,
   type Edge,
+  type OnNodeDrag,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { toPng, toSvg } from 'html-to-image';
@@ -544,8 +545,8 @@ const ReactFlowERDInner = forwardRef<ReactFlowERDRef, ReactFlowERDProps>(functio
   ]);
 
   // Handle node drag end to update positions
-  const onNodeDragStop = useCallback(
-    (_event: React.MouseEvent, node: Node) => {
+  const onNodeDragStop = useCallback<OnNodeDrag<Node>>(
+    (_event, node) => {
       onPositionsChange({
         ...entityPositions,
         [node.id]: { x: node.position.x, y: node.position.y },
