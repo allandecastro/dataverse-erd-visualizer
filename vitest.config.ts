@@ -10,6 +10,10 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   plugins: [react()],
+  // Provide the build-time global so modules referencing it can run under Vitest.
+  define: {
+    __APP_VERSION__: JSON.stringify('0.0.0'),
+  },
   test: {
     globals: true,
     environment: 'jsdom',
