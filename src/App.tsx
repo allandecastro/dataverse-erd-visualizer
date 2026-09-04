@@ -1036,6 +1036,9 @@ function ERDVisualizerContent({
 
       {/* Main Canvas Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Auto-update banner (in-flow; pushes the toolbar/canvas down when visible) */}
+        <UpdateBanner />
+
         {/* Toolbar */}
         <Toolbar
           filteredEntitiesCount={filteredEntities.length}
@@ -1092,9 +1095,6 @@ function ERDVisualizerContent({
           />
         </main>
       </div>
-
-      {/* Auto-update banner (checks GitHub releases on load) */}
-      <UpdateBanner />
 
       {/* Toast Notification */}
       {toast && <Toast message={toast.message} type={toast.type} />}

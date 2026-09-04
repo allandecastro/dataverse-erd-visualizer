@@ -4,11 +4,10 @@
  */
 
 .banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10001;
+  position: relative;
+  z-index: 10;
+  flex: 0 0 auto;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 12px;

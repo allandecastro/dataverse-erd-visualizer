@@ -127,16 +127,31 @@ jobs:
           $js = "window.__ERD_SOLUTION_UPDATE__ = $payload;"
           Set-Content -Path "$outDir/v$version.js" -Value $js -Encoding utf8NoBOM -NoNewline
 
-          # Publish a manifest with the SRI hash for optional integrity checks.
-          $sha = [System.Security.Cryptography.SHA384]::Create().ComputeHash(
+          # SRI hash of the .js file (for <script integrity> on the fallback path).
+          $jsSha = [System.Security.Cryptography.SHA384]::Create().ComputeHash(
             [System.Text.Encoding]::UTF8.GetBytes($js)
           )
-          $integrity = "sha384-" + [System.Convert]::ToBase64String($sha)
-          @{ version = $version; js = "update/v$version.js"; integrity = $integrity } |
+          $integrity = "sha384-" + [System.Convert]::ToBase64String($jsSha)
+
+          # SRI hash of the base64 data (verified after the data-only fetch path).
+          $dataSha = [System.Security.Cryptography.SHA384]::Create().ComputeHash(
+            [System.Text.Encoding]::UTF8.GetBytes($b64)
+          )
+          $dataIntegrity = "sha384-" + [System.Convert]::ToBase64String($dataSha)
+
+          # latest.json — version source (no rate limit) + integrity hashes.
+          @{
+            version = $version
+            js = "update/v$version.js"
+            integrity = $integrity
+            dataIntegrity = $dataIntegrity
+          } |
             ConvertTo-Json -Compress |
             Set-Content -Path "pages-out/update/latest.json" -Encoding utf8NoBOM -NoNewline
 
-          Write-Host "Update payload generated for v$version ($integrity)"
+          Write-Host "Update payload generated for v$version"
+          Write-Host "  js:   $integrity"
+          Write-Host "  data: $dataIntegrity"
 
       - name: Publish update payload to GitHub Pages
         if: steps.version.outputs.IS_TAG == 'true'
@@ -200,28 +215,37 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update README version badge
+      # Housekeeping: bump the version on main. Re-applies onto the LATEST main
+      # instead of stash/pop'ing the tag's tree, which avoids a merge conflict
+      # when the tagged commit is behind main. continue-on-error keeps a
+      # housekeeping hiccup from failing an otherwise-successful release.
+      - name: Bump version on main
         if: steps.version.outputs.IS_TAG == 'true'
+        continue-on-error: true
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.VERSION }}"
-
-          # Update version badge in README.md
-          $readme = Get-Content "README.md" -Raw
-          $readme = $readme -replace 'version-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', "version-$version"
-          Set-Content "README.md" $readme -Encoding UTF8
-
-          Write-Host "README.md version badge updated to $version"
-
-      - name: Commit and push version updates
-        if: steps.version.outputs.IS_TAG == 'true'
-        shell: bash
-        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git stash push --include-untracked --message "release version updates"
-          git checkout main
-          git stash pop
-          git add README.md package.json
-          git diff --staged --quiet || git commit --no-verify -m "chore: update version to ${{ steps.version.outputs.VERSION }} [skip ci]"
-          git push origin main
+
+          git fetch origin main
+          git checkout -B main origin/main
+
+          $pkg = Get-Content "package.json" -Raw | ConvertFrom-Json
+          $pkg.version = $version
+          $pkg | ConvertTo-Json -Depth 100 | Set-Content "package.json" -Encoding utf8NoBOM
+
+          $readme = Get-Content "README.md" -Raw
+          $readme = $readme -replace 'version-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', "version-$version"
+          Set-Content "README.md" $readme -Encoding utf8NoBOM
+
+          git add package.json README.md
+          git diff --staged --quiet
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "No version changes to commit."
+          } else {
+            # [skip ci] avoids re-running CI on the bump. Do NOT tag this commit
+            # for a release — [skip ci] would skip the release workflow too.
+            git commit --no-verify -m "chore: update version to $version [skip ci]"
+            git push origin main
+          }

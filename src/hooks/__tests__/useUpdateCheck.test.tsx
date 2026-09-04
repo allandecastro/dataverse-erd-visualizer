@@ -8,12 +8,14 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useUpdateCheck } from '../useUpdateCheck';
 import type { LatestRelease } from '@/services/githubReleaseService';
-import { getLatestRelease, getManagedSolutionBase64 } from '@/services/githubReleaseService';
+import { getLatestReleaseInfo, getManagedSolutionBase64 } from '@/services/githubReleaseService';
 import { dataverseApi, SolutionImportForbiddenError } from '@/services/dataverseApi';
 import {
   getUpdateCheckEnabled,
   getDismissedVersion,
   setDismissedVersion,
+  getCachedLatest,
+  isCacheFresh,
 } from '@/services/updatePreferences';
 
 // Keep the real version-comparison logic, mock only the network entry points.
@@ -24,7 +26,7 @@ vi.mock('@/services/githubReleaseService', async () => {
   >;
   return {
     ...actual,
-    getLatestRelease: vi.fn(),
+    getLatestReleaseInfo: vi.fn(),
     getManagedSolutionBase64: vi.fn(),
   };
 });
@@ -33,6 +35,9 @@ vi.mock('@/services/updatePreferences', () => ({
   getUpdateCheckEnabled: vi.fn(() => true),
   getDismissedVersion: vi.fn(() => null),
   setDismissedVersion: vi.fn(),
+  getCachedLatest: vi.fn(() => null),
+  setCachedLatest: vi.fn(),
+  isCacheFresh: vi.fn(() => false),
 }));
 
 vi.mock('@/services/dataverseApi', async () => {
@@ -60,11 +65,13 @@ const releaseV1: LatestRelease = {
   },
 };
 
-const mockGetLatestRelease = vi.mocked(getLatestRelease);
+const mockGetLatestRelease = vi.mocked(getLatestReleaseInfo);
 const mockGetSolution = vi.mocked(getManagedSolutionBase64);
 const mockGetUpdateCheckEnabled = vi.mocked(getUpdateCheckEnabled);
 const mockGetDismissedVersion = vi.mocked(getDismissedVersion);
 const mockSetDismissedVersion = vi.mocked(setDismissedVersion);
+const mockGetCachedLatest = vi.mocked(getCachedLatest);
+const mockIsCacheFresh = vi.mocked(isCacheFresh);
 const mockImport = vi.mocked(dataverseApi.importSolutionAsync);
 const mockAsyncStatus = vi.mocked(dataverseApi.getAsyncOperationStatus);
 const mockProgress = vi.mocked(dataverseApi.getImportJobProgress);
@@ -75,6 +82,8 @@ describe('useUpdateCheck', () => {
     vi.clearAllMocks();
     mockGetUpdateCheckEnabled.mockReturnValue(true);
     mockGetDismissedVersion.mockReturnValue(null);
+    mockGetCachedLatest.mockReturnValue(null);
+    mockIsCacheFresh.mockReturnValue(false);
     mockIsInContext.mockReturnValue(true);
   });
 
@@ -98,6 +107,16 @@ describe('useUpdateCheck', () => {
         expect(result.current.status.current).toBe('0.0.0');
         expect(result.current.status.latest.version).toBe('1.0.0.0');
       }
+    });
+
+    it('uses a fresh cached result without hitting the network', async () => {
+      mockGetCachedLatest.mockReturnValue({ release: releaseV1, checkedAt: Date.now() });
+      mockIsCacheFresh.mockReturnValue(true);
+
+      const { result } = renderHook(() => useUpdateCheck());
+
+      await waitFor(() => expect(result.current.status.phase).toBe('available'));
+      expect(mockGetLatestRelease).not.toHaveBeenCalled();
     });
 
     it('reports up to date when the latest release is not newer', async () => {
