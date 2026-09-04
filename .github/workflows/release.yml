@@ -103,6 +103,53 @@ jobs:
         run: |
           Compress-Archive -Path "dist/webresource/*" -DestinationPath "webresources_${{ steps.version.outputs.VERSION }}.zip"
 
+      - name: Generate GitHub Pages update payload
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $zipPath = "DataverseERDVisualizer_${version}_managed.zip"
+
+          # Base64-encode the managed solution so it can be delivered as an
+          # executable JS payload (a <script> include bypasses CORS in the
+          # Dataverse iframe, unlike a direct binary download).
+          $bytes = [System.IO.File]::ReadAllBytes((Resolve-Path $zipPath))
+          $b64 = [System.Convert]::ToBase64String($bytes)
+
+          $outDir = "pages-out/update"
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+
+          $payload = @{ version = $version; data = $b64 } | ConvertTo-Json -Compress
+
+          # JSON payload — preferred, fetched cross-origin as data (Pages sends ACAO).
+          Set-Content -Path "$outDir/v$version.json" -Value $payload -Encoding utf8NoBOM -NoNewline
+
+          # JS payload — <script>-include fallback (CORS-exempt) for restrictive CSPs.
+          $js = "window.__ERD_SOLUTION_UPDATE__ = $payload;"
+          Set-Content -Path "$outDir/v$version.js" -Value $js -Encoding utf8NoBOM -NoNewline
+
+          # Publish a manifest with the SRI hash for optional integrity checks.
+          $sha = [System.Security.Cryptography.SHA384]::Create().ComputeHash(
+            [System.Text.Encoding]::UTF8.GetBytes($js)
+          )
+          $integrity = "sha384-" + [System.Convert]::ToBase64String($sha)
+          @{ version = $version; js = "update/v$version.js"; integrity = $integrity } |
+            ConvertTo-Json -Compress |
+            Set-Content -Path "pages-out/update/latest.json" -Encoding utf8NoBOM -NoNewline
+
+          Write-Host "Update payload generated for v$version ($integrity)"
+
+      - name: Publish update payload to GitHub Pages
+        if: steps.version.outputs.IS_TAG == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./pages-out
+          publish_branch: gh-pages
+          keep_files: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'chore(pages): publish update payload v${{ steps.version.outputs.VERSION }}'
+
       - name: Upload managed solution artifact
         uses: actions/upload-artifact@v7
         with:

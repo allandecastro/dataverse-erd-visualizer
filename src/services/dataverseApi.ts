@@ -39,6 +39,44 @@ interface DataverseSolutionComponentResponse {
   _solutionid_value: string;
 }
 
+/** Result of starting an asynchronous solution import */
+export interface ImportSolutionResult {
+  asyncOperationId: string;
+  importJobId: string;
+}
+
+/** Status of an in-flight async solution import */
+export interface AsyncOperationStatus {
+  /** statecode: 0=Ready, 1=Suspended, 2=Locked, 3=Completed */
+  stateCode: number;
+  /** statuscode: 30=Succeeded, 31/32=Failed/Canceled, etc. */
+  statusCode: number;
+  /** Friendly message (populated on failure) */
+  message?: string;
+}
+
+/** Error raised when the current user lacks import privileges */
+export class SolutionImportForbiddenError extends Error {
+  constructor(message = 'Importing a solution requires System Administrator privileges.') {
+    super(message);
+    this.name = 'SolutionImportForbiddenError';
+  }
+}
+
+/** Generate an RFC-4122 v4 GUID (crypto-backed when available) */
+function generateGuid(): string {
+  const cryptoObj = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined;
+  if (cryptoObj?.randomUUID) {
+    return cryptoObj.randomUUID();
+  }
+  // Fallback for older runtimes
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 /** Raw attribute response from Dataverse API */
 interface DataverseAttributeResponse {
   '@odata.type'?: string;
@@ -83,6 +121,20 @@ class DataverseApiService {
 
     // Final fallback to current origin (development mode uses mock data anyway)
     return typeof window !== 'undefined' ? window.location.origin : '';
+  }
+
+  /**
+   * Standard OData/JSON headers for Dataverse Web API requests.
+   * @param extra - additional headers (e.g. a `Prefer` page-size hint)
+   */
+  private jsonHeaders(extra?: Record<string, string>): Record<string, string> {
+    return {
+      Accept: 'application/json',
+      'OData-MaxVersion': '4.0',
+      'OData-Version': '4.0',
+      'Content-Type': 'application/json',
+      ...extra,
+    };
   }
 
   /**
@@ -217,13 +269,7 @@ class DataverseApiService {
 
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'OData-MaxVersion': '4.0',
-          'OData-Version': '4.0',
-          'Content-Type': 'application/json',
-          Prefer: 'odata.maxpagesize=100', // Request 100 entities per page
-        },
+        headers: this.jsonHeaders({ Prefer: 'odata.maxpagesize=100' }),
       });
 
       if (!response.ok) {
@@ -273,12 +319,7 @@ class DataverseApiService {
           const attributesQuery = `EntityDefinitions(LogicalName='${entityMeta.LogicalName}')/Attributes?$select=LogicalName,AttributeType,DisplayName,IsCustomAttribute,SourceType`;
           const attrResponse = await fetch(`${this.baseUrl}/${attributesQuery}`, {
             method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              'OData-MaxVersion': '4.0',
-              'OData-Version': '4.0',
-              'Content-Type': 'application/json',
-            },
+            headers: this.jsonHeaders(),
           });
 
           // Get solution names for this entity
@@ -489,12 +530,7 @@ class DataverseApiService {
 
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'OData-MaxVersion': '4.0',
-          'OData-Version': '4.0',
-          'Content-Type': 'application/json',
-        },
+        headers: this.jsonHeaders(),
       });
 
       if (!response.ok) {
@@ -534,13 +570,7 @@ class DataverseApiService {
       while (url) {
         const response = await fetch(url, {
           method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'OData-MaxVersion': '4.0',
-            'OData-Version': '4.0',
-            'Content-Type': 'application/json',
-            Prefer: 'odata.maxpagesize=5000',
-          },
+          headers: this.jsonHeaders({ Prefer: 'odata.maxpagesize=5000' }),
         });
 
         if (!response.ok) {
@@ -576,6 +606,112 @@ class DataverseApiService {
     } catch (error) {
       console.warn('Error fetching solution components:', error);
       return entitySolutionMap;
+    }
+  }
+
+  /**
+   * Start an asynchronous solution import (in-place update).
+   * The current user must have System Administrator / Customizer privileges.
+   *
+   * @param customizationFileBase64 - base64-encoded managed solution zip
+   * @throws SolutionImportForbiddenError when the user lacks privileges (403)
+   * @throws Error on other failures
+   */
+  async importSolutionAsync(customizationFileBase64: string): Promise<ImportSolutionResult> {
+    this.initialize();
+
+    const importJobId = generateGuid();
+    const body = {
+      OverwriteUnmanagedCustomizations: false,
+      PublishWorkflows: true,
+      CustomizationFile: customizationFileBase64,
+      ImportJobId: importJobId,
+    };
+
+    const response = await fetch(`${this.baseUrl}/ImportSolutionAsync`, {
+      method: 'POST',
+      headers: this.jsonHeaders(),
+      body: JSON.stringify(body),
+    });
+
+    if (response.status === 403) {
+      throw new SolutionImportForbiddenError();
+    }
+
+    if (!response.ok) {
+      const detail = await this.readErrorMessage(response);
+      throw new Error(`Failed to start solution import: ${detail}`);
+    }
+
+    const data: { AsyncOperationId?: string; ImportJobKey?: string } = await response.json();
+
+    return {
+      asyncOperationId: data.AsyncOperationId ?? '',
+      importJobId: data.ImportJobKey ?? importJobId,
+    };
+  }
+
+  /**
+   * Poll the status of an asynchronous operation (e.g. a solution import).
+   */
+  async getAsyncOperationStatus(asyncOperationId: string): Promise<AsyncOperationStatus> {
+    this.initialize();
+
+    const url = `${this.baseUrl}/asyncoperations(${asyncOperationId})?$select=statecode,statuscode,message`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.jsonHeaders(),
+    });
+
+    if (!response.ok) {
+      const detail = await this.readErrorMessage(response);
+      throw new Error(`Failed to read import status: ${detail}`);
+    }
+
+    const data: { statecode: number; statuscode: number; message?: string } = await response.json();
+
+    return {
+      stateCode: data.statecode,
+      statusCode: data.statuscode,
+      message: data.message,
+    };
+  }
+
+  /**
+   * Read the progress (0-100) of an import job, if available.
+   * Returns null when the job cannot be read yet.
+   */
+  async getImportJobProgress(importJobId: string): Promise<number | null> {
+    this.initialize();
+
+    try {
+      const url = `${this.baseUrl}/importjobs(${importJobId})?$select=progress`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.jsonHeaders(),
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data: { progress?: number } = await response.json();
+      return typeof data.progress === 'number' ? data.progress : null;
+    } catch {
+      // Import job row may not exist yet — treat as unknown progress.
+      return null;
+    }
+  }
+
+  /**
+   * Extract a human-readable message from a failed Dataverse Web API response.
+   */
+  private async readErrorMessage(response: Response): Promise<string> {
+    try {
+      const data: { error?: { message?: string } } = await response.json();
+      return data.error?.message || `${response.status} ${response.statusText}`;
+    } catch {
+      return `${response.status} ${response.statusText}`;
     }
   }
 }

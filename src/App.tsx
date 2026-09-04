@@ -29,6 +29,7 @@ import {
 import { ReactFlowERD, type ReactFlowERDRef } from './components/ReactFlowERD';
 import { AddRelatedTableDialog } from './components/AddRelatedTableDialog';
 import { ColorPickerPopover } from './components/ColorPickerPopover';
+import { UpdateBanner } from './components/UpdateBanner';
 
 // Components - lazy loaded (not immediately needed)
 const FeatureGuide = lazy(() =>
@@ -1091,6 +1092,9 @@ function ERDVisualizerContent({
           />
         </main>
       </div>
+
+      {/* Auto-update banner (checks GitHub releases on load) */}
+      <UpdateBanner />
 
       {/* Toast Notification */}
       {toast && <Toast message={toast.message} type={toast.type} />}

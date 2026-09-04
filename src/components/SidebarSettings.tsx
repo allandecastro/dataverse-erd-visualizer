@@ -2,8 +2,9 @@
  * Sidebar color settings panel
  */
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import type { ColorSettings } from '@/types/erdTypes';
+import { getUpdateCheckEnabled, setUpdateCheckEnabled } from '@/services/updatePreferences';
 import styles from '@/styles/Sidebar.module.css';
 
 export interface SidebarSettingsProps {
@@ -41,6 +42,13 @@ export const SidebarSettings = memo(function SidebarSettings({
   } = colorSettings;
   const panelBg = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
   const inputBg = isDarkMode ? '#1a1a1a' : '#ffffff';
+
+  // Auto-update preference (persisted to localStorage; applied on next load)
+  const [updateCheckEnabled, setUpdateCheckEnabledState] = useState(getUpdateCheckEnabled);
+  const handleUpdateCheckToggle = (checked: boolean) => {
+    setUpdateCheckEnabledState(checked);
+    setUpdateCheckEnabled(checked);
+  };
 
   // SVG chevron arrow for select dropdown
   const arrowColor = isDarkMode ? '%23e2e8f0' : '%231e293b';
@@ -260,6 +268,27 @@ export const SidebarSettings = memo(function SidebarSettings({
               style={{ marginRight: '8px', cursor: 'pointer' }}
             />
             Show Lookup IDs on Relationship Lines
+          </label>
+        </div>
+
+        {/* Check for Updates Checkbox */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <label
+            className={styles.settingsLabel}
+            style={{
+              color: textSecondary,
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={updateCheckEnabled}
+              onChange={(e) => handleUpdateCheckToggle(e.target.checked)}
+              style={{ marginRight: '8px', cursor: 'pointer' }}
+            />
+            Check for updates on load
           </label>
         </div>
 
