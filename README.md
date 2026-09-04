@@ -84,6 +84,14 @@
 | **Keyboard Shortcuts**    | Ctrl+S (save), Ctrl+Shift+S (snapshots), Ctrl+Shift+C (share), / (search), Esc (deselect)                                                                     |
 | **Feature Guide**         | Interactive onboarding for new users                                                                                                                          |
 
+### Automatic Updates
+
+| Feature            | Description                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Update banner**  | Detects a newer GitHub release on load and offers a one-click, in-place update — no manual solution export/import                |
+| **In-app install** | Downloads the managed solution and imports it via the Dataverse Web API (`ImportSolutionAsync`) with live progress (admin only) |
+| **Opt-out**        | "Check for updates on load" toggle in Settings; the check is throttled to once per 24h and the payload is integrity-checked      |
+
 ### Export & Customization
 
 | Feature                           | Description                                                                                        |
@@ -580,6 +588,12 @@ npm install
 ---
 
 ## Changelog
+
+### v0.1.13.0 — 2026-09-04
+
+**Added**
+
+- **Auto-update banner with in-place Dataverse solution import** ([#96](https://github.com/allandecastro/dataverse-erd-visualizer/pull/96), [#97](https://github.com/allandecastro/dataverse-erd-visualizer/pull/97)). On load the app compares its version against the latest GitHub release; when a newer one exists it shows a banner. Admins can update in place — the managed solution is fetched via a GitHub Pages payload (which bypasses the Dataverse iframe's CORS restriction) and imported through the Web API `ImportSolutionAsync` with live progress. A Settings toggle disables the check, which is throttled to once per 24 hours, and the fetched payload is verified with Subresource Integrity (SRI).
 
 ### v0.1.12.4 — 2026-09-03
 
