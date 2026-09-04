@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  getLatestRelease,
+  getLatestReleaseInfo,
   isUpdateAvailable,
   getManagedSolutionBase64,
   type LatestRelease,
@@ -16,6 +16,9 @@ import {
   getUpdateCheckEnabled,
   getDismissedVersion,
   setDismissedVersion,
+  getCachedLatest,
+  setCachedLatest,
+  isCacheFresh,
 } from '@/services/updatePreferences';
 
 export type UpdateStatus =
@@ -40,6 +43,25 @@ const ASYNC_STATUS_SUCCEEDED = 30;
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Resolve the latest release, throttled: reuse a fresh cached result, otherwise
+ * fetch and cache. On a failed fetch, fall back to a stale cache if present.
+ */
+async function resolveLatestRelease(): Promise<LatestRelease> {
+  const cached = getCachedLatest();
+  if (cached && isCacheFresh(cached)) {
+    return cached.release;
+  }
+  try {
+    const fresh = await getLatestReleaseInfo();
+    setCachedLatest(fresh);
+    return fresh;
+  } catch (error) {
+    if (cached) return cached.release;
+    throw error;
+  }
+}
+
 export function useUpdateCheck() {
   // Start in "checking" when enabled so the first render already reflects the
   // pending check without a synchronous setState inside the effect.
@@ -60,7 +82,7 @@ export function useUpdateCheck() {
 
     (async () => {
       try {
-        const latest = await getLatestRelease();
+        const latest = await resolveLatestRelease();
         if (cancelled) return;
 
         const current = __APP_VERSION__;

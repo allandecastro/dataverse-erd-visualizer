@@ -5,7 +5,19 @@
  * the update/import machinery.
  */
 
-import { UPDATE_CHECK_ENABLED_KEY, UPDATE_DISMISSED_VERSION_KEY } from '@/constants';
+import type { LatestRelease } from '@/services/githubReleaseService';
+import {
+  UPDATE_CHECK_ENABLED_KEY,
+  UPDATE_DISMISSED_VERSION_KEY,
+  UPDATE_LAST_CHECK_KEY,
+  UPDATE_CHECK_TTL_MS,
+} from '@/constants';
+
+/** Cached result of a version check, used to throttle GitHub/Pages requests. */
+export interface CachedLatest {
+  release: LatestRelease;
+  checkedAt: number;
+}
 
 /** Safely read a localStorage value, returning null on any failure. */
 function readItem(key: string): string | null {
@@ -44,4 +56,29 @@ export function getDismissedVersion(): string | null {
 /** Remember a release version so its banner stops prompting. */
 export function setDismissedVersion(version: string): void {
   writeItem(UPDATE_DISMISSED_VERSION_KEY, version);
+}
+
+/** Read the cached latest-release info, or null when absent/corrupt. */
+export function getCachedLatest(): CachedLatest | null {
+  const raw = readItem(UPDATE_LAST_CHECK_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as CachedLatest;
+    if (parsed?.release?.version && typeof parsed.checkedAt === 'number') {
+      return parsed;
+    }
+  } catch {
+    // Corrupt cache — ignore.
+  }
+  return null;
+}
+
+/** Cache the latest-release info with the current timestamp. */
+export function setCachedLatest(release: LatestRelease): void {
+  writeItem(UPDATE_LAST_CHECK_KEY, JSON.stringify({ release, checkedAt: Date.now() }));
+}
+
+/** Whether a cached check is still within the throttle window. */
+export function isCacheFresh(cached: CachedLatest): boolean {
+  return Date.now() - cached.checkedAt < UPDATE_CHECK_TTL_MS;
 }

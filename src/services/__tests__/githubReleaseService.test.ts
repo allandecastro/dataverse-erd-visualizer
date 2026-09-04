@@ -7,6 +7,8 @@ import {
   compareVersions,
   isUpdateAvailable,
   getLatestRelease,
+  fetchLatestReleaseFromPages,
+  getLatestReleaseInfo,
   downloadManagedSolutionBase64,
   fetchManagedSolutionFromPages,
   loadManagedSolutionViaScript,
@@ -14,6 +16,14 @@ import {
   type ReleaseAsset,
   type LatestRelease,
 } from '../githubReleaseService';
+
+/** Compute the sha384-<base64> SRI hash of a string (mirrors the service). */
+async function sri(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-384', new TextEncoder().encode(text));
+  let bin = '';
+  new Uint8Array(digest).forEach((b) => (bin += String.fromCharCode(b)));
+  return `sha384-${btoa(bin)}`;
+}
 
 const mockFetch = vi.fn();
 
@@ -216,6 +226,58 @@ describe('githubReleaseService', () => {
     });
   });
 
+  describe('fetchLatestReleaseFromPages', () => {
+    it('parses the manifest into a LatestRelease with SRI hashes', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          version: '0.1.13.1',
+          js: 'update/v0.1.13.1.js',
+          integrity: 'sha384-jshash',
+          dataIntegrity: 'sha384-datahash',
+        }),
+      });
+
+      const r = await fetchLatestReleaseFromPages();
+      expect(r.version).toBe('0.1.13.1');
+      expect(r.htmlUrl).toContain('/releases/tag/v0.1.13.1');
+      expect(r.managedAsset).toBeNull();
+      expect(r.integrity).toBe('sha384-jshash');
+      expect(r.dataIntegrity).toBe('sha384-datahash');
+    });
+
+    it('throws when the manifest is unavailable', async () => {
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
+      await expect(fetchLatestReleaseFromPages()).rejects.toThrow(/not available/);
+    });
+  });
+
+  describe('getLatestReleaseInfo', () => {
+    it('prefers the Pages manifest', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ version: '0.1.13.1', js: 'update/v0.1.13.1.js' }),
+      });
+      const r = await getLatestReleaseInfo();
+      expect(r.version).toBe('0.1.13.1');
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('falls back to the GitHub API when Pages is unavailable', async () => {
+      mockFetch.mockRejectedValueOnce(new TypeError('pages down')).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          tag_name: 'v0.1.13.0',
+          html_url: 'https://github.com/x/y/releases/tag/v0.1.13.0',
+          assets: [],
+        }),
+      });
+      const r = await getLatestReleaseInfo();
+      expect(r.version).toBe('0.1.13.0');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('fetchManagedSolutionFromPages', () => {
     it('returns the base64 from the Pages JSON payload', async () => {
       mockFetch.mockResolvedValue({
@@ -227,6 +289,25 @@ describe('githubReleaseService', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         'https://allandecastro.github.io/dataverse-erd-visualizer/update/v1.0.0.0.json',
         expect.anything()
+      );
+    });
+
+    it('accepts a matching dataIntegrity hash', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ version: '1.0.0.0', data: 'VIAFETCH' }),
+      });
+      const good = await sri('VIAFETCH');
+      await expect(fetchManagedSolutionFromPages('1.0.0.0', good)).resolves.toBe('VIAFETCH');
+    });
+
+    it('throws when dataIntegrity does not match', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ version: '1.0.0.0', data: 'VIAFETCH' }),
+      });
+      await expect(fetchManagedSolutionFromPages('1.0.0.0', 'sha384-bogus')).rejects.toThrow(
+        /Integrity check failed/
       );
     });
 

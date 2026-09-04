@@ -5,6 +5,15 @@ All notable changes to the Dataverse ERD Visualizer will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13.0] - 2026-09-04
+
+### Added
+
+- **Auto-update banner** — Detects a newer GitHub release on load and lets admins download and import the managed solution in place via the Dataverse Web API (`ImportSolutionAsync`) with live progress. A "Check for updates on load" toggle lives in Settings.
+- **CORS-safe delivery** — The update payload (managed solution base64) is published to GitHub Pages and loaded from the Dataverse iframe (data-only `fetch` with a `<script>`-include fallback), bypassing the release-asset CORS restriction. Payloads are verified with Subresource Integrity (SRI) and the version check is throttled to once per 24h.
+
+---
+
 ## [0.1.12.0] - 2026-02-16
 
 ### Added

@@ -45,6 +45,18 @@ export interface LatestRelease {
   htmlUrl: string;
   /** The managed solution asset, if present */
   managedAsset: ReleaseAsset | null;
+  /** SRI hash (`sha384-…`) of the Pages `.js` payload, for `<script integrity>` */
+  integrity?: string;
+  /** SRI hash (`sha384-…`) of the base64 `data`, to verify the fetched payload */
+  dataIntegrity?: string;
+}
+
+/** Manifest published to GitHub Pages at `update/latest.json` */
+interface PagesLatestManifest {
+  version: string;
+  js: string;
+  integrity?: string;
+  dataIntegrity?: string;
 }
 
 /** Raw asset shape from the GitHub REST API */
@@ -63,6 +75,24 @@ interface GitHubApiRelease {
 }
 
 const RELEASES_LATEST_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
+const PAGES_LATEST_MANIFEST_URL = `${GITHUB_PAGES_BASE_URL}/update/latest.json`;
+
+/** Build the public release page URL for a version. */
+function releaseTagUrl(version: string): string {
+  return `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/tag/v${version}`;
+}
+
+/** Compute the `sha384-<base64>` SRI hash of a string (WebCrypto). */
+async function sha384OfString(text: string): Promise<string> {
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest('SHA-384', bytes);
+  let binary = '';
+  const view = new Uint8Array(digest);
+  for (let i = 0; i < view.length; i++) {
+    binary += String.fromCharCode(view[i]);
+  }
+  return `sha384-${btoa(binary)}`;
+}
 
 /**
  * Compare two 4-segment (Dataverse-style) version strings.
@@ -133,6 +163,48 @@ export async function getLatestRelease(): Promise<LatestRelease> {
         }
       : null,
   };
+}
+
+/**
+ * Read the latest-version manifest from GitHub Pages (`update/latest.json`).
+ * Preferred over the GitHub API: no rate limit, and it carries SRI hashes.
+ *
+ * @throws Error when the manifest is unavailable or malformed.
+ */
+export async function fetchLatestReleaseFromPages(): Promise<LatestRelease> {
+  // latest.json is mutable (rewritten each release) — bypass the HTTP cache.
+  const response = await fetch(PAGES_LATEST_MANIFEST_URL, {
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+  if (!response.ok) {
+    throw new Error(`Pages manifest not available: ${response.status}`);
+  }
+  const manifest = (await response.json()) as Partial<PagesLatestManifest>;
+  if (!manifest.version) {
+    throw new Error('Pages manifest is missing a version.');
+  }
+  return {
+    tagName: `v${manifest.version}`,
+    version: manifest.version,
+    htmlUrl: releaseTagUrl(manifest.version),
+    managedAsset: null,
+    integrity: manifest.integrity,
+    dataIntegrity: manifest.dataIntegrity,
+  };
+}
+
+/**
+ * Resolve the latest release, preferring the GitHub Pages manifest (no rate
+ * limit, includes SRI hashes) and falling back to the GitHub API.
+ */
+export async function getLatestReleaseInfo(): Promise<LatestRelease> {
+  try {
+    return await fetchLatestReleaseFromPages();
+  } catch {
+    // Pages unavailable — fall back to the rate-limited GitHub API (no SRI).
+    return getLatestRelease();
+  }
 }
 
 /**
@@ -207,9 +279,14 @@ export async function downloadManagedSolutionBase64(asset: ReleaseAsset): Promis
  * `fetch` works from the Dataverse iframe — and unlike the <script> include this
  * only retrieves data (no remote code execution). This is the preferred strategy.
  *
- * @throws Error when the payload is unavailable or its version does not match.
+ * @param dataIntegrity - optional `sha384-…` hash; when provided, the fetched
+ *   base64 is verified against it and a mismatch throws (tamper detection).
+ * @throws Error when the payload is unavailable, mismatched, or fails integrity.
  */
-export async function fetchManagedSolutionFromPages(version: string): Promise<string> {
+export async function fetchManagedSolutionFromPages(
+  version: string,
+  dataIntegrity?: string
+): Promise<string> {
   const url = `${GITHUB_PAGES_BASE_URL}/update/v${version}.json`;
   const response = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!response.ok) {
@@ -218,6 +295,12 @@ export async function fetchManagedSolutionFromPages(version: string): Promise<st
   const payload = (await response.json()) as Partial<SolutionUpdatePayload>;
   if (!payload || payload.version !== version || !payload.data) {
     throw new Error('The Pages payload was missing or did not match the expected version.');
+  }
+  if (dataIntegrity) {
+    const actual = await sha384OfString(payload.data);
+    if (actual !== dataIntegrity) {
+      throw new Error('Integrity check failed for the update payload.');
+    }
   }
   return payload.data;
 }
@@ -296,8 +379,8 @@ export function loadManagedSolutionViaScript(version: string, integrity?: string
  */
 export async function getManagedSolutionBase64(release: LatestRelease): Promise<string> {
   const strategies: Array<() => Promise<string>> = [
-    () => fetchManagedSolutionFromPages(release.version),
-    () => loadManagedSolutionViaScript(release.version),
+    () => fetchManagedSolutionFromPages(release.version, release.dataIntegrity),
+    () => loadManagedSolutionViaScript(release.version, release.integrity),
   ];
   const asset = release.managedAsset;
   if (asset) {
